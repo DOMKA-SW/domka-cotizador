@@ -1,63 +1,81 @@
-// js/clientes.js
-const clientesTabla = document.getElementById("clientesTabla");
-const clienteForm = document.getElementById("clienteForm");
+const formClientes = document.getElementById("form-clientes");
+const listaClientes = document.getElementById("clientes-list");
 
-// --- Guardar cliente ---
-clienteForm.addEventListener("submit", async (e) => {
+let editando = false;
+let idEditando = null;
+
+// Guardar cliente (nuevo o editado)
+formClientes.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const nuevoCliente = {
-    nombre: document.getElementById("nombre").value,
-    empresa: document.getElementById("empresa").value,
-    nit: document.getElementById("nit").value,
-    telefono: document.getElementById("telefono").value,
-    email: document.getElementById("email").value,
-    fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+  const cliente = {
+    nombre: formClientes.nombre.value,
+    email: formClientes.email.value,
+    telefono: formClientes.telefono.value,
+    empresa: formClientes.empresa.value,
+    nit: formClientes.nit.value,
   };
 
-  try {
-    await db.collection("clientes").add(nuevoCliente);
-    clienteForm.reset();
-    cargarClientes();
-  } catch (error) {
-    console.error("Error al guardar cliente:", error);
+  if (editando) {
+    await db.collection("clientes").doc(idEditando).update(cliente);
+    editando = false;
+    idEditando = null;
+  } else {
+    await db.collection("clientes").add(cliente);
   }
+
+  formClientes.reset();
+  cargarClientes();
 });
 
-// --- Cargar clientes ---
+// Cargar clientes
 async function cargarClientes() {
-  clientesTabla.innerHTML = "";
-  const snap = await db.collection("clientes").orderBy("fechaCreacion", "desc").get();
-
-  snap.forEach((doc) => {
+  const snapshot = await db.collection("clientes").get();
+  listaClientes.innerHTML = "";
+  snapshot.forEach((doc) => {
     const c = doc.data();
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="p-2 border">${c.nombre || ""}</td>
-      <td class="p-2 border">${c.empresa || ""}</td>
-      <td class="p-2 border">${c.nit || ""}</td>
-      <td class="p-2 border">${c.telefono || ""}</td>
-      <td class="p-2 border">${c.email || ""}</td>
-      <td class="p-2 border">
-        <button onclick="eliminarCliente('${doc.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Eliminar</button>
-      </td>
+    listaClientes.innerHTML += `
+      <tr class="border-b">
+        <td class="p-2">${c.nombre}</td>
+        <td class="p-2">${c.email}</td>
+        <td class="p-2">${c.telefono}</td>
+        <td class="p-2">${c.empresa}</td>
+        <td class="p-2">${c.nit}</td>
+        <td class="p-2 space-x-2">
+          <button onclick="editarCliente('${doc.id}')" class="text-blue-600 hover:underline">Editar</button>
+          <button onclick="eliminarCliente('${doc.id}')" class="text-red-600 hover:underline">Eliminar</button>
+        </td>
+      </tr>
     `;
-    clientesTabla.appendChild(tr);
   });
 }
 
-// --- Eliminar cliente ---
+// Eliminar cliente
 async function eliminarCliente(id) {
   if (confirm("¿Seguro de eliminar este cliente?")) {
-    try {
-      await db.collection("clientes").doc(id).delete();
-      cargarClientes();
-    } catch (error) {
-      console.error("Error al eliminar cliente:", error);
-    }
+    await db.collection("clientes").doc(id).delete();
+    cargarClientes();
   }
 }
 
-// Exponer funciones globalmente
-window.eliminarCliente = eliminarCliente;
+// Editar cliente
+async function editarCliente(id) {
+  const docSnap = await db.collection("clientes").doc(id).get();
+  const c = docSnap.data();
+
+  formClientes.nombre.value = c.nombre;
+  formClientes.email.value = c.email;
+  formClientes.telefono.value = c.telefono;
+  formClientes.empresa.value = c.empresa;
+  formClientes.nit.value = c.nit;
+
+  editando = true;
+  idEditando = id;
+}
+
+// Cargar al iniciar
 cargarClientes();
+
+// Hacer accesibles desde HTML
+window.eliminarCliente = eliminarCliente;
+window.editarCliente = editarCliente;
