@@ -16,3 +16,14 @@ window.logout = async function () {
   await auth.signOut();
   window.location.href = "index.html";
 };
+
+// Cerrar sesión
+function logout() {
+  auth.signOut()
+    .then(() => {
+      window.location.href = "index.html"; // vuelve al login
+    })
+    .catch((error) => {
+      console.error("Error al cerrar sesión:", error);
+    });
+}
