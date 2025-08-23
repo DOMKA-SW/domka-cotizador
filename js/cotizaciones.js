@@ -1,6 +1,7 @@
-const db = firebase.firestore();
+window.addEventListener("DOMContentLoaded", () => {
+  const db = firebase.firestore();
 
-let items = [];
+  let items = [];
 
 // Cargar clientes en el select
 async function cargarClientes() {
