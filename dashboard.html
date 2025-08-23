@@ -8,36 +8,39 @@
 <body class="bg-gray-100 min-h-screen">
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-domka">Dashboard</h1>
-      <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">Cerrar sesión</button>
+      <h1 class="text-2xl font-bold text-orange-600">Dashboard</h1>
+      <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+        Cerrar sesión
+      </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <a href="cotizaciones.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
-        <h2 class="font-bold text-lg text-domka">📄 Cotizaciones</h2>
+      <a href="cotizaciones.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition">
+        <h2 class="font-bold text-lg text-orange-600">📄 Cotizaciones</h2>
         <p class="text-gray-600">Crear y gestionar cotizaciones</p>
       </a>
-      <a href="cuentas.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
-        <h2 class="font-bold text-lg text-domka">💰 Cuentas de Cobro</h2>
+
+      <a href="cuentas.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition">
+        <h2 class="font-bold text-lg text-orange-600">💰 Cuentas de Cobro</h2>
         <p class="text-gray-600">Emitir cuentas de cobro</p>
       </a>
-      <a href="clientes.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
-        <h2 class="font-bold text-lg text-domka">👥 Clientes</h2>
+
+      <a href="clientes.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition">
+        <h2 class="font-bold text-lg text-orange-600">👥 Clientes</h2>
         <p class="text-gray-600">Administrar clientes</p>
       </a>
     </div>
   </div>
 
-  
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
-<!-- Tu config de Firebase -->
-<script src="js/firebase-config.js"></script>
+  <!-- Tu config de Firebase -->
+  <script src="js/firebase-config.js"></script>
 
-<!-- Archivo de autenticación -->
-<script src="js/auth.js"></script>
+  <!-- Funciones de login/logout -->
+  <script src="js/auth.js"></script>
 </body>
 </html>
