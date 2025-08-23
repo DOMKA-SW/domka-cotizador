@@ -1,9 +1,9 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// js/firebase.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
+// ⚠️ Reemplaza con tu configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAzcLdb3lm0efSMuG3U3U8etdb9oJe9SdY",
   authDomain: "domka-cotizador.firebaseapp.com",
@@ -13,5 +13,7 @@ const firebaseConfig = {
   appId: "1:11233894590:web:56fb76f5a1ca9af7453eef"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Inicializa
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
