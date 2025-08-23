@@ -1,29 +1,42 @@
-// auth.js
-window.login = async function () {
+// js/auth.js
+const firebaseConfig = {
+  // 🔑 Tus credenciales Firebase
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Hacemos que sean accesibles globalmente
+window.auth = auth;
+window.db = db;
+
+// --- LOGIN ---
+function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  const errorEl = document.getElementById("error");
 
-  try {
-    await auth.signInWithEmailAndPassword(email, password);
-    window.location.href = "dashboard.html";
-  } catch (err) {
-    errorEl.textContent = "❌ " + err.message;
-  }
-};
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      window.location.href = "dashboard.html";
+    })
+    .catch((error) => {
+      alert("Error en login: " + error.message);
+    });
+}
 
-window.logout = async function () {
-  await auth.signOut();
-  window.location.href = "index.html";
-};
-
-// Cerrar sesión
+// --- LOGOUT ---
 function logout() {
   auth.signOut()
     .then(() => {
-      window.location.href = "index.html"; // vuelve al login
+      window.location.href = "index.html";
     })
     .catch((error) => {
       console.error("Error al cerrar sesión:", error);
     });
 }
+
+// Exportamos para usar en HTML (botones)
+window.login = login;
+window.logout = logout;
