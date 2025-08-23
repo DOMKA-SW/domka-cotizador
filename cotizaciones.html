@@ -1,12 +1,51 @@
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          domka: "#f97316", // naranja DOMKA
-        }
-      }
-    }
-  }
-</script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>DOMKA - Cotizaciones</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-50">
+
+  <nav class="p-4 bg-orange-600 text-white flex justify-between">
+    <h1 class="font-bold">DOMKA - Cotizaciones</h1>
+    <button onclick="logout()" class="bg-white text-orange-600 px-3 py-1 rounded">Cerrar Sesión</button>
+  </nav>
+
+  <main class="p-6">
+    <h2 class="text-xl font-bold mb-4">Nueva Cotización</h2>
+    
+    <form id="formCotizacion" class="bg-white p-4 shadow rounded mb-6">
+      <input type="text" id="cliente" placeholder="Cliente" class="border p-2 w-full mb-2" required>
+      <input type="email" id="email" placeholder="Email" class="border p-2 w-full mb-2">
+      <input type="text" id="telefono" placeholder="Teléfono" class="border p-2 w-full mb-2">
+      <textarea id="detalle" placeholder="Detalle de la cotización" class="border p-2 w-full mb-2"></textarea>
+      <input type="number" id="valor" placeholder="Valor total" class="border p-2 w-full mb-2">
+      <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">Guardar</button>
+    </form>
+
+    <h2 class="text-xl font-bold mb-2">Listado de Cotizaciones</h2>
+    <table class="w-full bg-white shadow rounded" id="tablaCotizaciones">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2">Cliente</th>
+          <th class="p-2">Email</th>
+          <th class="p-2">Valor</th>
+          <th class="p-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="cotizacionesBody"></tbody>
+    </table>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <!-- Scripts propios -->
+  <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cotizaciones.js"></script>
+</body>
+</html>
