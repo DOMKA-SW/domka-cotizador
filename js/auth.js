@@ -1,23 +1,20 @@
 // js/auth.js
-const firebaseConfig = {
-  // 🔑 Tus credenciales Firebase
-};
 
-firebase.initializeApp(firebaseConfig);
+// Inicializar Firebase solo si no está inicializado
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Hacemos que sean accesibles globalmente
-window.auth = auth;
-window.db = db;
+// Inicializamos servicios
+window.auth = firebase.auth();
+window.db = firebase.firestore();
 
 // --- LOGIN ---
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  auth.signInWithEmailAndPassword(email, password)
+  window.auth.signInWithEmailAndPassword(email, password)
     .then(() => {
       window.location.href = "dashboard.html";
     })
@@ -28,7 +25,7 @@ function login() {
 
 // --- LOGOUT ---
 function logout() {
-  auth.signOut()
+  window.auth.signOut()
     .then(() => {
       window.location.href = "index.html";
     })
@@ -37,6 +34,6 @@ function logout() {
     });
 }
 
-// Exportamos para usar en HTML (botones)
+// Exponer en window
 window.login = login;
 window.logout = logout;
