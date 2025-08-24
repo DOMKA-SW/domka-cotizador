@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="p-2 flex gap-2">
           <button class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 btn-pdf">PDF</button>
           <a class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700" target="_blank"
-             href="https://wa.me/?text=${encodeURIComponent(`Hola, aquí tienes tu cotización DOMKA: ${c.linkPublico || ''}`)}">WhatsApp</a>
+         href="https://api.whatsapp.com/send?text=${encodeURIComponent(`Hola, aquí tienes tu cotización DOMKA: ${c.linkPublico || ''}`)}">WhatsApp</a>
         </td>
       `;
 
