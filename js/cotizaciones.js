@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-           <td class="p-2">${c.clienteNombre || "—"}</td>
+           <td class="p-2">${c.nombre || "—"}</td>
            <td class="p-2">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
            <td class="p-2 flex gap-2">
            <button class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 btn-pdf">PDF</button>
