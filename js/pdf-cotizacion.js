@@ -1,119 +1,64 @@
-// js/cotizaciones.js
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("form-cotizacion");
-  const tablaItems = document.querySelector("#tabla-items tbody");
-  const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
+// js/pdf-cotizacion.js
 
-  let items = [];
+// Asegúrate de cargar pdfMake y vfs_fonts en el HTML ANTES de este archivo.
+// En compat, pdfMake ya trae vfs por el script de vfs_fonts.
 
-  // ============================
-  // 🔹 Ítems dinámicos
-  // ============================
-  document.getElementById("agregar-item").addEventListener("click", () => {
-    const row = document.createElement("tr");
+function generarPDFCotizacion(cotizacion, clienteNombre) {
+  const items = Array.isArray(cotizacion.items) ? cotizacion.items : [];
 
-    row.innerHTML = `
-      <td><input type="text" class="desc border p-1 w-full"></td>
-      <td><input type="number" class="cant border p-1 w-full" value="1"></td>
-      <td><input type="number" class="precio border p-1 w-full" value="0"></td>
-      <td class="subtotal text-right p-2">0</td>
-      <td><button type="button" class="text-red-600">Eliminar</button></td>
-    `;
+  const body = [
+    [{ text: "Descripción", style: "th" }, { text: "Cant.", style: "th" }, { text: "Vlr Unit.", style: "th" }, { text: "Subtotal", style: "th" }],
+    ...items.map(it => ([
+      it.descripcion || "",
+      String(it.cantidad ?? 0),
+      `$${Number(it.precio || 0).toLocaleString("es-CO")}`,
+      `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`
+    ]))
+  ];
 
-    row.querySelector(".cant").addEventListener("input", recalcular);
-    row.querySelector(".precio").addEventListener("input", recalcular);
-    row.querySelector("button").addEventListener("click", () => {
-      row.remove();
-      recalcular();
-    });
+  const docDefinition = {
+    content: [
+      {
+        columns: [
+          { text: "DOMKA", style: "brand" },
+          { text: "COTIZACIÓN", alignment: "right", style: "title" }
+        ]
+      },
+      { text: " " },
+      { text: `Cliente: ${clienteNombre || "—"}`, margin: [0, 2, 0, 2] },
+      { text: `Notas: ${cotizacion.notas || "—"}`, color: "#374151", margin: [0, 0, 0, 8] },
 
-    tablaItems.appendChild(row);
-    recalcular();
-  });
+      {
+        table: { widths: ["*", "auto", "auto", "auto"], body },
+        layout: "lightHorizontalLines"
+      },
 
-  function recalcular() {
-    let subtotal = 0;
-    items = [];
-    tablaItems.querySelectorAll("tr").forEach(tr => {
-      const desc = tr.querySelector(".desc").value;
-      const cant = Number(tr.querySelector(".cant").value) || 0;
-      const precio = Number(tr.querySelector(".precio").value) || 0;
-      const sub = cant * precio;
-      tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
-      subtotal += sub;
-      items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
-    });
+      { text: " " },
+      {
+        columns: [
+          { text: " " },
+          {
+            table: {
+              widths: ["*", "auto"],
+              body: [
+                ["Subtotal", `$${Number(cotizacion.subtotal || 0).toLocaleString("es-CO")}`],
+                ["IVA (19%)", `$${Number(cotizacion.impuestos || 0).toLocaleString("es-CO")}`],
+                [{ text: "TOTAL", bold: true }, { text: `$${Number(cotizacion.total || 0).toLocaleString("es-CO")}`, bold: true }]
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    styles: {
+      brand: { fontSize: 18, bold: true, color: "#F97316" }, // naranja DOMKA
+      title: { fontSize: 16, bold: true },
+      th: { fillColor: "#F97316", color: "white", bold: true, alignment: "center" }
+    },
+    defaultStyle: { fontSize: 10 }
+  };
 
-    const impuestos = Math.round(subtotal * 0.19);
-    const total = subtotal + impuestos;
+  pdfMake.createPdf(docDefinition).open();
+}
 
-    document.getElementById("subtotal").textContent = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
-    document.getElementById("impuestos").textContent = `IVA (19%): $${impuestos.toLocaleString("es-CO")}`;
-    document.getElementById("total").textContent = `Total: $${total.toLocaleString("es-CO")}`;
-
-    return { subtotal, impuestos, total };
-  }
-
-  // ============================
-  // 🔹 Guardar cotización
-  // ============================
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const cliente = document.getElementById("cliente").value;
-    const notas = document.getElementById("notas").value;
-    const { subtotal, impuestos, total } = recalcular();
-
-    if (!cliente) {
-      alert("Escribe el nombre del cliente");
-      return;
-    }
-
-    const docRef = await db.collection("cotizaciones").add({
-      cliente,
-      notas,
-      items,
-      subtotal,
-      impuestos,
-      total,
-      fecha: new Date(),
-      estado: "pendiente"
-    });
-
-    // Guardamos link público
-    await db.collection("cotizaciones").doc(docRef.id).update({
-      linkPublico: `public/cotizacion.html?id=${docRef.id}`
-    });
-
-    alert("✅ Cotización guardada");
-    form.reset();
-    tablaItems.innerHTML = "";
-    recalcular();
-    cargarCotizaciones();
-  });
-
-  // ============================
-  // 🔹 Listar cotizaciones
-  // ============================
-  async function cargarCotizaciones() {
-    tablaCotizaciones.innerHTML = "";
-    const snap = await db.collection("cotizaciones").orderBy("fecha", "desc").get();
-    snap.forEach(doc => {
-      const c = doc.data();
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="p-2">${c.cliente}</td>
-        <td class="p-2">$${c.total.toLocaleString("es-CO")}</td>
-        <td class="p-2 flex gap-2">
-          <button onclick='generarPDFCotizacion(${JSON.stringify(c)})'
-            class="bg-orange-600 text-white px-2 py-1 rounded">PDF</button>
-          <a href="https://wa.me/?text=Hola, aquí tienes tu cotización DOMKA: ${window.location.origin}/public/cotizacion.html?id=${doc.id}"
-            target="_blank"
-            class="bg-green-600 text-white px-2 py-1 rounded">WhatsApp</a>
-        </td>
-      `;
-      tablaCotizaciones.appendChild(tr);
-    });
-  }
-
-  cargarCotizaciones();
-});
+window.generarPDFCotizacion = generarPDFCotizacion;
