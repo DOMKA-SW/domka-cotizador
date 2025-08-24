@@ -133,9 +133,10 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
       // Botón PDF (pasamos el nombre de cliente)
-      tr.querySelector(".btn-pdf").addEventListener("click", () => {
-        window.generarPDFCotizacion(c, nombreCliente);
-      });
+        tr.querySelector(".btn-pdf").addEventListener("click", () => {
+        console.log("Generando PDF para:", c); // 👈 debug
+        generarPDFCotizacion(c);
+});
 
       tablaCotizaciones.appendChild(tr);
     });
