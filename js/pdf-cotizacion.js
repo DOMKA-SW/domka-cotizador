@@ -1,7 +1,7 @@
 // js/pdf-cotizacion.js
 // Logo DOMKA en Base64 (versión comprimida para usar directamente en pdfmake)
 const logoBase64 =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAYAAADxY9t9AAAgAElEQVR4Xu2d..."; 
+  "data:image/logo.png"; 
 // ⚠️ Reemplaza el contenido por el string COMPLETO de tu logo convertido a Base64
 
 function generarPDFCotizacion(c) {
