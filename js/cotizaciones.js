@@ -123,9 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2">${nombreCliente}</td>
-        <td class="p-2">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
-        <td class="p-2 flex gap-2">
+           <td class="p-2">${c.clienteNombre || "—"}</td>
+           <td class="p-2">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
+           <td class="p-2 flex gap-2">
            <button class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 btn-pdf">PDF</button>
            <a class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700" target="_blank"
                href="https://wa.me/${c.telefono}?text=${encodeURIComponent(
