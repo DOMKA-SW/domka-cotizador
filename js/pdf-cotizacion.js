@@ -1,38 +1,22 @@
 // js/pdf-cotizacion.js
-function generarPDFCotizacion(cotizacion) {
-  if (!cotizacion) {
-    alert("Error: no se encontró la cotización");
-    return;
-  }
+// pdfMake ya está cargado desde el HTML
 
-  const {
-    clienteNombre,
-    telefono,
-    email,
-    items = [],
-    subtotal = 0,
-    impuestos = 0,
-    total = 0,
-    notas = "",
-    firmaBase64 = null
-  } = cotizacion;
+// Logo en Base64 (tu logo de DOMKA convertido)
+const logoBase64 = "data:image/png;base64,PUT_AQUI_TU_BASE64"; 
 
-  // Logo (debe estar en /public/logo.png o en la raíz del proyecto)
-  const logo = "https://i.ibb.co/mb54XQ6/logo-domka.png"; // puedes reemplazar con tu logo en GitHub Pages o ruta local
-
-  // Construcción de tabla de ítems
+function generarPDFCotizacion(c) {
   const tablaItems = [
     [
       { text: "Descripción", style: "tableHeader" },
       { text: "Cantidad", style: "tableHeader" },
-      { text: "Vlr Unitario", style: "tableHeader" },
-      { text: "Subtotal", style: "tableHeader" }
+      { text: "Precio", style: "tableHeader" },
+      { text: "Subtotal", style: "tableHeader" },
     ],
-    ...items.map(it => [
-      it.descripcion || "",
-      it.cantidad || 0,
-      `$${Number(it.precio || 0).toLocaleString("es-CO")}`,
-      `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`
+    ...(c.items || []).map(it => [
+      it.descripcion,
+      it.cantidad,
+      `$${Number(it.precio).toLocaleString("es-CO")}`,
+      `$${Number(it.subtotal).toLocaleString("es-CO")}`
     ])
   ];
 
@@ -40,97 +24,37 @@ function generarPDFCotizacion(cotizacion) {
     content: [
       {
         columns: [
-          {
-            image: logo,
-            width: 80
-          },
-          {
-            text: "DOMKA - Cotización",
-            style: "header",
-            alignment: "right"
-          }
+          { image: logoBase64, width: 80 },
+          { text: "DOMKA - Cotización", style: "header", alignment: "right" }
         ]
       },
-      { text: " " },
+      { text: "\n" },
+      { text: `Cliente: ${c.nombreCliente || ""}`, style: "subheader" },
+      { text: `Notas: ${c.notas || ""}\n\n` },
       {
-        text: "Datos del Cliente",
-        style: "subheader"
+        table: { widths: ["*", "auto", "auto", "auto"], body: tablaItems }
       },
-      {
-        columns: [
-          { text: `Nombre: ${clienteNombre || ""}` },
-          { text: `Teléfono: ${telefono || ""}` },
-          { text: `Email: ${email || ""}` }
-        ]
-      },
-      { text: " " },
-      {
-        text: "Detalle de Cotización",
-        style: "subheader"
-      },
-      {
-        table: {
-          widths: ["*", "auto", "auto", "auto"],
-          body: tablaItems
-        }
-      },
-      { text: " " },
-      {
-        text: "Totales",
-        style: "subheader"
-      },
+      { text: "\n" },
       {
         table: {
           widths: ["*", "auto"],
           body: [
-            ["Subtotal", `$${subtotal.toLocaleString("es-CO")}`],
-            ["IVA (19%)", `$${impuestos.toLocaleString("es-CO")}`],
-            [{ text: "TOTAL", bold: true }, { text: `$${total.toLocaleString("es-CO")}`, bold: true }]
+            ["Subtotal", `$${c.subtotal.toLocaleString("es-CO")}`],
+            ["IVA (19%)", `$${c.impuestos.toLocaleString("es-CO")}`],
+            [{ text: "TOTAL", bold: true }, { text: `$${c.total.toLocaleString("es-CO")}`, bold: true }]
           ]
-        },
-        layout: "lightHorizontalLines"
-      },
-      { text: " " },
-      {
-        text: "Notas",
-        style: "subheader"
-      },
-      {
-        text: notas || "—",
-        margin: [0, 0, 0, 10]
-      },
-      {
-        text: "Firma del Cliente",
-        style: "subheader"
-      },
-      firmaBase64
-        ? { image: firmaBase64, width: 150, margin: [0, 10, 0, 0] }
-        : { text: "Pendiente de firma", italics: true }
+        }
+      }
     ],
     styles: {
-      header: {
-        fontSize: 18,
-        bold: true,
-        color: "#F97316", // naranja DOMKA
-        margin: [0, 0, 0, 10]
-      },
-      subheader: {
-        fontSize: 14,
-        bold: true,
-        margin: [0, 10, 0, 5],
-        color: "#374151"
-      },
-      tableHeader: {
-        bold: true,
-        fillColor: "#F97316",
-        color: "white",
-        alignment: "center"
-      }
-    },
-    defaultStyle: {
-      fontSize: 10
+      header: { fontSize: 18, bold: true, color: "#F97316" },
+      subheader: { fontSize: 13, bold: true, margin: [0, 10, 0, 5] },
+      tableHeader: { bold: true, fillColor: "#F97316", color: "white" }
     }
   };
 
   pdfMake.createPdf(docDefinition).open();
 }
+
+// Exportamos para usar en cotizaciones.js
+window.generarPDFCotizacion = generarPDFCotizacion;
