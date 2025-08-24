@@ -1,3 +1,4 @@
+<!-- cotizaciones.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,66 +6,72 @@
   <title>DOMKA - Cotizaciones</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-100 min-h-screen">
+  <div class="p-6 max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-orange-600 mb-6">Cotizaciones</h1>
 
-  <!-- Encabezado -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-orange-600">📄 Cotizaciones</h1>
-    <a href="dashboard.html" class="bg-gray-600 text-white px-4 py-2 rounded">← Volver</a>
-  </div>
+    <!-- Formulario Cotización -->
+    <form id="form-cotizacion" class="bg-white p-6 rounded shadow mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-semibold mb-2">Cliente</label>
+          <input type="text" id="cliente" class="w-full border rounded px-3 py-2" required>
+        </div>
+        <div>
+          <label class="block font-semibold mb-2">Notas</label>
+          <input type="text" id="notas" class="w-full border rounded px-3 py-2">
+        </div>
+      </div>
 
-  <!-- Formulario de cotización -->
-  <form id="form-cotizacion" class="bg-white shadow p-4 rounded mb-6">
-    <h2 class="text-lg font-bold mb-4">Crear Cotización</h2>
+      <!-- Tabla de Ítems -->
+      <h2 class="font-semibold mb-2">Ítems</h2>
+      <table class="w-full border mb-4" id="tabla-items">
+        <thead class="bg-orange-600 text-white">
+          <tr>
+            <th class="p-2">Descripción</th>
+            <th class="p-2">Cantidad</th>
+            <th class="p-2">Precio</th>
+            <th class="p-2">Subtotal</th>
+            <th class="p-2"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded">+ Agregar Ítem</button>
 
-    <!-- Cliente -->
-    <label class="block mb-2 font-semibold">Cliente</label>
-    <select id="cliente" class="w-full border p-2 rounded mb-4"></select>
+      <!-- Totales -->
+      <div class="mt-4 text-right">
+        <p id="subtotal">Subtotal: $0</p>
+        <p id="impuestos">IVA (19%): $0</p>
+        <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
+      </div>
 
-    <!-- Items -->
-    <h3 class="font-bold mb-2">Ítems</h3>
-    <div id="items"></div>
-    <button type="button" onclick="agregarItem()" class="bg-orange-600 text-white px-3 py-1 rounded mt-2">
-      + Agregar Ítem
-    </button>
+      <!-- Guardar -->
+      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded mt-4 w-full">
+        Guardar Cotización
+      </button>
+    </form>
 
-    <!-- Notas -->
-    <label class="block mt-4 font-semibold">Notas</label>
-    <textarea id="notas" class="w-full border p-2 rounded mb-4"></textarea>
-
-    <!-- Totales -->
-    <div class="bg-gray-100 p-3 rounded">
-      <p id="subtotal">Subtotal: $0</p>
-      <p id="impuestos">IVA (19%): $0</p>
-      <p id="total" class="font-bold text-orange-600">Total: $0</p>
+    <!-- Lista Cotizaciones -->
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="font-bold text-lg mb-4">Cotizaciones Guardadas</h2>
+      <table class="w-full border" id="tabla-cotizaciones">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2">Cliente</th>
+            <th class="p-2">Total</th>
+            <th class="p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-
-    <!-- Botón -->
-    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded mt-4 w-full">
-      Guardar Cotización
-    </button>
-  </form>
-
-  <!-- Cotizaciones guardadas -->
-  <div class="bg-white shadow p-4 rounded">
-    <h2 class="text-lg font-bold mb-4">Cotizaciones Guardadas</h2>
-    <table class="w-full border">
-      <thead class="bg-orange-600 text-white">
-        <tr>
-          <th class="p-2">Cliente</th>
-          <th class="p-2">Total</th>
-          <th class="p-2">Estado</th>
-          <th class="p-2">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="lista-cotizaciones"></tbody>
-    </table>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
   <script src="js/firebase.js"></script>
   <script src="js/cotizaciones.js"></script>
 </body>
