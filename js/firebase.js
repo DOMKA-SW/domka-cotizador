@@ -8,16 +8,13 @@ const firebaseConfig = {
   appId: "1:11233894590:web:56fb76f5a1ca9af7453eef"
 };
 
-// Inicializa Firebase
+// Inicializar Firebase (compat)
 firebase.initializeApp(firebaseConfig);
 
-// Firestore
+// Firestore y Auth desde compat
 const db = firebase.firestore();
-
-// Auth solo si lo necesitas en login/dashboard
 const auth = firebase.auth();
 
-// Exportamos globalmente
+// Exportamos global
 window.db = db;
 window.auth = auth;
-
