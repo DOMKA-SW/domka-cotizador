@@ -1,113 +1,104 @@
-const db = firebase.firestore();
+// js/cotizaciones.js
+
+const formCotizacion = document.getElementById("form-cotizacion");
+const tablaItems = document.querySelector("#tabla-items tbody");
+const btnAgregarItem = document.getElementById("agregar-item");
+const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
 
 let items = [];
 
-// Cargar clientes en el select
-async function cargarClientes() {
-  const snapshot = await db.collection("clientes").get();
-  const select = document.getElementById("cliente");
-  select.innerHTML = `<option value="">-- Seleccione Cliente --</option>`;
-  snapshot.forEach(doc => {
-    let data = doc.data();
-    select.innerHTML += `<option value="${doc.id}">${data.nombreEmpresa || data.nombre}</option>`;
-  });
-}
-
-// Agregar item
-function agregarItem(descripcion = "", cantidad = 1, precioUnitario = 0) {
-  items.push({ descripcion, cantidad, precioUnitario });
+// Agregar un ítem
+btnAgregarItem.addEventListener("click", () => {
+  const item = { descripcion: "", cantidad: 1, precio: 0, subtotal: 0 };
+  items.push(item);
   renderItems();
-}
+});
 
-// Renderizar items
+// Renderizar tabla de ítems
 function renderItems() {
-  const container = document.getElementById("items");
-  container.innerHTML = "";
-  items.forEach((item, index) => {
-    container.innerHTML += `
-      <div class="grid grid-cols-4 gap-2 mb-2">
-        <input type="text" value="${item.descripcion}" placeholder="Descripción"
-          class="border p-2 rounded"
-          onchange="items[${index}].descripcion=this.value">
-        <input type="number" value="${item.cantidad}" class="border p-2 rounded"
-          onchange="items[${index}].cantidad=parseInt(this.value)">
-        <input type="number" value="${item.precioUnitario}" class="border p-2 rounded"
-          onchange="items[${index}].precioUnitario=parseFloat(this.value)">
-        <button type="button" onclick="eliminarItem(${index})" class="bg-red-600 text-white px-2 rounded">X</button>
-      </div>`;
+  tablaItems.innerHTML = "";
+  items.forEach((it, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><input type="text" value="${it.descripcion}" class="border px-2 py-1 w-full" onchange="updateItem(${index}, 'descripcion', this.value)"></td>
+      <td><input type="number" value="${it.cantidad}" class="border px-2 py-1 w-full" onchange="updateItem(${index}, 'cantidad', this.value)"></td>
+      <td><input type="number" value="${it.precio}" class="border px-2 py-1 w-full" onchange="updateItem(${index}, 'precio', this.value)"></td>
+      <td class="text-right">$${it.subtotal.toLocaleString("es-CO")}</td>
+      <td><button class="text-red-600" onclick="deleteItem(${index})">X</button></td>
+    `;
+    tablaItems.appendChild(row);
   });
   calcularTotales();
 }
 
+// Actualizar item
+window.updateItem = (index, field, value) => {
+  items[index][field] = field === "descripcion" ? value : Number(value);
+  items[index].subtotal = items[index].cantidad * items[index].precio;
+  renderItems();
+};
+
 // Eliminar item
-function eliminarItem(index) {
+window.deleteItem = (index) => {
   items.splice(index, 1);
   renderItems();
-}
+};
 
 // Calcular totales
 function calcularTotales() {
-  let subtotal = items.reduce((acc, i) => acc + (i.cantidad * i.precioUnitario), 0);
-  let impuestos = subtotal * 0.19;
-  let total = subtotal + impuestos;
-
-  document.getElementById("subtotal").innerText = "Subtotal: $" + subtotal.toLocaleString();
-  document.getElementById("impuestos").innerText = "IVA (19%): $" + impuestos.toLocaleString();
-  document.getElementById("total").innerText = "Total: $" + total.toLocaleString();
-
+  const subtotal = items.reduce((acc, it) => acc + it.subtotal, 0);
+  const impuestos = Math.round(subtotal * 0.19);
+  const total = subtotal + impuestos;
+  document.getElementById("subtotal").innerText = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
+  document.getElementById("impuestos").innerText = `IVA (19%): $${impuestos.toLocaleString("es-CO")}`;
+  document.getElementById("total").innerText = `Total: $${total.toLocaleString("es-CO")}`;
   return { subtotal, impuestos, total };
 }
 
 // Guardar cotización
-document.getElementById("form-cotizacion").addEventListener("submit", async (e) => {
+formCotizacion.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const clienteId = document.getElementById("cliente").value;
+
+  const cliente = document.getElementById("cliente").value;
   const notas = document.getElementById("notas").value;
   const { subtotal, impuestos, total } = calcularTotales();
 
   await db.collection("cotizaciones").add({
-    clienteId,
-    items,
+    cliente,
     notas,
+    items,
     subtotal,
     impuestos,
     total,
-    estado: "pendiente",
-    fecha: new Date()
+    fecha: new Date(),
   });
 
+  alert("✅ Cotización guardada");
+  formCotizacion.reset();
   items = [];
   renderItems();
-  document.getElementById("form-cotizacion").reset();
-  cargarCotizaciones();
+  loadCotizaciones();
 });
 
 // Listar cotizaciones
-async function cargarCotizaciones() {
+async function loadCotizaciones() {
   const snapshot = await db.collection("cotizaciones").get();
-  const tbody = document.getElementById("lista-cotizaciones");
-  tbody.innerHTML = "";
-
-  for (const doc of snapshot.docs) {
-    let c = doc.data();
-    let clienteDoc = await db.collection("clientes").doc(c.clienteId).get();
-    let clienteNombre = clienteDoc.exists ? clienteDoc.data().nombreEmpresa || clienteDoc.data().nombre : "N/A";
-
-    tbody.innerHTML += `
-      <tr class="border">
-        <td class="p-2">${clienteNombre}</td>
-        <td class="p-2">$${c.total.toLocaleString()}</td>
-        <td class="p-2">${c.estado}</td>
-        <td class="p-2">
-          <button class="bg-blue-600 text-white px-2 rounded">PDF</button>
-          <a href="https://wa.me/?text=Hola, aquí tienes tu cotización: TOTAL $${c.total.toLocaleString()}" target="_blank"
-            class="bg-green-600 text-white px-2 rounded">WhatsApp</a>
-        </td>
-      </tr>`;
-  }
+  tablaCotizaciones.innerHTML = "";
+  snapshot.forEach(doc => {
+    const c = doc.data();
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="p-2">${c.cliente}</td>
+      <td class="p-2">$${c.total.toLocaleString("es-CO")}</td>
+      <td class="p-2">
+        <button class="bg-orange-600 text-white px-2 py-1 rounded" onclick="generarPDF('${doc.id}')">PDF</button>
+        <a href="https://wa.me/?text=Hola, aquí tienes tu cotización DOMKA: ${window.location.origin}/public-cotizacion.html?id=${doc.id}" 
+           target="_blank" class="bg-green-600 text-white px-2 py-1 rounded">WhatsApp</a>
+      </td>
+    `;
+    tablaCotizaciones.appendChild(row);
+  });
 }
 
 // Inicializar
-cargarClientes();
-cargarCotizaciones();
-
+loadCotizaciones();
