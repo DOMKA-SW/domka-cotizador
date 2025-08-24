@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cotización DOMKA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex justify-center items-center">
+  <div class="bg-white shadow p-6 max-w-3xl w-full">
+    <h1 class="text-2xl font-bold text-orange-600 mb-4">Cotización DOMKA</h1>
+    <div id="contenido"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="../js/firebase.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    async function cargarCotizacion() {
+      const docSnap = await db.collection("cotizaciones").doc(id).get();
+      if (!docSnap.exists) {
+        document.getElementById("contenido").innerHTML = "<p class='text-red-600'>Cotización no encontrada</p>";
+        return;
+      }
+      const c = docSnap.data();
+      document.getElementById("contenido").innerHTML = `
+        <p><b>Cliente:</b> ${c.clienteId}</p>
+        <p><b>Notas:</b> ${c.notas || "-"}</p>
+        <p><b>Total:</b> $${c.total.toLocaleString("es-CO")}</p>
+        <button onclick="window.print()" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded">Imprimir</button>
+      `;
+    }
+    cargarCotizacion();
+  </script>
+</body>
+</html>
