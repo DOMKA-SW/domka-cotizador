@@ -20,3 +20,4 @@ const auth = firebase.auth();
 // Exportamos globalmente
 window.db = db;
 window.auth = auth;
+
