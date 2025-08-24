@@ -2,38 +2,78 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Cotización DOMKA</title>
+  <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex justify-center items-center">
-  <div class="bg-white shadow p-6 max-w-3xl w-full">
-    <h1 class="text-2xl font-bold text-orange-600 mb-4">Cotización DOMKA</h1>
-    <div id="contenido"></div>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-orange-600 mb-4 text-center">Cotización DOMKA</h1>
+    <div id="cotizacion" class="text-gray-800">
+      <p>Cargando cotización...</p>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="../js/firebase.js"></script>
+
+  <script src="js/firebase.js"></script>
   <script>
+    // Obtener ID desde la URL
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
 
+    const container = document.getElementById("cotizacion");
+
     async function cargarCotizacion() {
-      const docSnap = await db.collection("cotizaciones").doc(id).get();
-      if (!docSnap.exists) {
-        document.getElementById("contenido").innerHTML = "<p class='text-red-600'>Cotización no encontrada</p>";
+      if (!id) {
+        container.innerHTML = "<p class='text-red-600'>❌ Cotización no encontrada.</p>";
         return;
       }
-      const c = docSnap.data();
-      document.getElementById("contenido").innerHTML = `
-        <p><b>Cliente:</b> ${c.clienteId}</p>
-        <p><b>Notas:</b> ${c.notas || "-"}</p>
-        <p><b>Total:</b> $${c.total.toLocaleString("es-CO")}</p>
-        <button onclick="window.print()" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded">Imprimir</button>
+
+      const docRef = await db.collection("cotizaciones").doc(id).get();
+      if (!docRef.exists) {
+        container.innerHTML = "<p class='text-red-600'>❌ Cotización inexistente.</p>";
+        return;
+      }
+
+      const c = docRef.data();
+
+      // Renderizar
+      container.innerHTML = `
+        <p><strong>Cliente:</strong> ${c.cliente || "N/A"}</p>
+        <p><strong>Notas:</strong> ${c.notas || "—"}</p>
+        <h2 class="mt-4 font-bold text-lg">Ítems</h2>
+        <table class="w-full border my-2">
+          <thead class="bg-orange-600 text-white">
+            <tr>
+              <th class="p-2">Descripción</th>
+              <th class="p-2">Cant.</th>
+              <th class="p-2">Precio</th>
+              <th class="p-2">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${c.items.map(it => `
+              <tr class="border">
+                <td class="p-2">${it.descripcion}</td>
+                <td class="p-2">${it.cantidad}</td>
+                <td class="p-2">$${Number(it.precio).toLocaleString("es-CO")}</td>
+                <td class="p-2">$${Number(it.subtotal).toLocaleString("es-CO")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+        <div class="text-right mt-4">
+          <p>Subtotal: $${c.subtotal.toLocaleString("es-CO")}</p>
+          <p>IVA (19%): $${c.impuestos.toLocaleString("es-CO")}</p>
+          <p class="text-lg font-bold text-orange-600">TOTAL: $${c.total.toLocaleString("es-CO")}</p>
+        </div>
       `;
     }
+
     cargarCotizacion();
   </script>
 </body>
 </html>
+
