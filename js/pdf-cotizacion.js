@@ -1,8 +1,8 @@
 // js/pdf-cotizacion.js
 
 // Logo DOMKA en Base64 (naranja, incrustado directamente)
-const logoBase64 =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIC..."; 
+//const logoBase64 =
+//  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIC..."; 
 // (Truncado para que no sea gigante, aquí va TODO el string base64 que te pasé)
 
 function generarPDFCotizacion(cotizacion, clienteNombre) {
@@ -39,7 +39,7 @@ function generarPDFCotizacion(cotizacion, clienteNombre) {
     content: [
       {
         columns: [
-          { image: logoBase64, width: 100 },
+          { //image: logoBase64, width: 100 },
           [
             { text: "DOMKA - Cotización", fontSize: 18, bold: true, margin: [0, 0, 0, 10], color: "#f97316" },
             { text: `Fecha: ${new Date().toLocaleDateString("es-CO")}`, fontSize: 10 }
