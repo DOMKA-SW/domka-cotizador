@@ -1,12 +1,25 @@
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          domka: "#f97316", // naranja DOMKA
-        }
-      }
-    }
-  }
-</script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>DOMKA - Clientes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+
+  <!-- Encabezado -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-orange-600">💰 Cuentas de Cobro</h1>
+    <a href="dashboard.html" class="bg-gray-600 text-white px-4 py-2 rounded">← Volver</a>
+  </div>
+
+  <!-- Firebase + Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/clientes.js"></script>
+</body>
+</html>
