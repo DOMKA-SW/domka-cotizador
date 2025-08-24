@@ -11,19 +11,25 @@
     <div id="cotizacion" class="text-gray-800">
       <p>Cargando cotización...</p>
     </div>
+    <!-- Botones acción -->
+    <div id="acciones" class="hidden flex justify-center gap-4 mt-6">
+      <button id="aprobar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">✅ Aprobar</button>
+      <button id="rechazar" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">❌ Rechazar</button>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-  <script src="js/firebase.js"></script>
+  <script src="../js/firebase.js"></script>
   <script>
-    // Obtener ID desde la URL
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
-
     const container = document.getElementById("cotizacion");
+    const acciones = document.getElementById("acciones");
+
+    let cotizacionRef;
 
     async function cargarCotizacion() {
       if (!id) {
@@ -31,15 +37,16 @@
         return;
       }
 
-      const docRef = await db.collection("cotizaciones").doc(id).get();
-      if (!docRef.exists) {
+      cotizacionRef = db.collection("cotizaciones").doc(id);
+      const docSnap = await cotizacionRef.get();
+
+      if (!docSnap.exists) {
         container.innerHTML = "<p class='text-red-600'>❌ Cotización inexistente.</p>";
         return;
       }
 
-      const c = docRef.data();
+      const c = docSnap.data();
 
-      // Renderizar
       container.innerHTML = `
         <p><strong>Cliente:</strong> ${c.cliente || "N/A"}</p>
         <p><strong>Notas:</strong> ${c.notas || "—"}</p>
@@ -68,11 +75,35 @@
           <p>Subtotal: $${c.subtotal.toLocaleString("es-CO")}</p>
           <p>IVA (19%): $${c.impuestos.toLocaleString("es-CO")}</p>
           <p class="text-lg font-bold text-orange-600">TOTAL: $${c.total.toLocaleString("es-CO")}</p>
+          <p class="mt-2">Estado actual: <span class="font-bold">${c.estado || "pendiente"}</span></p>
         </div>
       `;
+
+      // Mostrar botones solo si está pendiente
+      if (c.estado === "pendiente") {
+        acciones.classList.remove("hidden");
+      } else {
+        acciones.innerHTML = `<p class="text-center mt-4 font-bold ${
+          c.estado === "aprobada" ? "text-green-600" : "text-red-600"
+        }">Esta cotización ya fue ${c.estado}</p>`;
+      }
     }
 
     cargarCotizacion();
+
+    // --- Aprobar ---
+    document.getElementById("aprobar").addEventListener("click", async () => {
+      await cotizacionRef.update({ estado: "aprobada" });
+      alert("✅ Cotización aprobada. ¡Gracias por confiar en DOMKA!");
+      location.reload();
+    });
+
+    // --- Rechazar ---
+    document.getElementById("rechazar").addEventListener("click", async () => {
+      await cotizacionRef.update({ estado: "rechazada" });
+      alert("❌ Cotización rechazada.");
+      location.reload();
+    });
   </script>
 </body>
 </html>
