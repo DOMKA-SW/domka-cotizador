@@ -1,25 +1,98 @@
+<!-- cuentas.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>DOMKA - Clientes</title>
+  <meta charset="UTF-8" />
+  <title>DOMKA - Cuentas de Cobro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-100 min-h-screen">
+  <div class="p-6 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-orange-600">💰 Cuentas de Cobro</h1>
+      <div class="flex gap-2">
+        <a href="dashboard.html" class="px-3 py-2 rounded bg-gray-600 text-white hover:bg-gray-700">← Volver</a>
+        <button onclick="logout()" class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700">Cerrar sesión</button>
+      </div>
+    </div>
 
-  <!-- Encabezado -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-orange-600">💰 Cuentas de Cobro</h1>
-    <a href="dashboard.html" class="bg-gray-600 text-white px-4 py-2 rounded">← Volver</a>
+    <!-- Formulario -->
+    <form id="form-cuenta" class="bg-white p-6 rounded shadow mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block font-semibold mb-2">Cliente</label>
+          <select id="cliente" class="w-full border rounded px-3 py-2" required>
+            <option value="">-- Selecciona un cliente --</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block font-semibold mb-2">Notas</label>
+          <input id="notas" type="text" class="w-full border rounded px-3 py-2" placeholder="Notas u observaciones" />
+        </div>
+      </div>
+
+      <h2 class="font-semibold mb-2">Ítems</h2>
+      <table class="w-full border mb-4" id="tabla-items">
+        <thead class="bg-orange-600 text-white">
+          <tr>
+            <th class="p-2 text-left">Descripción</th>
+            <th class="p-2 text-right">Cantidad</th>
+            <th class="p-2 text-right">Vlr Unitario</th>
+            <th class="p-2 text-right">Subtotal</th>
+            <th class="p-2"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">+ Agregar ítem</button>
+
+      <div class="mt-4 text-right">
+        <p id="subtotal">Subtotal: $0</p>
+        <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
+      </div>
+
+      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded mt-4 w-full hover:bg-orange-700">
+        Guardar Cuenta de Cobro
+      </button>
+    </form>
+
+    <!-- Tabla -->
+    <div class="bg-white p-6 rounded shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-lg">Cuentas de Cobro Guardadas</h2>
+        <div class="text-sm text-gray-500">Estados: <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">pendiente</span> / <span class="px-2 py-1 bg-green-100 text-green-800 rounded">pagada</span></div>
+      </div>
+
+      <table class="w-full border" id="tabla-cuentas">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">Cliente</th>
+            <th class="p-2 text-right">Total</th>
+            <th class="p-2 text-center">Estado</th>
+            <th class="p-2 text-left">Fecha</th>
+            <th class="p-2 text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Firebase + Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <!-- CDNs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
+  <!-- Tu Firebase config + helpers -->
   <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/clientes.js"></script>
+
+  <!-- PDFs y módulo -->
+  <script src="js/pdf-cuenta.js"></script>
+  <script src="js/cuentas.js"></script>
 </body>
 </html>
