@@ -87,6 +87,11 @@ form.addEventListener("submit", async (e) => {
     total,
     fecha: new Date(),
     estado: "pendiente"
+    }).then(docRef => {
+      // Guardar link público (se puede usar el ID del doc)
+     db.collection("cotizaciones").doc(docRef.id).update({
+      linkPublico: `public/cotizacion.html?id=${docRef.id}`
+    });
   });
 
   alert("✅ Cotización guardada");
