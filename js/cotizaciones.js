@@ -1,32 +1,34 @@
 // js/cotizaciones.js
+
 const form = document.getElementById("form-cotizacion");
 const tablaItems = document.querySelector("#tabla-items tbody");
 const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
 const clienteSelect = document.getElementById("cliente");
 
 let items = [];
+let clientesCache = {}; // guardar clientes para traducir id -> nombre
 
 // ============================
-// 🔹 Cargar clientes en select
+// Cargar clientes en select
 // ============================
 async function cargarClientes() {
   const snap = await db.collection("clientes").get();
   snap.forEach(doc => {
     const c = doc.data();
+    clientesCache[doc.id] = c; // guardamos en cache
     const opt = document.createElement("option");
     opt.value = doc.id;
-    opt.textContent = c.nombre || c.nombreEmpresa;
+    opt.textContent = c.nombre || c.nombreEmpresa || "Sin nombre";
     clienteSelect.appendChild(opt);
   });
 }
 cargarClientes();
 
 // ============================
-// 🔹 Ítems dinámicos
+// Ítems dinámicos
 // ============================
 document.getElementById("agregar-item").addEventListener("click", () => {
   const row = document.createElement("tr");
-
   row.innerHTML = `
     <td><input type="text" class="desc border p-1 w-full"></td>
     <td><input type="number" class="cant border p-1 w-full" value="1"></td>
@@ -34,11 +36,9 @@ document.getElementById("agregar-item").addEventListener("click", () => {
     <td class="subtotal text-right p-2">0</td>
     <td><button type="button" class="text-red-600">Eliminar</button></td>
   `;
-
   row.querySelector(".cant").addEventListener("input", recalcular);
   row.querySelector(".precio").addEventListener("input", recalcular);
   row.querySelector("button").addEventListener("click", () => row.remove());
-
   tablaItems.appendChild(row);
   recalcular();
 });
@@ -55,7 +55,6 @@ function recalcular() {
     subtotal += sub;
     items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
   });
-
   const impuestos = Math.round(subtotal * 0.19);
   const total = subtotal + impuestos;
   document.getElementById("subtotal").textContent = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
@@ -65,7 +64,7 @@ function recalcular() {
 }
 
 // ============================
-// 🔹 Guardar cotización
+// Guardar cotización
 // ============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -89,9 +88,9 @@ form.addEventListener("submit", async (e) => {
     estado: "pendiente"
   });
 
-  // Guardar link público con ID del documento
+  // Guardar link público
   await db.collection("cotizaciones").doc(docRef.id).update({
-    linkPublico: `public/cotizacion.html?id=${docRef.id}`
+    linkPublico: `https://domka-sw.github.io/domka-cotizador/public/cotizacion.html?id=${docRef.id}`
   });
 
   alert("✅ Cotización guardada");
@@ -101,23 +100,21 @@ form.addEventListener("submit", async (e) => {
 });
 
 // ============================
-// 🔹 Listar cotizaciones
+// Listar cotizaciones
 // ============================
 async function cargarCotizaciones() {
   tablaCotizaciones.innerHTML = "";
   const snap = await db.collection("cotizaciones").get();
   snap.forEach(doc => {
     const c = doc.data();
+    const cliente = clientesCache[c.clienteId] ? (clientesCache[c.clienteId].nombre || clientesCache[c.clienteId].nombreEmpresa) : c.clienteId;
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td class="p-2">${c.clienteId}</td>
+      <td class="p-2">${cliente}</td>
       <td class="p-2">$${c.total.toLocaleString("es-CO")}</td>
       <td class="p-2 flex gap-2">
-        <button onclick='generarPDFCotizacion(${JSON.stringify(c)})' 
-          class="bg-orange-600 text-white px-2 py-1 rounded">PDF</button>
-        <a href="https://wa.me/?text=Hola! Aquí tienes tu cotización: ${window.location.origin}/public/cotizacion.html?id=${doc.id}" 
-          target="_blank" 
-          class="bg-green-600 text-white px-2 py-1 rounded">WhatsApp</a>
+        <button onclick='generarPDFCotizacion(${JSON.stringify(c)})' class="bg-orange-600 text-white px-2 py-1 rounded">PDF</button>
+        <a href="https://wa.me/?text=Hola, aquí tienes tu cotización DOMKA: ${encodeURIComponent(c.linkPublico)}" target="_blank" class="bg-green-600 text-white px-2 py-1 rounded">WhatsApp</a>
       </td>
     `;
     tablaCotizaciones.appendChild(tr);
