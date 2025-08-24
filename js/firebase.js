@@ -8,13 +8,13 @@ const firebaseConfig = {
   appId: "1:11233894590:web:56fb76f5a1ca9af7453eef"
 };
 
-// Inicializar Firebase (compat)
+// Inicializa Firebase en modo compat (coincide con los <script> del HTML)
 firebase.initializeApp(firebaseConfig);
 
-// Firestore y Auth desde compat
+// Firestore y Auth (compat)
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Exportamos global
+// Exponer globalmente
 window.db = db;
 window.auth = auth;
