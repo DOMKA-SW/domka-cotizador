@@ -1,50 +1,86 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+  <meta charset="utf-8" />
   <title>DOMKA - Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-      <img src="img/logo.png" alt="Logo" width="100" height="50">
-      <h1 class="text-2xl font-bold text-orange-600">Dashboard</h1>
-      <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">
-        Cerrar sesión
-      </button>
-    </div>
+  <div class="p-6 max-w-5xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-orange-600">DOMKA - Dashboard</h1>
+      <div class="flex items-center gap-3">
+        <button onclick="logout()" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700">Cerrar sesión</button>
+      </div>
+    </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <a href="cotizaciones.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
+    <!-- Resumen rápido -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div id="card-cot" class="bg-white p-4 rounded shadow">
+        <h3 class="font-semibold text-gray-700">Cotizaciones</h3>
+        <p class="text-2xl font-bold text-orange-600" id="count-cot">—</p>
+      </div>
+      <div id="card-cuentas" class="bg-white p-4 rounded shadow">
+        <h3 class="font-semibold text-gray-700">Cuentas de Cobro</h3>
+        <p class="text-2xl font-bold text-orange-600" id="count-cuentas">—</p>
+      </div>
+      <div id="card-ingresos" class="bg-white p-4 rounded shadow">
+        <h3 class="font-semibold text-gray-700">Ingresos (pagadas)</h3>
+        <p class="text-2xl font-bold text-orange-600" id="sum-pagadas">—</p>
+      </div>
+    </section>
+
+    <!-- Accesos -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <a href="cotizaciones.html" class="bg-white p-6 rounded shadow hover:shadow-lg">
         <h2 class="font-bold text-lg text-orange-600">📄 Cotizaciones</h2>
-        <p class="text-gray-600">Crear y gestionar cotizaciones</p>
+        <p class="text-sm text-gray-600">Crear y gestionar cotizaciones</p>
       </a>
-      <a href="cuentas.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
+      <a href="cuentas.html" class="bg-white p-6 rounded shadow hover:shadow-lg">
         <h2 class="font-bold text-lg text-orange-600">💰 Cuentas de Cobro</h2>
-        <p class="text-gray-600">Emitir cuentas de cobro</p>
+        <p class="text-sm text-gray-600">Crear y gestionar cuentas</p>
       </a>
-      <a href="clientes.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
+      <a href="clientes.html" class="bg-white p-6 rounded shadow hover:shadow-lg">
         <h2 class="font-bold text-lg text-orange-600">👥 Clientes</h2>
-        <p class="text-gray-600">Administrar clientes</p>
+        <p class="text-sm text-gray-600">Administrar clientes</p>
       </a>
-      <a href="contabilidad.html" class="bg-white shadow rounded-lg p-6 hover:shadow-lg">
-        <h2 class="font-bold text-lg text-orange-600">🪙 Contabilidad</h2>
-        <p class="text-gray-600">Reportes Facturación</p>
+      <a href="contabilidad.html" class="bg-white p-6 rounded shadow hover:shadow-lg">
+        <h2 class="font-bold text-lg text-orange-600">📊 Contabilidad</h2>
+        <p class="text-sm text-gray-600">Reportes y exportes</p>
       </a>
-    </div>
+    </section>
   </div>
 
-  <!-- Firebase SDK v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-  <!-- Configuración Firebase -->
   <script src="js/firebase.js"></script>
 
-  <!-- Autenticación -->
-  <script src="js/auth.js"></script>
+  <script>
+    // dashboard quick stats
+    (async function () {
+      try {
+        const cotSnap = await db.collection("cotizaciones").get();
+        const cuentasSnap = await db.collection("cuentas").get();
+
+        document.getElementById("count-cot").textContent = cotSnap.size;
+        document.getElementById("count-cuentas").textContent = cuentasSnap.size;
+
+        let sumaPagadas = 0;
+        // sumar totales de cuentas pagadas + cotizaciones aprobadas? (aquí cuentas pagadas)
+        cuentasSnap.forEach(d => {
+          const data = d.data();
+          if (data.estado === "pagada") sumaPagadas += Number(data.total || 0);
+        });
+
+        document.getElementById("sum-pagadas").textContent = `$${sumaPagadas.toLocaleString("es-CO")}`;
+      } catch (e) {
+        console.error("Error cargando estadísticas:", e);
+      }
+    })();
+  </script>
 </body>
 </html>
