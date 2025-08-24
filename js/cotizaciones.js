@@ -103,7 +103,7 @@ form.addEventListener("submit", async (e) => {
 
   // Guardar link público
   await db.collection("cotizaciones").doc(docRef.id).update({
-    linkPublico: `public/cotizacion.html?id=${docRef.id}`
+    linkPublico: `https://domka-sw.github.io/domka-cotizador/public/cotizacion.html?id=${docRef.id}`
   });
 
   alert("✅ Cotización guardada");
