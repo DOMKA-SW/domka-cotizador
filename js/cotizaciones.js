@@ -105,7 +105,7 @@ totalManualInput.addEventListener("input", recalcular);
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const cliente = document.getElementById("cliente").value.trim();
+  const clienteId = clienteSelect.value;
   const notas = document.getElementById("notas").value.trim();
   const tipoCotizacion = document.getElementById("tipoCotizacion").value;
   const { subtotal, impuestos, total } = recalcular();
@@ -115,6 +115,23 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  // Buscar cliente seleccionado
+  const clienteDoc = await db.collection("clientes").doc(clienteId).get();
+  const clienteData = clienteDoc.data() || {};
+
+  const cotizacion = {
+    clienteId,
+    nombreCliente: clienteData.nombre || clienteData.nombreEmpresa || "Sin nombre",
+    telefono: clienteData.telefono || "",
+    notas,
+    items,
+    subtotal,
+    impuestos,
+    total,
+    fecha: new Date(),
+    estado: "pendiente"
+  };
+  
   // Construimos objeto
   const cot = {
     cliente,
