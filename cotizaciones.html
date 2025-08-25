@@ -1,28 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>DOMKA - Cotizaciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-  <div class="p-6 max-w-5xl mx-auto">
-    <h1 class="text-2xl font-bold text-orange-600 mb-6">Cotizaciones</h1>
+  <div class="p-6 max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-orange-600">Cotizaciones</h1>
+      <a href="dashboard.html" class="text-sm bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-800">
+        ← Volver al Dashboard
+      </a>
+    </div>
 
-    <!-- Formulario Cotización -->
-    <form id="form-cotizacion" class="bg-white p-6 rounded shadow mb-6">
+    <!-- Formulario -->
+    <form id="form-cotizacion" class="bg-white p-6 rounded-lg shadow mb-6">
+      <!-- Cliente + Notas -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block font-semibold mb-2">Cliente</label>
-          <input type="text" id="cliente" class="w-full border rounded px-3 py-2" required>
+          <input type="text" id="cliente" class="w-full border rounded px-3 py-2" placeholder="Nombre del cliente" required />
         </div>
         <div>
           <label class="block font-semibold mb-2">Notas</label>
-          <input type="text" id="notas" class="w-full border rounded px-3 py-2">
+          <input type="text" id="notas" class="w-full border rounded px-3 py-2" placeholder="Notas (opcional)" />
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <!-- Tipo + Modo -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label class="block font-semibold mb-2">Tipo de Cotización</label>
           <select id="tipoCotizacion" class="w-full border rounded px-3 py-2">
@@ -39,65 +48,88 @@
         </div>
       </div>
 
-      <!-- Tabla de Ítems -->
+      <!-- Tabla Ítems -->
       <h2 class="font-semibold mb-2">Ítems</h2>
-      <table class="w-full border mb-4" id="tabla-items">
-        <thead class="bg-orange-600 text-white">
-          <tr>
-            <th class="p-2">Descripción</th>
-            <th class="p-2">Cantidad</th>
-            <th class="p-2">Precio</th>
-            <th class="p-2">Subtotal</th>
-            <th class="p-2"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded">+ Agregar Ítem</button>
+      <div class="overflow-x-auto">
+        <table class="w-full border mb-4" id="tabla-items">
+          <thead class="bg-orange-600 text-white">
+            <tr>
+              <th class="p-2 text-left">Descripción</th>
+              <th class="p-2 text-right">Cantidad</th>
+              <th class="p-2 text-right">Precio</th>
+              <th class="p-2 text-right">Subtotal</th>
+              <th class="p-2"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-      <!-- Valor total manual -->
-      <div id="campo-total-manual" class="mt-4 hidden">
+      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">
+        + Agregar Ítem
+      </button>
+
+      <!-- Valor total manual (visible solo si modo = total) -->
+      <div id="campo-total-manual" class="mt-6 hidden">
         <label class="block font-semibold mb-2">Valor Total Manual</label>
-        <input type="number" id="totalManual" class="w-full border rounded px-3 py-2" value="0">
+        <input type="number" id="totalManual" class="w-full border rounded px-3 py-2" value="0" />
+        <p class="text-xs text-gray-500 mt-1">
+          Si está activo “Valor Total Manual”, este valor reemplaza el total calculado por ítems (los ítems siguen visibles).
+        </p>
       </div>
 
       <!-- Totales -->
-      <div class="mt-4 text-right">
-        <p id="subtotal">Subtotal: $0</p>
-        <p id="impuestos" class="hidden">IVA (19%): $0</p>
-        <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
-        <p class="italic text-gray-600" id="totalLetras">Total en letras: Cero pesos</p>
+      <div class="mt-6 p-4 bg-gray-50 rounded">
+        <div class="flex justify-end gap-12">
+          <div class="text-right">
+            <p id="subtotal" class="text-gray-700">Subtotal: $0</p>
+            <!-- IVA suspendido temporalmente -->
+            <p id="impuestos" class="text-gray-400 hidden">IVA (19%): $0</p>
+            <p id="total" class="text-xl font-bold text-orange-600">Total: $0</p>
+            <p id="totalLetras" class="italic text-gray-600">Total en letras: Cero pesos</p>
+          </div>
+        </div>
       </div>
 
       <!-- Guardar -->
-      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded mt-4 w-full">
+      <button type="submit" class="bg-orange-600 text-white px-6 py-3 rounded mt-6 w-full hover:bg-orange-700">
         Guardar Cotización
       </button>
+
+      <!-- Firma oculta para PDF (opcional). Pon firma.png en esta misma carpeta -->
+      <img id="firma-img" src="firma.png" alt="firma" class="hidden" crossorigin="anonymous" />
     </form>
 
-    <!-- Lista Cotizaciones -->
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="font-bold text-lg mb-4">Cotizaciones Guardadas</h2>
-      <table class="w-full border" id="tabla-cotizaciones">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2">Cliente</th>
-            <th class="p-2">Tipo</th>
-            <th class="p-2">Total</th>
-            <th class="p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <!-- Lista de Cotizaciones -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-lg">Cotizaciones Guardadas</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border" id="tabla-cotizaciones">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-2 text-left">Cliente</th>
+              <th class="p-2 text-left">Tipo</th>
+              <th class="p-2 text-right">Total</th>
+              <th class="p-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- Firebase -->
+  <!-- Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <!-- pdfmake -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
+  <!-- App scripts -->
   <script src="js/firebase.js"></script>
   <script src="js/numero-letras.js"></script>
   <script src="js/pdf-cotizacion.js"></script>
