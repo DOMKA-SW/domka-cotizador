@@ -20,10 +20,12 @@
     <form id="form-cotizacion" class="bg-white p-6 rounded-lg shadow mb-6">
       <!-- Cliente + Notas -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block font-semibold mb-2">Cliente</label>
-          <input type="text" id="cliente" class="w-full border rounded px-3 py-2" placeholder="Nombre del cliente" required />
-        </div>
+          <div>
+            <label class="block font-semibold mb-2">Cliente</label>
+            <select id="cliente" class="w-full border rounded px-3 py-2" required>
+            <option value="">-- Selecciona un cliente --</option>
+            </select>
+          </div>
         <div>
           <label class="block font-semibold mb-2">Notas</label>
           <input type="text" id="notas" class="w-full border rounded px-3 py-2" placeholder="Notas (opcional)" />
