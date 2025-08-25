@@ -1,232 +1,206 @@
-// js/cotizaciones.js
-
-// ====== CONFIG ======
-const BASE_URL = "https://domka-sw.github.io/domka-cotizador/"; // ajusta si cambias dominio
-
-// ====== ELEMENTOS ======
+// --- DOM refs ---
 const form = document.getElementById("form-cotizacion");
-const clienteSelect = document.getElementById("cliente");
-const notasInput = document.getElementById("notas");
+const tablaItems = document.querySelector("#tabla-items tbody");
+const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
+const modoValorSel = document.getElementById("modoValor");
+const totalManualInput = document.getElementById("totalManual");
+const campoTotalManual = document.getElementById("campo-total-manual");
 
-const tipoSelect = document.getElementById("tipo-cotizacion");
-const seccionItems = document.getElementById("seccion-items");
-const seccionTotal = document.getElementById("seccion-total");
-const valorTotalInput = document.getElementById("valor-total");
-
-const tablaItemsBody = document.querySelector("#tabla-items tbody");
-const agregarItemBtn = document.getElementById("agregar-item");
-
-const elSubtotal = document.getElementById("subtotal");
-const elImpuestos = document.getElementById("impuestos");
-const elTotal = document.getElementById("total");
-
-const tablaCotizacionesBody = document.querySelector("#tabla-cotizaciones tbody");
-
-// ====== STATE ======
 let items = [];
-let clientesMap = {}; // id -> {nombreEmpresa, telefono, email, ...}
 
-// ====== UI: alternar tipo ======
-tipoSelect.addEventListener("change", () => {
-  if (tipoSelect.value === "items") {
-    seccionItems.classList.remove("hidden");
-    seccionTotal.classList.add("hidden");
-    recalcular(); // re-mostrar totales calculados por ítems
-  } else {
-    seccionItems.classList.add("hidden");
-    seccionTotal.classList.remove("hidden");
-    pintarTotales(0, 0, Number(valorTotalInput.value || 0));
-  }
-});
-
-valorTotalInput.addEventListener("input", () => {
-  if (tipoSelect.value === "total") {
-    const total = Number(valorTotalInput.value || 0);
-    // IVA suspendido → impuestos=0; si activas IVA, calcula aquí 19%
-    pintarTotales(total, 0, total);
-  }
-});
-
-// ====== Ítems dinámicos ======
-agregarItemBtn.addEventListener("click", addItemRow);
-function addItemRow(data = {}) {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td class="p-2"><input type="text" class="desc border rounded px-2 py-1 w-full" placeholder="Descripción" value="${data.descripcion || ""}"></td>
-    <td class="p-2 text-right"><input type="number" class="cant border rounded px-2 py-1 w-24 text-right" value="${data.cantidad ?? 1}"></td>
-    <td class="p-2 text-right"><input type="number" class="precio border rounded px-2 py-1 w-32 text-right" value="${data.precio ?? data.precioUnitario ?? 0}"></td>
-    <td class="p-2 text-right subtotal">0</td>
-    <td class="p-2 text-right">
-      <button type="button" class="text-red-600 hover:underline btn-del">Eliminar</button>
-    </td>
-  `;
-  tr.querySelector(".cant").addEventListener("input", recalcular);
-  tr.querySelector(".precio").addEventListener("input", recalcular);
-  tr.querySelector(".btn-del").addEventListener("click", () => {
-    tr.remove();
-    recalcular();
-  });
-
-  tablaItemsBody.appendChild(tr);
-  recalcular();
+// ============================
+// Helpers
+// ============================
+function currency(n) {
+  return `$${Number(n || 0).toLocaleString("es-CO")}`;
 }
 
-// ====== Totales ======
+// Genera una URL absoluta al recurso (resuelve bien en GitHub Pages)
+function urlAbsoluta(rel) {
+  // new URL(res, base)
+  return new URL(rel, window.location.href).toString();
+}
+
+// ============================
+// Ítems dinámicos
+// ============================
+document.getElementById("agregar-item").addEventListener("click", () => {
+  const row = document.createElement("tr");
+  row.className = "border-b";
+
+  row.innerHTML = `
+    <td class="p-2">
+      <input type="text" class="desc border rounded px-2 py-1 w-full" placeholder="Descripción">
+    </td>
+    <td class="p-2 text-right">
+      <input type="number" class="cant border rounded px-2 py-1 w-full text-right" value="1" min="0">
+    </td>
+    <td class="p-2 text-right">
+      <input type="number" class="precio border rounded px-2 py-1 w-full text-right" value="0" min="0">
+    </td>
+    <td class="p-2 text-right subtotal">0</td>
+    <td class="p-2 text-center">
+      <button type="button" class="text-red-600 hover:underline">Eliminar</button>
+    </td>
+  `;
+
+  row.querySelector(".cant").addEventListener("input", recalcular);
+  row.querySelector(".precio").addEventListener("input", recalcular);
+  row.querySelector("button").addEventListener("click", () => { row.remove(); recalcular(); });
+
+  tablaItems.appendChild(row);
+  recalcular();
+});
+
+// ============================
+// Recalcular totales
+// ============================
 function recalcular() {
   let subtotal = 0;
   items = [];
-  tablaItemsBody.querySelectorAll("tr").forEach((tr) => {
-    const desc = tr.querySelector(".desc").value;
-    const cant = Number(tr.querySelector(".cant").value || 0);
-    const precio = Number(tr.querySelector(".precio").value || 0);
+
+  tablaItems.querySelectorAll("tr").forEach(tr => {
+    const desc = tr.querySelector(".desc")?.value || "";
+    const cant = Number(tr.querySelector(".cant")?.value) || 0;
+    const precio = Number(tr.querySelector(".precio")?.value) || 0;
     const sub = cant * precio;
-    tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
-    subtotal += sub;
+
+    const cellSubtotal = tr.querySelector(".subtotal");
+    if (cellSubtotal) cellSubtotal.textContent = Number(sub).toLocaleString("es-CO");
+
     items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
+    subtotal += sub;
   });
 
-  // IVA suspendido: 0 (deja comentado el cálculo para activarlo después)
-  // const impuestos = Math.round(subtotal * 0.19);
-  const impuestos = 0;
-  const total = subtotal + impuestos;
+  // Modo de cálculo de total
+  let total = subtotal;
+  if (modoValorSel.value === "total") {
+    total = Number(totalManualInput.value) || 0;
+  }
 
-  pintarTotales(subtotal, impuestos, total);
-  return { subtotal, impuestos, total };
+  // IVA suspendido temporalmente
+  // const impuestos = Math.round(total * 0.19);
+
+  document.getElementById("subtotal").textContent = `Subtotal: ${currency(subtotal)}`;
+  document.getElementById("total").textContent = `Total: ${currency(total)}`;
+  document.getElementById("totalLetras").textContent = `Total en letras: ${numeroALetras(total)}`;
+
+  return { subtotal, impuestos: 0, total };
 }
 
-function pintarTotales(subtotal, impuestos, total) {
-  elSubtotal.textContent = `Subtotal: $${Number(subtotal || 0).toLocaleString("es-CO")}`;
-  elImpuestos.textContent = `IVA (19%): $${Number(impuestos || 0).toLocaleString("es-CO")}`;
-  elTotal.textContent = `Total: $${Number(total || 0).toLocaleString("es-CO")}`;
-}
+// toggle campo total manual
+modoValorSel.addEventListener("change", () => {
+  if (modoValorSel.value === "total") {
+    campoTotalManual.classList.remove("hidden");
+  } else {
+    campoTotalManual.classList.add("hidden");
+  }
+  recalcular();
+});
+totalManualInput.addEventListener("input", recalcular);
 
-// ====== Cargar clientes ======
-async function cargarClientes() {
-  const snap = await db.collection("clientes").get();
-  clientesMap = {};
-  clienteSelect.innerHTML = `<option value="">— Selecciona un cliente —</option>`;
-  snap.forEach((doc) => {
-    const data = doc.data();
-    clientesMap[doc.id] = { id: doc.id, ...data };
-    const opt = document.createElement("option");
-    const nombre = data.nombreEmpresa || data.nombre || `Cliente ${doc.id}`;
-    opt.value = doc.id;
-    opt.textContent = nombre;
-    clienteSelect.appendChild(opt);
-  });
-}
-
-// ====== Guardar cotización ======
+// ============================
+// Guardar cotización
+// ============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const clienteId = clienteSelect.value;
-  if (!clienteId) {
-    alert("Selecciona un cliente");
+
+  const cliente = document.getElementById("cliente").value.trim();
+  const notas = document.getElementById("notas").value.trim();
+  const tipoCotizacion = document.getElementById("tipoCotizacion").value;
+  const { subtotal, impuestos, total } = recalcular();
+
+  if (!cliente) {
+    alert("Debe ingresar un cliente.");
     return;
   }
 
-  const tipo = tipoSelect.value;
-  const notas = notasInput.value || "";
-  let subtotal = 0, impuestos = 0, total = 0;
-
-  if (tipo === "items") {
-    ({ subtotal, impuestos, total } = recalcular());
-  } else {
-    total = Number(valorTotalInput.value || 0);
-    subtotal = total;
-    impuestos = 0; // IVA suspendido
-  }
-
-  const payload = {
-    clienteId,
+  // Construimos objeto
+  const cot = {
+    cliente,
     notas,
-    tipo,
-    items: (tipo === "items" ? items : []),
+    tipoCotizacion,
+    modoValor: modoValorSel.value, // 'items' o 'total'
+    items,
     subtotal,
     impuestos,
     total,
+    totalEnLetras: numeroALetras(total),
     fecha: new Date(),
-    estado: "pendiente",
-    linkPublico: ""
+    estado: "pendiente"
   };
 
-  const docRef = await db.collection("cotizaciones").add(payload);
+  try {
+    // Guardar
+    const docRef = await db.collection("cotizaciones").add(cot);
 
-  // construimos URL pública absoluta para WhatsApp
-  const publicLink = `${BASE_URL}public/cotizacion.html?id=${docRef.id}`;
-  await db.collection("cotizaciones").doc(docRef.id).update({ linkPublico: publicLink });
+    // URL pública absoluta
+    const publicURL = urlAbsoluta(`public/cotizacion.html?id=${docRef.id}`);
 
-  alert("✅ Cotización guardada");
-  form.reset();
-  tablaItemsBody.innerHTML = "";
-  // por UX, si el tipo es "items", dejamos una fila vacía al volver
-  if (tipoSelect.value === "items") addItemRow();
-  pintarTotales(0, 0, 0);
-  await cargarCotizaciones();
+    await db.collection("cotizaciones").doc(docRef.id).update({
+      linkPublico: publicURL
+    });
+
+    alert("✅ Cotización guardada.");
+    form.reset();
+    tablaItems.innerHTML = "";
+    campoTotalManual.classList.add("hidden");
+    cargarCotizaciones();
+  } catch (err) {
+    console.error(err);
+    alert("Error guardando la cotización.");
+  }
 });
 
-// ====== Listar cotizaciones ======
+// ============================
+// Listar cotizaciones
+// ============================
 async function cargarCotizaciones() {
-  // aseguramos tener clientes cargados
-  if (!Object.keys(clientesMap).length) await cargarClientes();
-
-  tablaCotizacionesBody.innerHTML = "";
+  tablaCotizaciones.innerHTML = "";
   const snap = await db.collection("cotizaciones").orderBy("fecha", "desc").get();
 
-  snap.forEach((doc) => {
-    const c = { id: doc.id, ...doc.data() };
-    const cliente = clientesMap[c.clienteId] || {};
-    const nombreCliente = cliente.nombreEmpresa || cliente.nombre || c.clienteId || "—";
-    const tel = (cliente.telefono || "").toString().trim();
+  snap.forEach(docu => {
+    const c = docu.data();
 
     const tr = document.createElement("tr");
+    tr.className = "border-t hover:bg-gray-50";
+
+    const tipoTxt = c.tipoCotizacion === "manoObra" ? "Solo Mano de Obra" : "Mano de Obra + Materiales";
+
+    // fallback de link si aún no existe (muy raro por timing)
+    const link = c.linkPublico || urlAbsoluta(`public/cotizacion.html?id=${docu.id}`);
+
     tr.innerHTML = `
-      <td class="p-2">${nombreCliente}</td>
-      <td class="p-2">${c.notas ? c.notas : "—"}</td>
-      <td class="p-2 text-right">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
-      <td class="p-2">${c.estado || "pendiente"}</td>
-      <td class="p-2">${(c.fecha?.toDate ? c.fecha.toDate() : c.fecha ? new Date(c.fecha) : new Date()).toLocaleDateString("es-CO")}</td>
+      <td class="p-2">${c.cliente}</td>
+      <td class="p-2">${tipoTxt}</td>
+      <td class="p-2 text-right">${currency(c.total)}</td>
       <td class="p-2">
-        ${c.linkPublico
-          ? `<a class="text-blue-600 underline" href="${c.linkPublico}" target="_blank">Abrir</a>`
-          : "—"}
-      </td>
-      <td class="p-2">
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 justify-end">
           <button class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 btn-pdf">PDF</button>
           <a class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 btn-wa" target="_blank">WhatsApp</a>
+          <a class="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-800" target="_blank" href="${link}">Ver Link</a>
         </div>
       </td>
     `;
 
     // PDF
     tr.querySelector(".btn-pdf").addEventListener("click", () => {
-      // puedes pasar firmaBase64 en opciones cuando la tengas
-      generarPDFCotizacion(c, cliente, {
-        firmante: "DOMKA",
-        cargo: "Construcción & Remodelaciones"
+      generarPDFCotizacion({
+        ...c,
+        // Asegurar consistencia para el PDF
+        items: Array.isArray(c.items) ? c.items : [],
       });
     });
 
     // WhatsApp
     const wa = tr.querySelector(".btn-wa");
-    const baseMsg = `Hola, aquí tienes tu cotización DOMKA: ${c.linkPublico || ""}`;
-    // Si no hay teléfono del cliente, abrimos chat al “wa.me” sin destino para que el usuario elija
-    const phone = (tel && /^\+?\d{7,15}$/.test(tel)) ? tel.replace(/\D/g, "") : "";
-    const waUrl = phone
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(baseMsg)}`
-      : `https://wa.me/?text=${encodeURIComponent(baseMsg)}`;
-    wa.href = waUrl;
+    const mensaje = `Hola, aquí tienes tu cotización DOMKA: ${link}`;
+    const hrefWa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+    wa.href = hrefWa;
 
-    tablaCotizacionesBody.appendChild(tr);
+    tablaCotizaciones.appendChild(tr);
   });
 }
 
-// ====== INIT ======
-(async function init() {
-  // si entras por primera vez, deja una fila para ítems
-  addItemRow();
-  // carga clientes y luego cotizaciones
-  await cargarClientes();
-  await cargarCotizaciones();
-})();
+cargarCotizaciones();
+
