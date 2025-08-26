@@ -9,52 +9,7 @@ const campoValorTotal = document.getElementById("campo-valor-total");
 const inputValorTotal = document.getElementById("valor-total");
 
 let items = [];
-let firmaBase64 = null;
-let signaturePad;
 let tipoCalculo = "por-items";
-
-// ============================
-// 🔹 Inicializar el pad de firma
-// ============================
-function inicializarFirma() {
-  const canvas = document.getElementById("firma-canvas");
-  signaturePad = new SignaturePad(canvas, {
-    backgroundColor: 'rgba(255, 255, 255, 0)',
-    penColor: 'rgb(0, 0, 0)',
-    minWidth: 1.5,
-    maxWidth: 2.5,
-    throttle: 16,
-  });
-
-  // Ajustar el canvas al tamaño del contenedor
-  function resizeCanvas() {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext("2d").scale(ratio, ratio);
-    signaturePad.clear();
-  }
-
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
-
-  // Limpiar firma
-  document.getElementById("limpiar-firma").addEventListener("click", () => {
-    signaturePad.clear();
-    document.getElementById("firma-guardada-msg").classList.add("hidden");
-  });
-
-  // Guardar firma
-  document.getElementById("guardar-firma").addEventListener("click", () => {
-    if (signaturePad.isEmpty()) {
-      alert("Por favor, dibuje su firma primero");
-      return;
-    }
-
-    firmaBase64 = signaturePad.toDataURL();
-    document.getElementById("firma-guardada-msg").classList.remove("hidden");
-  });
-}
 
 // ============================
 // 🔹 Cargar clientes en select
@@ -114,13 +69,9 @@ document.querySelectorAll('input[name="tipo-calculo"]').forEach(radio => {
     
     if (tipoCalculo === "valor-total") {
       campoValorTotal.classList.remove("hidden");
-      document.getElementById("agregar-item").disabled = true;
-      tablaItems.querySelectorAll("tr").forEach(tr => tr.remove());
-      document.getElementById("tabla-items").classList.add("hidden");
+      // NO deshabilitar la agregación de items, solo cambiar el cálculo
     } else {
       campoValorTotal.classList.add("hidden");
-      document.getElementById("agregar-item").disabled = false;
-      document.getElementById("tabla-items").classList.remove("hidden");
     }
     
     recalcular();
@@ -162,7 +113,7 @@ function recalcular() {
   items = [];
   
   if (tipoCalculo === "por-items") {
-    // Cálculo por items
+    // Cálculo por items - modo normal
     tablaItems.querySelectorAll("tr").forEach(tr => {
       const desc = tr.querySelector(".desc").value;
       const cant = Number(tr.querySelector(".cant").value) || 0;
@@ -175,17 +126,33 @@ function recalcular() {
     
     total = subtotal;
   } else {
-    // Cálculo por valor total directo
+    // Cálculo por valor total directo - los items son informativos
     total = Number(inputValorTotal.value) || 0;
+    
+    // Recolectar items para mostrar en el PDF (aunque no afecten el cálculo)
+    tablaItems.querySelectorAll("tr").forEach(tr => {
+      const desc = tr.querySelector(".desc").value;
+      const cant = Number(tr.querySelector(".cant").value) || 0;
+      const precio = Number(tr.querySelector(".precio").value) || 0;
+      const sub = cant * precio;
+      
+      // Mostrar el subtotal calculado pero no usarlo para el total general
+      tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
+      items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
+    });
+    
+    // El subtotal para el cálculo general es el valor total ingresado
     subtotal = total;
     
-    // Crear un ítem general para el valor total
-    items = [{
-      descripcion: "Valor total de la cotización",
-      cantidad: 1,
-      precio: total,
-      subtotal: total
-    }];
+    // Agregar un ítem que representa el valor total
+    if (items.length === 0) {
+      items.push({
+        descripcion: "Valor total de la cotización",
+        cantidad: 1,
+        precio: total,
+        subtotal: total
+      });
+    }
   }
   
   // Actualizar la interfaz
@@ -292,8 +259,8 @@ form.addEventListener("submit", async (e) => {
     fecha: new Date(),
     estado: "pendiente",
     mostrarValorLetras,
-    tipoCalculo,
-    firma: firmaBase64
+    tipoCalculo
+    // NOTA: Ya no incluimos firma aquí
   };
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
@@ -308,15 +275,11 @@ form.addEventListener("submit", async (e) => {
   tablaItems.innerHTML = "";
   pagosPersonalizadosDiv.classList.add("hidden");
   document.getElementById("valor-letras").textContent = "Cero pesos";
-  document.getElementById("firma-guardada-msg").classList.add("hidden");
-  firmaBase64 = null;
   
   // Resetear tipo de cálculo a por defecto
   document.querySelector('input[name="tipo-calculo"][value="por-items"]').checked = true;
   tipoCalculo = "por-items";
   campoValorTotal.classList.add("hidden");
-  document.getElementById("agregar-item").disabled = false;
-  document.getElementById("tabla-items").classList.remove("hidden");
   
   cargarCotizaciones();
 });
@@ -363,6 +326,5 @@ async function cargarCotizaciones() {
 
 // Inicializar cuando el documento esté listo
 document.addEventListener("DOMContentLoaded", function() {
-  inicializarFirma();
   cargarCotizaciones();
 });
