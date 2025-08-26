@@ -198,8 +198,7 @@ form.addEventListener("submit", async (e) => {
     total,
     fecha: new Date(),
     estado: "pendiente",
-    mostrarValorLetras,
-    firma: firmaBase64  // Guardamos la firma en base64
+    mostrarValorLetras
   };
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
