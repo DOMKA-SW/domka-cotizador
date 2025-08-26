@@ -3,7 +3,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   const { 
     items = [], 
     subtotal = 0, 
-    impuestos = 0, 
     total = 0, 
     notas = "", 
     tipo = "mano-obra",
@@ -45,7 +44,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     [
       { text: "Descripción", style: "tableHeader" },
       { text: "Cantidad", style: "tableHeader" },
-      { text: "Vlr Unitario", style: "tableHeader" },
+      { text: "Precio", style: "tableHeader" },
       { text: "Subtotal", style: "tableHeader" }
     ],
     ...items.map(it => [
@@ -104,7 +103,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       ]
     }
   ] : [
-    { text: " ", margin: [0, 20] },
     {
       columns: [
         {
@@ -182,7 +180,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         widths: ["*", "auto"],
         body: [
           ["Subtotal", { text: `$${subtotal.toLocaleString("es-CO")}`, alignment: "right" }],
-          ["IVA (19%)", { text: `$${impuestos.toLocaleString("es-CO")}`, alignment: "right" }],
           [{ text: "TOTAL", style: "totalLabel" }, { text: `$${total.toLocaleString("es-CO")}`, style: "totalValue" }]
         ]
       },
@@ -299,7 +296,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   };
 
-  pdfMake.createPdf(docDefinition).open();
+  // Descargar automáticamente el PDF
+  pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
 }
 
 // Hacer accesible globalmente
