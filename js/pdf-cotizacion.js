@@ -11,7 +11,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     planPagos = [],
     fecha = new Date(),
     mostrarValorLetras = true,
-    id = ""
+    id = "",
+    incluirFirma = true  // Nuevo campo para controlar si se incluye firma
   } = cotizacion;
 
   // Formatear fecha
@@ -68,6 +69,34 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       }
     }
   ] : [];
+
+  // Contenido de la firma (imagen o línea)
+  const contenidoFirma = incluirFirma 
+    ? [
+        {
+          columns: [
+            {
+              text: " ",
+              width: "*"
+            },
+            {
+              stack: [
+                // Intentar cargar la imagen de firma, si falla mostrar línea
+                {
+                  image: 'img/firma.png',
+                  width: 150,
+                  margin: [0, 0, 0, 5],
+                  fallback: () => [{ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] }]
+                },
+                { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
+                { text: "DOMKA", style: "firma", alignment: "center" }
+              ],
+              width: 200
+            }
+          ]
+        }
+      ]
+    : [];
 
   const contenido = [
     // Encabezado
@@ -167,26 +196,11 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       ],
       margin: [0, 0, 0, 30]
     },
-
-        // Firmas
-    {
-      columns: [
-        {
-          text: " ",
-          width: "*"
-        },
-        {
-          stack: [
-            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-            { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
-            { text: "DOMKA", style: "firma", alignment: "center" }
-          ],
-          width: 200
-        }
-      ]
-    }
-  ];
     
+    // Firmas
+    ...contenidoFirma
+  ];
+
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
