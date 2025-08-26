@@ -168,7 +168,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       margin: [0, 0, 0, 30]
     },
     
-    // Firmas
+// Firmas
 {
   columns: [
     {
@@ -177,11 +177,9 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     },
     {
       stack: [
-        // Agregar la imagen
         {
-          image: 'img/firma.png', // Ruta de tu imagen
-          width: 200, // Ancho de la imagen
-          height: 60, // Alto de la imagen (opcional)
+          image: 'data:img/firma.png;base64,iVBORw0KGgoAAAANSUhEUgAA...', // Tu imagen en base64
+          width: 200,
           alignment: "center"
         },
         { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
