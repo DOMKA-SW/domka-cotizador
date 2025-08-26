@@ -192,7 +192,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ]
 }
-
+];
+  
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
