@@ -12,7 +12,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     mostrarValorLetras = true,
     id = "",
     firmaAprobacion = null,
-    fechaAprobacion = null
+    fechaAprobacion = null,        
+    tipoCalculo = "por-items"
   } = cotizacion;
 
   // Formatear fecha
