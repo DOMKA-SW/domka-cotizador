@@ -23,6 +23,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script src="../js/firebase.js"></script>
+  <script src="../js/numero-letras.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
@@ -31,80 +32,138 @@
 
     let cotizacionRef;
 
-    async function cargarCotizacion() {
-      if (!id) {
-        container.innerHTML = "<p class='text-red-600'>❌ Cotización no encontrada.</p>";
-        return;
-      }
-
-      cotizacionRef = db.collection("cotizaciones").doc(id);
-      const docSnap = await cotizacionRef.get();
-
-      if (!docSnap.exists) {
-        container.innerHTML = "<p class='text-red-600'>❌ Cotización inexistente.</p>";
-        return;
-      }
-
-      const c = docSnap.data();
-
-      container.innerHTML = `
-        <p><strong>Cliente:</strong> ${c.cliente || "N/A"}</p>
-        <p><strong>Notas:</strong> ${c.notas || "—"}</p>
-        <h2 class="mt-4 font-bold text-lg">Ítems</h2>
-        <table class="w-full border my-2">
-          <thead class="bg-orange-600 text-white">
-            <tr>
-              <th class="p-2">Descripción</th>
-              <th class="p-2">Cant.</th>
-              <th class="p-2">Precio</th>
-              <th class="p-2">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${c.items.map(it => `
-              <tr class="border">
-                <td class="p-2">${it.descripcion}</td>
-                <td class="p-2">${it.cantidad}</td>
-                <td class="p-2">$${Number(it.precio).toLocaleString("es-CO")}</td>
-                <td class="p-2">$${Number(it.subtotal).toLocaleString("es-CO")}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-        <div class="text-right mt-4">
-          <p>Subtotal: $${c.subtotal.toLocaleString("es-CO")}</p>
-          <p>IVA (19%): $${c.impuestos.toLocaleString("es-CO")}</p>
-          <p class="text-lg font-bold text-orange-600">TOTAL: $${c.total.toLocaleString("es-CO")}</p>
-          <p class="mt-2">Estado actual: <span class="font-bold">${c.estado || "pendiente"}</span></p>
-        </div>
-      `;
-
-      // Mostrar botones solo si está pendiente
-      if (c.estado === "pendiente") {
-        acciones.classList.remove("hidden");
-      } else {
-        acciones.innerHTML = `<p class="text-center mt-4 font-bold ${
-          c.estado === "aprobada" ? "text-green-600" : "text-red-600"
-        }">Esta cotización ya fue ${c.estado}</p>`;
+    // Traducir tipo de cotización
+    function traducirTipo(tipo) {
+      switch(tipo) {
+        case "mano-obra": return "Mano de obra";
+        case "materiales": return "Materiales";
+        case "ambos": return "Mano de obra y materiales";
+        default: return tipo || "No especificado";
       }
     }
 
-    cargarCotizacion();
+    // Formatear forma de pago
+    function formatearFormaPago(formaPago, planPagos) {
+      switch(formaPago) {
+        case "contado": return "Pago al contado";
+        case "60-40": return "60% al inicio - 40% al finalizar";
+        case "50-50": return "50% al inicio - 50% al finalizar";
+        case "tres-pagos": return "Tres pagos (40%-30%-30%)";
+        case "personalizado": 
+          return planPagos.map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
+        default: return formaPago;
+      }
+    }
 
-    // --- Aprobar ---
+    // Cargar cotización
+    async function cargarCotizacion() {
+      if (!id) {
+        container.innerHTML = "<p class='text-red-600'>Error: No se especificó ID de cotización</p>";
+        return;
+      }
+
+      try {
+        cotizacionRef = db.collection("cotizaciones").doc(id);
+        const doc = await cotizacionRef.get();
+        
+        if (!doc.exists) {
+          container.innerHTML = "<p class='text-red-600'>Error: Cotización no encontrada</p>";
+          return;
+        }
+
+        const c = doc.data();
+        const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds * 1000 : c.fecha) : new Date();
+        
+        container.innerHTML = `
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <p class="font-semibold">Cliente:</p>
+              <p>${c.nombreCliente || "No especificado"}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold">Fecha:</p>
+              <p>${fecha.toLocaleDateString('es-CO')}</p>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <p class="font-semibold">Tipo de cotización:</p>
+            <p>${traducirTipo(c.tipo)}</p>
+          </div>
+
+          <div class="mb-4">
+            <p class="font-semibold">Forma de pago:</p>
+            <p>${formatearFormaPago(c.formaPago, c.planPagos || [])}</p>
+          </div>
+
+          <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cotización</h2>
+          <table class="w-full mb-6">
+            <thead class="bg-orange-600 text-white">
+              <tr>
+                <th class="p-2 text-left">Descripción</th>
+                <th class="p-2 text-center">Cantidad</th>
+                <th class="p-2 text-right">Precio</th>
+                <th class="p-2 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(c.items || []).map(item => `
+                <tr class="border-b">
+                  <td class="p-2">${item.descripcion || ""}</td>
+                  <td class="p-2 text-center">${item.cantidad || 0}</td>
+                  <td class="p-2 text-right">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
+                  <td class="p-2 text-right">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <div class="text-right mb-4">
+            <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
+            <p>IVA (19%): $${Number(c.impuestos || 0).toLocaleString("es-CO")}</p>
+            <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
+            ${c.mostrarValorLetras ? `<p class="text-sm italic">Son: ${numeroAPalabras(c.total || 0)}</p>` : ""}
+          </div>
+
+          ${c.notas ? `
+            <div class="mb-4">
+              <p class="font-semibold">Notas:</p>
+              <p>${c.notas}</p>
+            </div>
+          ` : ""}
+        `;
+
+        // Mostrar botones de acción
+        acciones.classList.remove("hidden");
+        
+      } catch (error) {
+        console.error("Error cargando cotización:", error);
+        container.innerHTML = "<p class='text-red-600'>Error al cargar la cotización</p>";
+      }
+    }
+
+    // Manejar aprobación/rechazo
     document.getElementById("aprobar").addEventListener("click", async () => {
-      await cotizacionRef.update({ estado: "aprobada" });
-      alert("✅ Cotización aprobada. ¡Gracias por confiar en DOMKA!");
-      location.reload();
+      try {
+        await cotizacionRef.update({ estado: "aprobada" });
+        alert("✅ Cotización aprobada");
+        acciones.classList.add("hidden");
+      } catch (error) {
+        alert("❌ Error al aprobar cotización");
+      }
     });
 
-    // --- Rechazar ---
     document.getElementById("rechazar").addEventListener("click", async () => {
-      await cotizacionRef.update({ estado: "rechazada" });
-      alert("❌ Cotización rechazada.");
-      location.reload();
+      try {
+        await cotizacionRef.update({ estado: "rechazada" });
+        alert("❌ Cotización rechazada");
+        acciones.classList.add("hidden");
+      } catch (error) {
+        alert("❌ Error al rechazar cotización");
+      }
     });
+
+    cargarCotizacion();
   </script>
 </body>
 </html>
-
