@@ -7,19 +7,6 @@ const formaPagoSelect = document.getElementById("forma-pago");
 const pagosPersonalizadosDiv = document.getElementById("pagos-personalizados");
 
 let items = [];
-let firmaBase64 = null; // ← 1. Variable para almacenar la firma (AL PRINCIPIO)
-
-// ============================
-// 🔹 Función para convertir imagen a Base64 (AL PRINCIPIO, después de las variables)
-// ============================
-function convertirImagenABase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-}
 
 // ============================
 // 🔹 Cargar clientes en select
@@ -70,21 +57,6 @@ function validarPagos() {
   }
 }
 
-// ============================
-// 🔹 Manejar la carga de la imagen de firma (DESPUÉS de las funciones existentes)
-// ============================
-document.getElementById('firma-upload').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    try {
-      firmaBase64 = await convertirImagenABase64(file);
-      document.getElementById("firma-preview").classList.remove("hidden");
-    } catch (error) {
-      console.error("Error al cargar la imagen:", error);
-      alert("Error al cargar la imagen. Intenta con otra imagen.");
-    }
-  }
-});
 
 // ============================
 // 🔹 Ítems dinámicos
