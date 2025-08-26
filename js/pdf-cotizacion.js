@@ -11,7 +11,9 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     planPagos = [],
     fecha = new Date(),
     mostrarValorLetras = true,
-    id = ""
+    id = "",
+    firmaAprobacion = null,
+    fechaAprobacion = null
   } = cotizacion;
 
   // Formatear fecha
@@ -20,6 +22,14 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     month: 'long',
     day: 'numeric'
   });
+
+  // Formatear fecha de aprobación si existe
+  const fechaAprobacionFormateada = fechaAprobacion ? 
+    new Date(fechaAprobacion.seconds ? fechaAprobacion.seconds * 1000 : fechaAprobacion).toLocaleDateString('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : null;
 
   // Traducir tipo de cotización
   let tipoTexto = "";
@@ -69,8 +79,10 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // Contenido de la firma (imagen o línea)
-  const contenidoFirma = [
+  // Contenido de aprobación con firma si existe
+  const contenidoAprobacion = firmaAprobacion ? [
+    { text: " ", margin: [0, 20] },
+    { text: "APROBACIÓN DEL CLIENTE", style: "aprobacionHeader" },
     {
       columns: [
         {
@@ -79,16 +91,29 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         },
         {
           stack: [
-            // Intentar cargar la imagen de firma desde el repositorio
+            { text: `Fecha de aprobación: ${fechaAprobacionFormateada}`, style: "aprobacionText" },
             {
-              image: 'https://domka-sw.github.io/domka-cotizador/img/firma.png',
+              image: firmaAprobacion,
               width: 150,
-              margin: [0, 0, 0, 5],
-              // Fallback en caso de que la imagen no se cargue
-              fallback: { 
-                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] 
-              }
+              margin: [0, 10, 0, 5]
             },
+            { text: "Firma del cliente", alignment: "center", style: "aprobacionText" }
+          ],
+          width: 200
+        }
+      ]
+    }
+  ] : [
+    { text: " ", margin: [0, 20] },
+    {
+      columns: [
+        {
+          text: " ",
+          width: "*"
+        },
+        {
+          stack: [
+            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
             { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
             { text: "DOMKA", style: "firma", alignment: "center" }
           ],
@@ -198,7 +223,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     },
     
     // Firmas
-    ...contenidoFirma
+    ...contenidoAprobacion
   ];
 
   const docDefinition = {
@@ -255,6 +280,18 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       firma: {
         bold: true,
         color: "#F97316"
+      },
+      aprobacionHeader: {
+        fontSize: 14,
+        bold: true,
+        color: "#059669",
+        alignment: "center",
+        margin: [0, 0, 0, 10]
+      },
+      aprobacionText: {
+        fontSize: 10,
+        color: "#374151",
+        alignment: "center"
       }
     },
     defaultStyle: {
