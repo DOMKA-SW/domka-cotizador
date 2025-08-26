@@ -39,8 +39,29 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     default: tipoTexto = tipo || "No especificado";
   }
 
-  // Construir tabla de ítems
-  const tablaItems = [
+// js/pdf-cotizacion.js - En la sección de construcción de tabla de ítems
+// Construir tabla de ítems
+let tablaItems = [];
+
+if (tipoCalculo === "valor-total" && items.length > 0 && items[0].descripcion === "Valor total de la cotización") {
+  // Modo valor total - mostrar solo el total
+  tablaItems = [
+    [
+      { text: "Descripción", style: "tableHeader" },
+      { text: "Cantidad", style: "tableHeader" },
+      { text: "Precio", style: "tableHeader" },
+      { text: "Subtotal", style: "tableHeader" }
+    ],
+    [
+      items[0].descripcion || "",
+      items[0].cantidad || 0,
+      { text: `$${Number(items[0].precio || 0).toLocaleString("es-CO")}`, alignment: "right" },
+      { text: `$${Number(items[0].subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
+    ]
+  ];
+} else {
+  // Modo por ítems - mostrar todos los ítems
+  tablaItems = [
     [
       { text: "Descripción", style: "tableHeader" },
       { text: "Cantidad", style: "tableHeader" },
@@ -54,6 +75,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
     ])
   ];
+}
 
   // Construir plan de pagos si existe
   const contenidoPagos = planPagos.length > 0 ? [
