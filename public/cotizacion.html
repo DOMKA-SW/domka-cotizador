@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
   <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-6">
@@ -11,10 +12,29 @@
     <div id="cotizacion" class="text-gray-800">
       <p>Cargando cotización...</p>
     </div>
+    
+    <!-- Firma digital -->
+    <div id="firma-container" class="hidden mt-6">
+      <h3 class="font-semibold mb-2">Firma de aprobación</h3>
+      <p class="text-sm text-gray-600 mb-3">Por favor, firme en el recuadro para aprobar la cotización</p>
+      <canvas id="firma-pad" class="border rounded w-full" width="500" height="200"></canvas>
+      <div class="flex justify-between mt-2">
+        <button id="limpiar-firma" class="text-sm text-gray-600 hover:text-gray-800">Limpiar firma</button>
+        <button id="guardar-firma" class="bg-orange-600 text-white px-4 py-1 rounded text-sm">Guardar firma</button>
+      </div>
+    </div>
+
     <!-- Botones acción -->
     <div id="acciones" class="hidden flex justify-center gap-4 mt-6">
       <button id="aprobar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">✅ Aprobar</button>
       <button id="rechazar" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">❌ Rechazar</button>
+    </div>
+
+    <!-- Confirmación con firma -->
+    <div id="confirmacion-firma" class="hidden mt-6 text-center">
+      <p class="text-green-600 font-semibold">✅ Cotización aprobada con firma digital</p>
+      <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
+      <button id="volver" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Volver</button>
     </div>
   </div>
 
@@ -23,14 +43,55 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script src="../js/firebase.js"></script>
-  <script src="../js/numero-letras.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     const container = document.getElementById("cotizacion");
     const acciones = document.getElementById("acciones");
+    const firmaContainer = document.getElementById("firma-container");
+    const confirmacionFirma = document.getElementById("confirmacion-firma");
 
     let cotizacionRef;
+    let signaturePad;
+
+    // Inicializar el pad de firma
+    function inicializarFirma() {
+      const canvas = document.getElementById("firma-pad");
+      signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+        penColor: 'rgb(0, 0, 0)',
+        minWidth: 1,
+        maxWidth: 3,
+      });
+
+      // Ajustar el canvas al tamaño del contenedor
+      function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear(); // Limpiar después de redimensionar
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      // Limpiar firma
+      document.getElementById("limpiar-firma").addEventListener("click", () => {
+        signaturePad.clear();
+      });
+
+      // Guardar firma
+      document.getElementById("guardar-firma").addEventListener("click", () => {
+        if (signaturePad.isEmpty()) {
+          alert("Por favor, proporcione su firma primero");
+          return;
+        }
+
+        const firmaData = signaturePad.toDataURL();
+        guardarAprobacionConFirma(firmaData);
+      });
+    }
 
     // Traducir tipo de cotización
     function traducirTipo(tipo) {
@@ -131,10 +192,25 @@
               <p>${c.notas}</p>
             </div>
           ` : ""}
+
+          ${c.firmaAprobacion ? `
+            <div class="mt-6 p-4 border rounded bg-gray-50">
+              <p class="font-semibold text-green-600">✅ Cotización aprobada</p>
+              <p class="text-sm">Aprobada el: ${new Date(c.fechaAprobacion?.seconds * 1000 || Date.now()).toLocaleDateString('es-CO')}</p>
+              <div class="mt-2">
+                <p class="text-sm font-semibold">Firma de aprobación:</p>
+                <img src="${c.firmaAprobacion}" alt="Firma" class="max-w-xs mx-auto border rounded mt-2">
+              </div>
+            </div>
+          ` : ""}
         `;
 
-        // Mostrar botones de acción
-        acciones.classList.remove("hidden");
+        // Mostrar botones de acción solo si no está aprobada
+        if (!c.estado || c.estado === "pendiente") {
+          acciones.classList.remove("hidden");
+        } else if (c.estado === "aprobada") {
+          acciones.classList.add("hidden");
+        }
         
       } catch (error) {
         console.error("Error cargando cotización:", error);
@@ -142,25 +218,50 @@
       }
     }
 
-    // Manejar aprobación/rechazo
-    document.getElementById("aprobar").addEventListener("click", async () => {
+    // Guardar aprobación con firma
+    async function guardarAprobacionConFirma(firmaData) {
       try {
-        await cotizacionRef.update({ estado: "aprobada" });
-        alert("✅ Cotización aprobada");
+        await cotizacionRef.update({ 
+          estado: "aprobada",
+          firmaAprobacion: firmaData,
+          fechaAprobacion: new Date()
+        });
+        
+        // Mostrar confirmación
+        confirmacionFirma.classList.remove("hidden");
+        firmaContainer.classList.add("hidden");
         acciones.classList.add("hidden");
+        
+        // Mostrar la firma guardada
+        document.getElementById("firma-guardada").innerHTML = `
+          <img src="${firmaData}" alt="Su firma" class="border rounded mx-auto">
+          <p class="text-sm mt-2">Firma guardada correctamente</p>
+        `;
+        
       } catch (error) {
-        alert("❌ Error al aprobar cotización");
+        alert("❌ Error al guardar la firma");
       }
+    }
+
+    // Manejar aprobación/rechazo
+    document.getElementById("aprobar").addEventListener("click", () => {
+      acciones.classList.add("hidden");
+      firmaContainer.classList.remove("hidden");
+      inicializarFirma();
     });
 
     document.getElementById("rechazar").addEventListener("click", async () => {
       try {
         await cotizacionRef.update({ estado: "rechazada" });
         alert("❌ Cotización rechazada");
-        acciones.classList.add("hidden");
+        location.reload();
       } catch (error) {
         alert("❌ Error al rechazar cotización");
       }
+    });
+
+    document.getElementById("volver").addEventListener("click", () => {
+      location.reload();
     });
 
     cargarCotizacion();
