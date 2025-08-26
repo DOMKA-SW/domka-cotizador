@@ -169,23 +169,28 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     },
     
     // Firmas
+{
+  columns: [
     {
-      columns: [
+      text: " ",
+      width: "*"
+    },
+    {
+      stack: [
+        // Agregar la imagen
         {
-          text: " ",
-          width: "*"
+          image: 'img/firma.png', // Ruta de tu imagen
+          width: 200, // Ancho de la imagen
+          height: 60, // Alto de la imagen (opcional)
+          alignment: "center"
         },
-        {
-          stack: [
-            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-            { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
-            { text: "DOMKA", style: "firma", alignment: "center" }
-          ],
-          width: 200
-        }
-      ]
+        { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
+        { text: "DOMKA", style: "firma", alignment: "center" }
+      ],
+      width: 200
     }
-  ];
+  ]
+}
 
   const docDefinition = {
     pageSize: 'A4',
