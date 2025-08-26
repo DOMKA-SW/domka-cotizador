@@ -5,6 +5,7 @@
   <title>DOMKA - Cotizaciones</title>
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
   <div class="p-6 max-w-5xl mx-auto">
@@ -77,12 +78,53 @@
         </div>
       </div>
 
+      <!-- Tipo de cálculo -->
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Tipo de cálculo:</label>
+        <div class="flex flex-col gap-2">
+          <label class="inline-flex items-center">
+            <input type="radio" name="tipo-calculo" value="por-items" checked class="form-radio text-orange-600">
+            <span class="ml-2">Calcular por ítems</span>
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" name="tipo-calculo" value="valor-total" class="form-radio text-orange-600">
+            <span class="ml-2">Ingresar valor total directamente</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Campo para valor total (inicialmente oculto) -->
+      <div id="campo-valor-total" class="hidden mb-4">
+        <label class="block font-semibold mb-2">Valor total</label>
+        <input type="number" id="valor-total" class="w-full border rounded px-3 py-2" value="0" min="0">
+      </div>
+
       <!-- Mostrar valor en letras -->
       <div class="mb-4">
         <label class="inline-flex items-center">
           <input type="checkbox" id="mostrar-valor-letras" checked class="form-checkbox text-orange-600">
           <span class="ml-2">Mostrar valor total en letras en el PDF</span>
         </label>
+      </div>
+
+      <!-- Firma digital -->
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Firma digital (opcional)</label>
+        <div class="border rounded p-3 bg-gray-50">
+          <p class="text-sm text-gray-600 mb-2">Puede agregar una firma digital que se incluirá en el PDF</p>
+          <div class="flex flex-col items-center">
+            <canvas id="firma-canvas" class="border rounded mb-2" width="400" height="200"></canvas>
+            <div class="flex gap-2">
+              <button type="button" id="limpiar-firma" class="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300">
+                Limpiar
+              </button>
+              <button type="button" id="guardar-firma" class="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700">
+                Guardar firma
+              </button>
+            </div>
+          </div>
+          <p id="firma-guardada-msg" class="text-sm text-green-600 mt-2 hidden">✓ Firma guardada correctamente</p>
+        </div>
       </div>
 
       <!-- Tabla de Ítems -->
@@ -104,7 +146,6 @@
       <!-- Totales -->
       <div class="mt-4 text-right">
         <p id="subtotal">Subtotal: $0</p>
-        <p id="impuestos">IVA (19%): $0</p>
         <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
         <p id="valor-letras" class="text-sm text-gray-600 italic mt-1">Cero pesos</p>
       </div>
@@ -144,4 +185,3 @@
   <script src="js/cotizaciones.js"></script>
 </body>
 </html>
-
