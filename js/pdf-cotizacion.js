@@ -12,7 +12,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     fecha = new Date(),
     mostrarValorLetras = true,
     id = "",
-    incluirFirma = true  // Nuevo campo para controlar si se incluye firma
+    firma = null  // Ahora recibimos la firma en base64
   } = cotizacion;
 
   // Formatear fecha
@@ -70,8 +70,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // Contenido de la firma (imagen o línea)
-  const contenidoFirma = incluirFirma 
+  // Contenido de la firma (si existe)
+  const contenidoFirma = firma 
     ? [
         {
           columns: [
@@ -81,12 +81,10 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
             },
             {
               stack: [
-                // Intentar cargar la imagen de firma, si falla mostrar línea
                 {
-                  image: 'img/firma.png',
+                  image: firma,
                   width: 150,
-                  margin: [0, 0, 0, 5],
-                  fallback: () => [{ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] }]
+                  margin: [0, 0, 0, 5]
                 },
                 { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
                 { text: "DOMKA", style: "firma", alignment: "center" }
@@ -96,7 +94,24 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
           ]
         }
       ]
-    : [];
+    : [
+        {
+          columns: [
+            {
+              text: " ",
+              width: "*"
+            },
+            {
+              stack: [
+                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
+                { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
+                { text: "DOMKA", style: "firma", alignment: "center" }
+              ],
+              width: 200
+            }
+          ]
+        }
+      ];
 
   const contenido = [
     // Encabezado
@@ -209,7 +224,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       header: {
         fontSize: 18,
         bold: true,
-        color: "#F97316" // naranja DOMKA
+        color: "#F97316"
       },
       logo: {
         fontSize: 22,
