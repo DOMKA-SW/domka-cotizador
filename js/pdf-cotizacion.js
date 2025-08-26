@@ -177,10 +177,13 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     },
     {
       stack: [
+        { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
+        // Agregar la imagen debajo de la línea
         {
-          image: 'data:img/firma.png;base64,iVBORw0KGgoAAAANSUhEUgAA...', // Tu imagen en base64
-          width: 200,
-          alignment: "center"
+          image: 'img/firma.png',
+          width: 150,
+          alignment: "center",
+          margin: [0, 5]
         },
         { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
         { text: "DOMKA", style: "firma", alignment: "center" }
