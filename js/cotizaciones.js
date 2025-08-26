@@ -1,117 +1,142 @@
-// --- DOM refs ---
+// js/cotizaciones.js
 const form = document.getElementById("form-cotizacion");
 const tablaItems = document.querySelector("#tabla-items tbody");
 const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
-const modoValorSel = document.getElementById("modoValor");
-const totalManualInput = document.getElementById("totalManual");
-const campoTotalManual = document.getElementById("campo-total-manual");
+const clienteSelect = document.getElementById("cliente");
+const formaPagoSelect = document.getElementById("forma-pago");
+const pagosPersonalizadosDiv = document.getElementById("pagos-personalizados");
 
 let items = [];
 
 // ============================
-// Helpers
+// 🔹 Cargar clientes en select
 // ============================
-function currency(n) {
-  return `$${Number(n || 0).toLocaleString("es-CO")}`;
+async function cargarClientes() {
+  clienteSelect.innerHTML = '<option value="">-- Selecciona un cliente --</option>'; // limpiar antes
+  const snap = await db.collection("clientes").get();
+  snap.forEach(doc => {
+    const c = doc.data();
+    const opt = document.createElement("option");
+    opt.value = doc.id;
+    opt.textContent = c.nombre || c.nombreEmpresa || "Sin nombre";
+    clienteSelect.appendChild(opt);
+  });
+}
+cargarClientes();
+
+// ============================
+// 🔹 Manejar forma de pago
+// ============================
+formaPagoSelect.addEventListener("change", function() {
+  if (this.value === "personalizado") {
+    pagosPersonalizadosDiv.classList.remove("hidden");
+  } else {
+    pagosPersonalizadosDiv.classList.add("hidden");
+  }
+});
+
+// Validar que los pagos personalizados sumen 100%
+document.getElementById("pago1").addEventListener("input", validarPagos);
+document.getElementById("pago2").addEventListener("input", validarPagos);
+document.getElementById("pago3").addEventListener("input", validarPagos);
+
+function validarPagos() {
+  const pago1 = Number(document.getElementById("pago1").value) || 0;
+  const pago2 = Number(document.getElementById("pago2").value) || 0;
+  const pago3 = Number(document.getElementById("pago3").value) || 0;
+  const total = pago1 + pago2 + pago3;
+  
+  if (total !== 100) {
+    pagosPersonalizadosDiv.style.border = "2px solid red";
+    pagosPersonalizadosDiv.style.padding = "5px";
+    return false;
+  } else {
+    pagosPersonalizadosDiv.style.border = "";
+    pagosPersonalizadosDiv.style.padding = "";
+    return true;
+  }
 }
 
-// Genera una URL absoluta al recurso (resuelve bien en GitHub Pages)
-function urlAbsoluta(rel) {
-  // new URL(res, base)
-  return new URL(rel, window.location.href).toString();
-}
-
 // ============================
-// Ítems dinámicos
+// 🔹 Ítems dinámicos
 // ============================
 document.getElementById("agregar-item").addEventListener("click", () => {
   const row = document.createElement("tr");
-  row.className = "border-b";
 
   row.innerHTML = `
-    <td class="p-2">
-      <input type="text" class="desc border rounded px-2 py-1 w-full" placeholder="Descripción">
-    </td>
-    <td class="p-2 text-right">
-      <input type="number" class="cant border rounded px-2 py-1 w-full text-right" value="1" min="0">
-    </td>
-    <td class="p-2 text-right">
-      <input type="number" class="precio border rounded px-2 py-1 w-full text-right" value="0" min="0">
-    </td>
-    <td class="p-2 text-right subtotal">0</td>
-    <td class="p-2 text-center">
-      <button type="button" class="text-red-600 hover:underline">Eliminar</button>
-    </td>
+    <td><input type="text" class="desc border p-1 w-full"></td>
+    <td><input type="number" class="cant border p-1 w-full" value="1" min="1"></td>
+    <td><input type="number" class="precio border p-1 w-full" value="0" min="0"></td>
+    <td class="subtotal text-right p-2">0</td>
+    <td><button type="button" class="text-red-600">Eliminar</button></td>
   `;
 
   row.querySelector(".cant").addEventListener("input", recalcular);
   row.querySelector(".precio").addEventListener("input", recalcular);
-  row.querySelector("button").addEventListener("click", () => { row.remove(); recalcular(); });
+  row.querySelector("button").addEventListener("click", () => {
+    row.remove();
+    recalcular();
+  });
 
   tablaItems.appendChild(row);
   recalcular();
 });
 
-// ============================
-// Recalcular totales
-// ============================
 function recalcular() {
   let subtotal = 0;
   items = [];
-
   tablaItems.querySelectorAll("tr").forEach(tr => {
-    const desc = tr.querySelector(".desc")?.value || "";
-    const cant = Number(tr.querySelector(".cant")?.value) || 0;
-    const precio = Number(tr.querySelector(".precio")?.value) || 0;
+    const desc = tr.querySelector(".desc").value;
+    const cant = Number(tr.querySelector(".cant").value) || 0;
+    const precio = Number(tr.querySelector(".precio").value) || 0;
     const sub = cant * precio;
-
-    const cellSubtotal = tr.querySelector(".subtotal");
-    if (cellSubtotal) cellSubtotal.textContent = Number(sub).toLocaleString("es-CO");
-
-    items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
+    tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
     subtotal += sub;
+    items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
   });
 
-  // Modo de cálculo de total
-  let total = subtotal;
-  if (modoValorSel.value === "total") {
-    total = Number(totalManualInput.value) || 0;
+  const impuestos = Math.round(subtotal * 0.19);
+  const total = subtotal + impuestos;
+  
+  document.getElementById("subtotal").textContent = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
+  document.getElementById("impuestos").textContent = `IVA (19%): $${impuestos.toLocaleString("es-CO")}`;
+  document.getElementById("total").textContent = `Total: $${total.toLocaleString("es-CO")}`;
+  
+  // Actualizar valor en letras
+  const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
+  if (mostrarValorLetras) {
+    document.getElementById("valor-letras").textContent = numeroAPalabras(total);
+  } else {
+    document.getElementById("valor-letras").textContent = "";
   }
-
-  // IVA suspendido temporalmente
-  // const impuestos = Math.round(total * 0.19);
-
-  document.getElementById("subtotal").textContent = `Subtotal: ${currency(subtotal)}`;
-  document.getElementById("total").textContent = `Total: ${currency(total)}`;
-  document.getElementById("totalLetras").textContent = `Total en letras: ${numeroALetras(total)}`;
-
-  return { subtotal, impuestos: 0, total };
+  
+  return { subtotal, impuestos, total };
 }
 
-// toggle campo total manual
-modoValorSel.addEventListener("change", () => {
-  if (modoValorSel.value === "total") {
-    campoTotalManual.classList.remove("hidden");
-  } else {
-    campoTotalManual.classList.add("hidden");
-  }
-  recalcular();
-});
-totalManualInput.addEventListener("input", recalcular);
-
 // ============================
-// Guardar cotización
+// 🔹 Guardar cotización
 // ============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const clienteId = clienteSelect.value;
-  const notas = document.getElementById("notas").value.trim();
-  const tipoCotizacion = document.getElementById("tipoCotizacion").value;
+  const notas = document.getElementById("notas").value;
+  const tipoCotizacion = document.querySelector('input[name="tipo"]:checked').value;
+  const formaPago = formaPagoSelect.value;
   const { subtotal, impuestos, total } = recalcular();
+  
+  // Validar pagos personalizados
+  if (formaPago === "personalizado" && !validarPagos()) {
+    alert("Los pagos personalizados deben sumar 100%");
+    return;
+  }
 
-  if (!cliente) {
-    alert("Debe ingresar un cliente.");
+  if (!clienteId) {
+    alert("Selecciona un cliente");
+    return;
+  }
+
+  if (items.length === 0) {
+    alert("Agrega al menos un ítem a la cotización");
     return;
   }
 
@@ -119,105 +144,113 @@ form.addEventListener("submit", async (e) => {
   const clienteDoc = await db.collection("clientes").doc(clienteId).get();
   const clienteData = clienteDoc.data() || {};
 
+  // Calcular plan de pagos
+  let planPagos = [];
+  if (formaPago === "contado") {
+    planPagos = [{ porcentaje: 100, monto: total, descripcion: "Pago completo al contado" }];
+  } else if (formaPago === "60-40") {
+    planPagos = [
+      { porcentaje: 60, monto: total * 0.6, descripcion: "60% al inicio" },
+      { porcentaje: 40, monto: total * 0.4, descripcion: "40% al finalizar" }
+    ];
+  } else if (formaPago === "50-50") {
+    planPagos = [
+      { porcentaje: 50, monto: total * 0.5, descripcion: "50% al inicio" },
+      { porcentaje: 50, monto: total * 0.5, descripcion: "50% al finalizar" }
+    ];
+  } else if (formaPago === "tres-pagos") {
+    planPagos = [
+      { porcentaje: 40, monto: total * 0.4, descripcion: "40% al inicio" },
+      { porcentaje: 30, monto: total * 0.3, descripcion: "30% al avance 50%" },
+      { porcentaje: 30, monto: total * 0.3, descripcion: "30% al finalizar" }
+    ];
+  } else if (formaPago === "personalizado") {
+    const pago1 = Number(document.getElementById("pago1").value) || 0;
+    const pago2 = Number(document.getElementById("pago2").value) || 0;
+    const pago3 = Number(document.getElementById("pago3").value) || 0;
+    
+    planPagos = [
+      { porcentaje: pago1, monto: total * (pago1/100), descripcion: `Pago 1 (${pago1}%)` }
+    ];
+    
+    if (pago2 > 0) {
+      planPagos.push({ porcentaje: pago2, monto: total * (pago2/100), descripcion: `Pago 2 (${pago2}%)` });
+    }
+    
+    if (pago3 > 0) {
+      planPagos.push({ porcentaje: pago3, monto: total * (pago3/100), descripcion: `Pago 3 (${pago3}%)` });
+    }
+  }
+
   const cotizacion = {
     clienteId,
     nombreCliente: clienteData.nombre || clienteData.nombreEmpresa || "Sin nombre",
     telefono: clienteData.telefono || "",
     notas,
+    tipo: tipoCotizacion,
+    formaPago,
+    planPagos,
     items,
     subtotal,
     impuestos,
     total,
     fecha: new Date(),
-    estado: "pendiente"
-  };
-  
-  // Construimos objeto
-  const cot = {
-    cliente,
-    notas,
-    tipoCotizacion,
-    modoValor: modoValorSel.value, // 'items' o 'total'
-    items,
-    subtotal,
-    impuestos,
-    total,
-    totalEnLetras: numeroALetras(total),
-    fecha: new Date(),
-    estado: "pendiente"
+    estado: "pendiente",
+    mostrarValorLetras: document.getElementById("mostrar-valor-letras").checked
   };
 
-  try {
-    // Guardar
-    const docRef = await db.collection("cotizaciones").add(cot);
+  const docRef = await db.collection("cotizaciones").add(cotizacion);
 
-    // URL pública absoluta
-    const publicURL = urlAbsoluta(`public/cotizacion.html?id=${docRef.id}`);
+  // Guardar link público
+  await db.collection("cotizaciones").doc(docRef.id).update({
+    linkPublico: `https://domka-sw.github.io/domka-cotizador/public/cotizacion.html?id=${docRef.id}`
+  });
 
-    await db.collection("cotizaciones").doc(docRef.id).update({
-      linkPublico: publicURL
-    });
-
-    alert("✅ Cotización guardada.");
-    form.reset();
-    tablaItems.innerHTML = "";
-    campoTotalManual.classList.add("hidden");
-    cargarCotizaciones();
-  } catch (err) {
-    console.error(err);
-    alert("Error guardando la cotización.");
-  }
+  alert("✅ Cotización guardada");
+  form.reset();
+  tablaItems.innerHTML = "";
+  pagosPersonalizadosDiv.classList.add("hidden");
+  document.getElementById("valor-letras").textContent = "Cero pesos";
+  cargarCotizaciones();
 });
 
 // ============================
-// Listar cotizaciones
+// 🔹 Listar cotizaciones
 // ============================
 async function cargarCotizaciones() {
   tablaCotizaciones.innerHTML = "";
   const snap = await db.collection("cotizaciones").orderBy("fecha", "desc").get();
-
-  snap.forEach(docu => {
-    const c = docu.data();
+  snap.forEach(doc => {
+    const c = doc.data();
+    const nombreCliente = c.nombreCliente || c.clienteId;
+    
+    // Traducir tipo de cotización
+    let tipoTexto = "";
+    switch(c.tipo) {
+      case "mano-obra": tipoTexto = "Mano de obra"; break;
+      case "materiales": tipoTexto = "Materiales"; break;
+      case "ambos": tipoTexto = "Mano de obra y materiales"; break;
+      default: tipoTexto = c.tipo || "No especificado";
+    }
 
     const tr = document.createElement("tr");
-    tr.className = "border-t hover:bg-gray-50";
-
-    const tipoTxt = c.tipoCotizacion === "manoObra" ? "Solo Mano de Obra" : "Mano de Obra + Materiales";
-
-    // fallback de link si aún no existe (muy raro por timing)
-    const link = c.linkPublico || urlAbsoluta(`public/cotizacion.html?id=${docu.id}`);
-
     tr.innerHTML = `
-      <td class="p-2">${c.cliente}</td>
-      <td class="p-2">${tipoTxt}</td>
-      <td class="p-2 text-right">${currency(c.total)}</td>
-      <td class="p-2">
-        <div class="flex flex-wrap gap-2 justify-end">
-          <button class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 btn-pdf">PDF</button>
-          <a class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 btn-wa" target="_blank">WhatsApp</a>
-          <a class="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-800" target="_blank" href="${link}">Ver Link</a>
-        </div>
+      <td class="p-2">${nombreCliente}</td>
+      <td class="p-2">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
+      <td class="p-2">${tipoTexto}</td>
+      <td class="p-2 flex gap-2">
+        <button class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 btn-pdf">PDF</button>
+        <a class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700" target="_blank"
+          href="https://wa.me/${c.telefono}?text=${encodeURIComponent(`Hola ${nombreCliente}, aquí tienes tu cotización DOMKA: ${c.linkPublico || ''}`)}">WhatsApp</a>
       </td>
     `;
 
-    // PDF
+    // Botón PDF
     tr.querySelector(".btn-pdf").addEventListener("click", () => {
-      generarPDFCotizacion({
-        ...c,
-        // Asegurar consistencia para el PDF
-        items: Array.isArray(c.items) ? c.items : [],
-      });
+      generarPDFCotizacion({...c, id: doc.id}, nombreCliente);
     });
-
-    // WhatsApp
-    const wa = tr.querySelector(".btn-wa");
-    const mensaje = `Hola, aquí tienes tu cotización DOMKA: ${link}`;
-    const hrefWa = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-    wa.href = hrefWa;
 
     tablaCotizaciones.appendChild(tr);
   });
 }
-
 cargarCotizaciones();
-
