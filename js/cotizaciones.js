@@ -122,6 +122,7 @@ form.addEventListener("submit", async (e) => {
   const notas = document.getElementById("notas").value;
   const tipoCotizacion = document.querySelector('input[name="tipo"]:checked').value;
   const formaPago = formaPagoSelect.value;
+  const incluirFirma = document.getElementById("incluir-firma").checked;
   const { subtotal, impuestos, total } = recalcular();
   
   // Validar pagos personalizados
@@ -196,7 +197,8 @@ form.addEventListener("submit", async (e) => {
     total,
     fecha: new Date(),
     estado: "pendiente",
-    mostrarValorLetras: document.getElementById("mostrar-valor-letras").checked
+    mostrarValorLetras: document.getElementById("mostrar-valor-letras").checked,
+    incluirFirma 
   };
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
