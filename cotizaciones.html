@@ -2,145 +2,168 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>DOMKA - Cotizaciones</title>
-  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+  <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
-  <div class="p-6 max-w-5xl mx-auto">
-
-    <!-- Encabezado -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-orange-600">📄 Cotizaciones</h1>
-      <a href="dashboard.html" class="bg-gray-600 text-white px-4 py-2 rounded">← Volver</a>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-orange-600 mb-4 text-center">Cotización DOMKA</h1>
+    <div id="cotizacion" class="text-gray-800">
+      <p>Cargando cotización...</p>
     </div>
-    
-    <!-- Formulario Cotización -->
-    <form id="form-cotizacion" class="bg-white p-6 rounded shadow mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block font-semibold mb-2">Cliente</label>
-          <select id="cliente" class="w-full border rounded px-3 py-2" required>
-            <option value="">-- Selecciona un cliente --</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-semibold mb-2">Notas</label>
-          <input type="text" id="notas" class="w-full border rounded px-3 py-2">
-        </div>
-      </div>
-
-      <!-- Tipo de cotización -->
-      <div class="mb-4">
-        <label class="block font-semibold mb-2">Tipo de Cotización</label>
-        <div class="flex gap-4">
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo" value="mano-obra" checked class="form-radio text-orange-600">
-            <span class="ml-2">Mano de obra</span>
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo" value="materiales" class="form-radio text-orange-600">
-            <span class="ml-2">Materiales</span>
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo" value="ambos" class="form-radio text-orange-600">
-            <span class="ml-2">Ambos</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Forma de pago -->
-      <div class="mb-4">
-        <label class="block font-semibold mb-2">Forma de Pago</label>
-        <select id="forma-pago" class="w-full border rounded px-3 py-2">
-          <option value="contado">Pago al contado</option>
-          <option value="60-40">60% al inicio - 40% al finalizar</option>
-          <option value="50-50">50% al inicio - 50% al finalizar</option>
-          <option value="tres-pagos">Tres pagos (40%-30%-30%)</option>
-          <option value="personalizado">Personalizado...</option>
-        </select>
-        
-        <!-- Campos para pagos personalizados -->
-        <div id="pagos-personalizados" class="hidden mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div>
-            <label class="block text-sm">Pago 1 (%)</label>
-            <input type="number" id="pago1" class="w-full border rounded px-2 py-1" value="50" min="0" max="100">
-          </div>
-          <div>
-            <label class="block text-sm">Pago 2 (%)</label>
-            <input type="number" id="pago2" class="w-full border rounded px-2 py-1" value="50" min="0" max="100">
-          </div>
-          <div>
-            <label class="block text-sm">Pago 3 (%)</label>
-            <input type="number" id="pago3" class="w-full border rounded px-2 py-1" value="0" min="0" max="100">
-          </div>
-        </div>
-      </div>
-
-      <!-- Mostrar valor en letras -->
-      <div class="mb-4">
-        <label class="inline-flex items-center">
-          <input type="checkbox" id="mostrar-valor-letras" checked class="form-checkbox text-orange-600">
-          <span class="ml-2">Mostrar valor total en letras en el PDF</span>
-        </label>
-      </div>
-
-      <!-- Tabla de Ítems -->
-      <h2 class="font-semibold mb-2">Ítems</h2>
-      <table class="w-full border mb-4" id="tabla-items">
-        <thead class="bg-orange-600 text-white">
-          <tr>
-            <th class="p-2">Descripción</th>
-            <th class="p-2">Cantidad</th>
-            <th class="p-2">Precio</th>
-            <th class="p-2">Subtotal</th>
-            <th class="p-2"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded">+ Agregar Ítem</button>
-
-      <!-- Totales -->
-      <div class="mt-4 text-right">
-        <p id="subtotal">Subtotal: $0</p>
-        <p id="impuestos">IVA (19%): $0</p>
-        <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
-        <p id="valor-letras" class="text-sm text-gray-600 italic mt-1">Cero pesos</p>
-      </div>
-
-      <!-- Guardar -->
-      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded mt-4 w-full">
-        Guardar Cotización
-      </button>
-    </form>
-
-    <!-- Lista Cotizaciones -->
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="font-bold text-lg mb-4">Cotizaciones Guardadas</h2>
-      <table class="w-full border" id="tabla-cotizaciones">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2">Cliente</th>
-            <th class="p-2">Total</th>
-            <th class="p-2">Tipo</th>
-            <th class="p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <!-- Botones acción -->
+    <div id="acciones" class="hidden flex justify-center gap-4 mt-6">
+      <button id="aprobar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">✅ Aprobar</button>
+      <button id="rechazar" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">❌ Rechazar</button>
     </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-  <script src="js/firebase.js"></script>
-  <script src="js/numero-letras.js"></script>
-  <script src="js/pdf-cotizacion.js"></script>
-  <script src="js/cotizaciones.js"></script>
+  <script src="../js/firebase.js"></script>
+  <script src="../js/numero-letras.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const container = document.getElementById("cotizacion");
+    const acciones = document.getElementById("acciones");
+
+    let cotizacionRef;
+
+    // Traducir tipo de cotización
+    function traducirTipo(tipo) {
+      switch(tipo) {
+        case "mano-obra": return "Mano de obra";
+        case "materiales": return "Materiales";
+        case "ambos": return "Mano de obra y materiales";
+        default: return tipo || "No especificado";
+      }
+    }
+
+    // Formatear forma de pago
+    function formatearFormaPago(formaPago, planPagos) {
+      switch(formaPago) {
+        case "contado": return "Pago al contado";
+        case "60-40": return "60% al inicio - 40% al finalizar";
+        case "50-50": return "50% al inicio - 50% al finalizar";
+        case "tres-pagos": return "Tres pagos (40%-30%-30%)";
+        case "personalizado": 
+          return planPagos.map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
+        default: return formaPago;
+      }
+    }
+
+    // Cargar cotización
+    async function cargarCotizacion() {
+      if (!id) {
+        container.innerHTML = "<p class='text-red-600'>Error: No se especificó ID de cotización</p>";
+        return;
+      }
+
+      try {
+        cotizacionRef = db.collection("cotizaciones").doc(id);
+        const doc = await cotizacionRef.get();
+        
+        if (!doc.exists) {
+          container.innerHTML = "<p class='text-red-600'>Error: Cotización no encontrada</p>";
+          return;
+        }
+
+        const c = doc.data();
+        const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds * 1000 : c.fecha) : new Date();
+        
+        container.innerHTML = `
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <p class="font-semibold">Cliente:</p>
+              <p>${c.nombreCliente || "No especificado"}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold">Fecha:</p>
+              <p>${fecha.toLocaleDateString('es-CO')}</p>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <p class="font-semibold">Tipo de cotización:</p>
+            <p>${traducirTipo(c.tipo)}</p>
+          </div>
+
+          <div class="mb-4">
+            <p class="font-semibold">Forma de pago:</p>
+            <p>${formatearFormaPago(c.formaPago, c.planPagos || [])}</p>
+          </div>
+
+          <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cotización</h2>
+          <table class="w-full mb-6">
+            <thead class="bg-orange-600 text-white">
+              <tr>
+                <th class="p-2 text-left">Descripción</th>
+                <th class="p-2 text-center">Cantidad</th>
+                <th class="p-2 text-right">Precio</th>
+                <th class="p-2 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(c.items || []).map(item => `
+                <tr class="border-b">
+                  <td class="p-2">${item.descripcion || ""}</td>
+                  <td class="p-2 text-center">${item.cantidad || 0}</td>
+                  <td class="p-2 text-right">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
+                  <td class="p-2 text-right">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <div class="text-right mb-4">
+            <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
+            <p>IVA (19%): $${Number(c.impuestos || 0).toLocaleString("es-CO")}</p>
+            <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
+            ${c.mostrarValorLetras ? `<p class="text-sm italic">Son: ${numeroAPalabras(c.total || 0)}</p>` : ""}
+          </div>
+
+          ${c.notas ? `
+            <div class="mb-4">
+              <p class="font-semibold">Notas:</p>
+              <p>${c.notas}</p>
+            </div>
+          ` : ""}
+        `;
+
+        // Mostrar botones de acción
+        acciones.classList.remove("hidden");
+        
+      } catch (error) {
+        console.error("Error cargando cotización:", error);
+        container.innerHTML = "<p class='text-red-600'>Error al cargar la cotización</p>";
+      }
+    }
+
+    // Manejar aprobación/rechazo
+    document.getElementById("aprobar").addEventListener("click", async () => {
+      try {
+        await cotizacionRef.update({ estado: "aprobada" });
+        alert("✅ Cotización aprobada");
+        acciones.classList.add("hidden");
+      } catch (error) {
+        alert("❌ Error al aprobar cotización");
+      }
+    });
+
+    document.getElementById("rechazar").addEventListener("click", async () => {
+      try {
+        await cotizacionRef.update({ estado: "rechazada" });
+        alert("❌ Cotización rechazada");
+        acciones.classList.add("hidden");
+      } catch (error) {
+        alert("❌ Error al rechazar cotización");
+      }
+    });
+
+    cargarCotizacion();
+  </script>
 </body>
 </html>
