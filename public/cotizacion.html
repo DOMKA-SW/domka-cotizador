@@ -5,14 +5,6 @@
   <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <style>
-    /* Estilos adicionales para mejorar la experiencia en móviles */
-    @media (max-width: 640px) {
-      #firma-pad {
-        height: 150px;
-      }
-    }
-  </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center py-4">
   <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-4 md:p-6 mx-2">
@@ -43,7 +35,7 @@
       <p class="text-green-600 font-semibold">✅ Cotización aprobada con firma digital</p>
       <p class="text-sm text-gray-600 mt-2">Hemos registrado su aprobación correctamente.</p>
       <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
-      <button id="volver" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Volver</button>
+      <button id="descargar-pdf" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Descargar PDF</button>
     </div>
   </div>
 
@@ -53,6 +45,7 @@
 
   <script src="../js/firebase.js"></script>
   <script src="../js/numero-letras.js"></script>
+  <script src="../js/pdf-cotizacion.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
@@ -63,6 +56,7 @@
 
     let cotizacionRef;
     let signaturePad;
+    let cotizacionData = null;
 
     // Inicializar el pad de firma
     function inicializarFirma() {
@@ -72,7 +66,7 @@
         penColor: 'rgb(0, 0, 0)',
         minWidth: 1.5,
         maxWidth: 2.5,
-        throttle: 16, // Mejorar rendimiento en móviles
+        throttle: 16,
       });
 
       // Ajustar el canvas al tamaño del contenedor
@@ -81,20 +75,7 @@
         canvas.width = canvas.offsetWidth * ratio;
         canvas.height = canvas.offsetHeight * ratio;
         canvas.getContext("2d").scale(ratio, ratio);
-        
-        // Si ya había una firma, volver a dibujarla
-        if (signaturePad && !signaturePad.isEmpty()) {
-          const data = signaturePad.toData();
-          signaturePad.clear();
-          signaturePad.fromData(data);
-        } else {
-          signaturePad.clear();
-        }
-      }
-
-      // Mejorar la experiencia táctil en dispositivos móviles
-      if ('ontouchstart' in window) {
-        canvas.style.touchAction = 'none';
+        signaturePad.clear();
       }
 
       window.addEventListener("resize", resizeCanvas);
@@ -156,7 +137,8 @@
           return;
         }
 
-        const c = doc.data();
+        cotizacionData = doc.data();
+        const c = cotizacionData;
         const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds * 1000 : c.fecha) : new Date();
         
         // Verificar si la función numeroAPalabras existe antes de usarla
@@ -212,7 +194,6 @@
 
           <div class="text-right mb-4">
             <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
-            <p>IVA (19%): $${Number(c.impuestos || 0).toLocaleString("es-CO")}</p>
             <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
             ${c.mostrarValorLetras ? `<p class="text-sm italic mt-1">Son: ${valorEnLetras}</p>` : ""}
           </div>
@@ -266,6 +247,11 @@
           fechaAprobacion: new Date()
         });
         
+        // Actualizar datos locales
+        cotizacionData.estado = "aprobada";
+        cotizacionData.firmaAprobacion = firmaData;
+        cotizacionData.fechaAprobacion = new Date();
+        
         // Mostrar confirmación
         confirmacionFirma.classList.remove("hidden");
         firmaContainer.classList.add("hidden");
@@ -277,6 +263,11 @@
           <p class="text-sm mt-2">Firma guardada correctamente</p>
         `;
         
+        // Descargar automáticamente el PDF
+        setTimeout(() => {
+          generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
+        }, 1000);
+        
       } catch (error) {
         console.error("Error al guardar firma:", error);
         alert("❌ Error al guardar la firma. Por favor, intente nuevamente.");
@@ -287,11 +278,18 @@
       }
     }
 
+    // Descargar PDF manualmente
+    document.getElementById("descargar-pdf").addEventListener("click", () => {
+      if (cotizacionData) {
+        generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
+      }
+    });
+
     // Manejar aprobación/rechazo
     document.getElementById("aprobar").addEventListener("click", () => {
       acciones.classList.add("hidden");
       firmaContainer.classList.remove("hidden");
-      setTimeout(inicializarFirma, 100); // Pequeño delay para asegurar que el canvas esté renderizado
+      setTimeout(inicializarFirma, 100);
     });
 
     document.getElementById("rechazar").addEventListener("click", async () => {
@@ -304,10 +302,6 @@
           alert("❌ Error al rechazar cotización");
         }
       }
-    });
-
-    document.getElementById("volver").addEventListener("click", () => {
-      location.reload();
     });
 
     // Cargar la cotización cuando la página esté lista
