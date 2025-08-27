@@ -1,3 +1,38 @@
-body{
-  
+/* === Opciones como tarjetas modernas === */
+.opciones-card {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.opciones-card label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+.opciones-card label:hover {
+  border-color: #fb923c;
+  background: #fff7ed;
+}
+
+.opciones-card input[type="radio"],
+.opciones-card input[type="checkbox"] {
+  display: none;
+}
+
+.opciones-card input[type="radio"]:checked + span,
+.opciones-card input[type="checkbox"]:checked + span {
+  color: #fff;
+  background: #f97316;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
 }
