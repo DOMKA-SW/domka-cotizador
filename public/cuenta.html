@@ -38,6 +38,7 @@
     <!-- Botones acción -->
     <div id="acciones" class="hidden flex flex-col sm:flex-row justify-center gap-4 mt-6">
       <button id="confirmar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 mb-2 sm:mb-0">✅ Confirmar Recepción</button>
+      <button id="descargar-pdf" class="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700">📄 Descargar PDF</button>
     </div>
 
     <!-- Confirmación con firma -->
@@ -45,7 +46,7 @@
       <p class="text-green-600 font-semibold">✅ Cuenta de cobro confirmada con firma digital</p>
       <p class="text-sm text-gray-600 mt-2">Hemos registrado su confirmación correctamente.</p>
       <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
-      <button id="descargar-pdf" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Descargar PDF</button>
+      <p class="text-sm text-gray-600 mt-4">Puede descargar el PDF con el botón de arriba.</p>
     </div>
   </div>
 
@@ -70,6 +71,7 @@
     const acciones = document.getElementById("acciones");
     const firmaContainer = document.getElementById("firma-container");
     const confirmacionFirma = document.getElementById("confirmacion-firma");
+    const descargarPdfBtn = document.getElementById("descargar-pdf");
 
     let cuentaRef;
     let signaturePad;
@@ -112,28 +114,6 @@
       });
     }
 
-    // Función para ocultar columnas en modo valor total
-    function ocultarColumnasValorTotal() {
-      const tabla = document.getElementById("tabla-cuenta-detalle");
-      if (!tabla) return;
-      
-      const headers = tabla.querySelectorAll("th");
-      if (headers.length >= 4) {
-        headers[1].classList.add("hidden");
-        headers[2].classList.add("hidden");
-        headers[3].classList.add("hidden");
-      }
-      
-      const cells = tabla.querySelectorAll("td");
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i].classList.contains("col-cantidad") || 
-            cells[i].classList.contains("col-precio") || 
-            cells[i].classList.contains("col-subtotal")) {
-          cells[i].classList.add("hidden");
-        }
-      }
-    }
-
     // Cargar cuenta de cobro
     async function cargarCuenta() {
       if (!id) {
@@ -173,32 +153,16 @@
             </div>
           </div>
 
-          <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cuenta de cobro</h2>
-          <div class="overflow-x-auto">
-            <table class="w-full mb-6" id="tabla-cuenta-detalle">
-              <thead class="bg-orange-600 text-white">
-                <tr>
-                  <th class="p-2 text-left">Descripción</th>
-                  <th class="p-2 text-center col-cantidad">Cantidad</th>
-                  <th class="p-2 text-right col-precio">Precio</th>
-                  <th class="p-2 text-right col-subtotal">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(c.items || []).map(item => `
-                  <tr class="border-b">
-                    <td class="p-2">${item.descripcion || ""}</td>
-                    <td class="p-2 text-center col-cantidad">${item.cantidad || 0}</td>
-                    <td class="p-2 text-right col-precio">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
-                    <td class="p-2 text-right col-subtotal">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
+          <h2 class="text-lg font-semibold border-b pb-2 mb-4">Descripción del Servicio</h2>
+          <div class="mb-6">
+            ${(c.items || []).map(item => `
+              <div class="border-b py-2">
+                <p>${item.descripcion || ""}</p>
+              </div>
+            `).join("")}
           </div>
 
           <div class="text-right mb-4">
-            <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
             <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
             ${c.mostrarValorLetras ? `<p class="text-sm italic mt-1">Son: ${valorEnLetras}</p>` : ""}
           </div>
@@ -207,13 +171,6 @@
             <div class="mb-4 p-3 bg-gray-50 rounded">
               <p class="font-semibold">Notas:</p>
               <p>${c.notas}</p>
-            </div>
-          ` : ""}
-
-          ${c.terminos ? `
-            <div class="mb-4 p-3 bg-gray-50 rounded">
-              <p class="font-semibold">Términos y Condiciones:</p>
-              <p class="text-sm whitespace-pre-line">${c.terminos}</p>
             </div>
           ` : ""}
 
@@ -229,14 +186,12 @@
           ` : ""}
         `;
 
-        // Ocultar columnas si es modo valor total
-        if (c.tipoCalculo === "valor-total") {
-          setTimeout(ocultarColumnasValorTotal, 100);
-        }
-
-        // Mostrar botones de acción solo si no está confirmada
-        if (!c.firmaConfirmacion) {
-          acciones.classList.remove("hidden");
+        // Mostrar botones de acción
+        acciones.classList.remove("hidden");
+        
+        // Si ya está confirmada, ocultar botón de confirmación
+        if (c.firmaConfirmacion) {
+          document.getElementById("confirmar").classList.add("hidden");
         }
         
       } catch (error) {
@@ -263,13 +218,15 @@
         // Mostrar confirmación
         confirmacionFirma.classList.remove("hidden");
         firmaContainer.classList.add("hidden");
-        acciones.classList.add("hidden");
         
         // Mostrar la firma guardada
         document.getElementById("firma-guardada").innerHTML = `
           <img src="${firmaData}" alt="Su firma" class="border rounded mx-auto max-w-full">
           <p class="text-sm mt-2">Firma guardada correctamente</p>
         `;
+        
+        // Ocultar botón de confirmación
+        document.getElementById("confirmar").classList.add("hidden");
         
       } catch (error) {
         console.error("Error al guardar firma:", error);
@@ -281,7 +238,7 @@
     }
 
     // Descargar PDF manualmente
-    document.getElementById("descargar-pdf").addEventListener("click", () => {
+    descargarPdfBtn.addEventListener("click", () => {
       if (cuentaData) {
         generarPDFCuenta({...cuentaData, id: id}, cuentaData.nombreCliente);
       }
