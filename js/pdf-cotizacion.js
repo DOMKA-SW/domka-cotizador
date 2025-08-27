@@ -388,3 +388,4 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
 if (typeof window !== 'undefined') {
   window.generarPDFCotizacion = generarPDFCotizacion;
 }
+
