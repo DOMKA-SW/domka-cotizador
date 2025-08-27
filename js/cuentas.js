@@ -1,51 +1,15 @@
 // js/cuentas.js
 const formCuenta = document.getElementById("form-cuenta");
 const selectCliente = document.getElementById("cliente");
-const tablaItems = document.querySelector("#tabla-items tbody");
+const itemsContainer = document.getElementById("items-container");
 const tablaCuentas = document.querySelector("#tabla-cuentas tbody");
-const campoValorTotal = document.getElementById("campo-valor-total");
-const inputValorTotal = document.getElementById("valor-total");
+const agregarItemBtn = document.getElementById("agregar-item");
+const valorTotalInput = document.getElementById("valor-total");
 
 let items = [];
-let tipoCalculo = "por-items";
 const BASE_PUBLICA = "https://domka-sw.github.io/domka-cotizador";
 
-// ============================
-// 🔹 Toggle columnas de items
-// ============================
-function toggleColumnasItems() {
-  const headers = document.querySelectorAll("#tabla-items th");
-  const cells = document.querySelectorAll("#tabla-items td");
-  
-  if (tipoCalculo === "valor-total") {
-    headers[1].classList.add("hidden");
-    headers[2].classList.add("hidden");
-    headers[3].classList.add("hidden");
-    
-    for (let i = 0; i < cells.length; i++) {
-      const position = i % 5;
-      if (position === 1 || position === 2 || position === 3) {
-        cells[i].classList.add("hidden");
-      }
-    }
-    
-    document.getElementById("agregar-item").textContent = "+ Agregar Descripción";
-  } else {
-    headers[1].classList.remove("hidden");
-    headers[2].classList.remove("hidden");
-    headers[3].classList.remove("hidden");
-    
-    for (let i = 0; i < cells.length; i++) {
-      cells[i].classList.remove("hidden");
-    }
-    
-    document.getElementById("agregar-item").textContent = "+ Agregar Ítem";
-  }
-}
-
-// ============================
-// 🔹 Cargar clientes en select
-// ============================
+// Cargar clientes
 async function cargarClientes() {
   try {
     const snap = await db.collection("clientes").get();
@@ -65,195 +29,118 @@ async function cargarClientes() {
   }
 }
 
-// ============================
-// 🔹 Manejar tipo de cálculo
-// ============================
-document.querySelectorAll('input[name="tipo-calculo"]').forEach(radio => {
-  radio.addEventListener("change", function() {
-    tipoCalculo = this.value;
-    
-    if (tipoCalculo === "valor-total") {
-      campoValorTotal.classList.remove("hidden");
-    } else {
-      campoValorTotal.classList.add("hidden");
-    }
-    
-    toggleColumnasItems();
-    recalcular();
-  });
-});
-
-// Event listener para el campo de valor total
-inputValorTotal.addEventListener("input", recalcular);
-
-// ============================
-// 🔹 Ítems dinámicos
-// ============================
-document.getElementById("agregar-item").addEventListener("click", () => {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td class="p-1">
-      <input type="text" class="desc border p-2 w-full rounded" placeholder="Descripción" />
-    </td>
-    <td class="p-1 text-right">
-      <input type="number" class="cant border p-2 w-full rounded text-right" value="1" min="0" />
-    </td>
-    <td class="p-1 text-right">
-      <input type="number" class="precio border p-2 w-full rounded text-right" value="0" min="0" />
-    </td>
-    <td class="p-1 text-right subtotal">0</td>
-    <td class="p-1 text-center">
-      <button type="button" class="text-red-600 hover:underline btn-del">Eliminar</button>
-    </td>
+// Agregar ítem
+function agregarItem(descripcion = "") {
+  const itemId = Date.now();
+  const itemDiv = document.createElement("div");
+  itemDiv.className = "flex items-center mb-2";
+  itemDiv.innerHTML = `
+    <input type="text" class="item-desc border rounded px-3 py-2 flex-grow mr-2" 
+           placeholder="Descripción del servicio" value="${descripcion}">
+    <button type="button" class="eliminar-item text-red-600 hover:text-red-800 px-2 py-1">
+      ✕
+    </button>
   `;
-
-  tr.querySelector(".cant").addEventListener("input", recalcular);
-  tr.querySelector(".precio").addEventListener("input", recalcular);
-  tr.querySelector(".btn-del").addEventListener("click", () => { tr.remove(); recalcular(); });
-
-  tablaItems.appendChild(tr);
-  toggleColumnasItems();
-  recalcular();
-});
-
-function recalcular() {
-  let subtotal = 0;
-  let total = 0;
-  items = [];
   
-  if (tipoCalculo === "por-items") {
-    tablaItems.querySelectorAll("tr").forEach(tr => {
-      const desc = tr.querySelector(".desc")?.value?.trim() || "";
-      const cant = Number(tr.querySelector(".cant")?.value || 0);
-      const precio = Number(tr.querySelector(".precio")?.value || 0);
-      const sub = cant * precio;
-      tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
-      subtotal += sub;
-      items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
-    });
-    
-    total = subtotal;
-  } else {
-    total = Number(inputValorTotal.value) || 0;
-    
-    tablaItems.querySelectorAll("tr").forEach(tr => {
-      const desc = tr.querySelector(".desc")?.value?.trim() || "";
-      const cant = Number(tr.querySelector(".cant")?.value || 0);
-      const precio = Number(tr.querySelector(".precio")?.value || 0);
-      const sub = cant * precio;
-      
-      tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
-      items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
-    });
-    
-    subtotal = total;
-  }
+  itemDiv.querySelector(".eliminar-item").addEventListener("click", () => {
+    itemDiv.remove();
+  });
   
-  document.getElementById("subtotal").textContent = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
-  document.getElementById("total").textContent = `Total: $${total.toLocaleString("es-CO")}`;
-  
-  const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
-  if (mostrarValorLetras) {
-    document.getElementById("valor-letras").textContent = numeroAPalabras(total);
-  } else {
-    document.getElementById("valor-letras").textContent = "";
-  }
-  
-  return { subtotal, total };
+  itemsContainer.appendChild(itemDiv);
 }
 
-// ============================
-// 🔹 Guardar cuenta de cobro
-// ============================
+// Actualizar array de items
+function actualizarItems() {
+  items = [];
+  document.querySelectorAll(".item-desc").forEach(input => {
+    if (input.value.trim() !== "") {
+      items.push({ descripcion: input.value.trim() });
+    }
+  });
+}
+
+// Guardar cuenta de cobro
 formCuenta.addEventListener("submit", async (e) => {
   e.preventDefault();
+  
   const clienteId = selectCliente.value;
   const notas = document.getElementById("notas").value.trim();
-  const terminos = document.getElementById("terminos").value.trim();
+  const valorTotal = Number(valorTotalInput.value) || 0;
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
-  const { subtotal, total } = recalcular();
-
+  
+  actualizarItems();
+  
   if (!clienteId) {
     alert("Selecciona un cliente.");
     return;
   }
   
-  if (tipoCalculo === "por-items" && items.length === 0) {
-    alert("Agrega al menos un ítem.");
+  if (items.length === 0) {
+    alert("Agrega al menos un ítem/descripción.");
     return;
   }
   
-  if (tipoCalculo === "valor-total" && total <= 0) {
+  if (valorTotal <= 0) {
     alert("Ingresa un valor total válido.");
     return;
   }
-
+  
   try {
     // Obtener datos del cliente
     const clienteDoc = await db.collection("clientes").doc(clienteId).get();
     const clienteData = clienteDoc.data() || {};
     const nombreCliente = clienteData.nombreEmpresa || clienteData.nombre || "(sin nombre)";
     const telefonoCliente = clienteData.telefono || "";
-
+    
+    // Guardar cuenta de cobro
     const docRef = await db.collection("cuentas").add({
       clienteId,
       nombreCliente,
       telefonoCliente,
       notas,
-      terminos,
       items,
-      subtotal,
-      total,
+      total: valorTotal,
+      subtotal: valorTotal,
       fecha: new Date(),
       estado: "pendiente",
       mostrarValorLetras,
-      tipoCalculo,
       firmaNombre: "DOMKA",
       firmaTelefono: "+57 321 456 7890",
       firmaEmail: "contacto@domka.com",
       firmaRut: "123456789-0"
     });
-
+    
+    // Guardar link público
     const linkPublico = `${BASE_PUBLICA}/public/cuenta.html?id=${docRef.id}`;
     await db.collection("cuentas").doc(docRef.id).update({ linkPublico });
-
-    alert("✅ Cuenta de cobro guardada");
     
-    // Resetear formulario
+    alert("✅ Cuenta de cobro guardada correctamente");
+    
+    // Limpiar formulario
     formCuenta.reset();
-    tablaItems.innerHTML = "";
+    itemsContainer.innerHTML = "";
     items = [];
-    document.getElementById("subtotal").textContent = `Subtotal: $0`;
-    document.getElementById("total").textContent = `Total: $0`;
-    document.getElementById("valor-letras").textContent = "Cero pesos";
-    document.getElementById("terminos").value = `Esta cuenta de cobro tiene una validez de 30 días a partir de la fecha de emisión.\nEl pago debe realizarse dentro de los 15 días posteriores a la recepción.\nEn caso de mora, se aplicará un interés del 1.5% mensual sobre el saldo pendiente.`;
+    valorTotalInput.value = "0";
     
-    // Resetear tipo de cálculo
-    document.querySelector('input[name="tipo-calculo"][value="por-items"]').checked = true;
-    tipoCalculo = "por-items";
-    campoValorTotal.classList.add("hidden");
-    toggleColumnasItems();
-    
-    await cargarCuentas();
+    // Recargar lista
+    cargarCuentas();
   } catch (e) {
     console.error("Error guardando cuenta:", e);
     alert("Error guardando la cuenta de cobro.");
   }
 });
 
-// ============================
-// 🔹 Listar cuentas de cobro
-// ============================
+// Cargar cuentas de cobro
 async function cargarCuentas() {
   tablaCuentas.innerHTML = "";
-
+  
   try {
     const snap = await db.collection("cuentas").orderBy("fecha", "desc").get();
-
+    
     snap.forEach(docu => {
       const c = docu.data();
       const id = docu.id;
-
+      
       const tr = document.createElement("tr");
       tr.className = "border-t hover:bg-gray-50";
       tr.innerHTML = `
@@ -304,9 +191,9 @@ async function cargarCuentas() {
   }
 }
 
-// Init
+// Inicializar
+agregarItemBtn.addEventListener("click", () => agregarItem());
 (async function init() {
   await cargarClientes();
   await cargarCuentas();
-  toggleColumnasItems();
 })();
