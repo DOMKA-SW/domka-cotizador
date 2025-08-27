@@ -42,7 +42,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   const images = await preloadImages({
     firma: "img/firma.png",   // firma "Atentamente"
     logo: "img/logo.png",     // logo grande marca de agua
-    muneco: "img/muñeco.png"  // logo pequeño superior
+    muneco: "img/muneco.png"  // logo pequeño superior
   });
 
   // Formatear fecha
