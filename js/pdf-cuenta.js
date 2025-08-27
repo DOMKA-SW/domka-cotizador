@@ -1,15 +1,21 @@
 // js/pdf-cuenta.js
 async function imageToDataURL(path) {
   try {
+    // Verificar si es una ruta local o ya es un data URL
+    if (path.startsWith('data:')) return path;
+    
     const res = await fetch(path);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
     const blob = await res.blob();
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
   } catch (e) {
-    console.warn("No se pudo cargar la imagen:", path);
+    console.warn("No se pudo cargar la imagen:", path, e);
     return null;
   }
 }
@@ -17,7 +23,12 @@ async function imageToDataURL(path) {
 async function preloadImages(imagePaths) {
   const images = {};
   for (const [key, path] of Object.entries(imagePaths)) {
-    images[key] = await imageToDataURL(path);
+    try {
+      images[key] = await imageToDataURL(path);
+    } catch (e) {
+      console.warn(`No se pudo cargar la imagen ${key}:`, path);
+      images[key] = null;
+    }
   }
   return images;
 }
@@ -38,10 +49,11 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     firmaRut = "123456789-0"
   } = cuenta;
 
-  // Cargar imágenes
+  // Cargar imágenes con rutas relativas correctas
   const images = await preloadImages({
     logo: "../img/logo.png",
-    firma: "../img/firma.png"
+    firma: "../img/firma.png",
+    muneco: "../img/muneco.png"
   });
 
   // Formatear fecha
@@ -90,102 +102,135 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     }
   ] : [];
 
+  // Preparar el contenido del PDF
+  const contenido = [
+    // Encabezado con logo
+    {
+      columns: [
+        images.logo ? { image: images.logo, width: 80, height: 80 } : { text: "DOMKA", style: "logo" },
+        {
+          stack: [
+            { text: "CUENTA DE COBRO", style: "header", alignment: "right" },
+            { text: `N°: ${id || "Sin ID"}`, style: "subheader", alignment: "right", margin: [0, 5] }
+          ],
+          width: "*"
+        }
+      ],
+      margin: [0, 0, 0, 20]
+    },
+    
+    // Información general
+    {
+      table: {
+        widths: ["*", "*"],
+        body: [
+          [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
+          [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
+          [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
+        ]
+      },
+      layout: "noBorders",
+      margin: [0, 0, 0, 15]
+    },
+    
+    // Detalle de items
+    { text: "Descripción del Servicio", style: "subheader" },
+    {
+      table: {
+        widths: ["*"],
+        body: [
+          [{ text: "Descripción", style: "tableHeader" }],
+          ...items.map(it => [it.descripcion || "-"])
+        ]
+      }
+    },
+    
+    // Valor total
+    { text: " ", margin: [0, 10] },
+    {
+      table: {
+        widths: ["*", "auto"],
+        body: [
+          [{ text: "VALOR TOTAL", style: "totalLabel" }, { text: `$${Number(total || 0).toLocaleString("es-CO")}`, style: "totalValue" }]
+        ]
+      },
+      layout: "noBorders"
+    },
+    
+    // Valor en letras
+    ...(mostrarValorLetras ? [
+      { text: " ", margin: [0, 5] },
+      { text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 0, 0, 15] }
+    ] : []),
+    
+    // Notas
+    ...(notas ? [
+      { text: " ", margin: [0, 10] },
+      { text: "Notas", style: "subheader" },
+      { text: notas, margin: [0, 0, 0, 20] }
+    ] : []),
+    
+    // Términos y condiciones
+    { text: "Términos y Condiciones", style: "subheader" },
+    {
+      ul: terminosFijos,
+      margin: [0, 0, 0, 30]
+    },
+    
+    // Firma del cliente (si existe)
+    ...contenidoFirmaCliente,
+    
+    // Firma de la empresa
+    { text: " ", margin: [0, 20] },
+    { text: "Atentamente,", style: "firmaText" },
+    images.firma ? {
+      image: images.firma,
+      width: 150,
+      margin: [0, 10, 0, 5]
+    } : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
+    { text: firmaNombre, style: "firmaNombre" },
+    { text: firmaTelefono, style: "firmaDatos" },
+    { text: firmaEmail, style: "firmaDatos" },
+    { text: firmaRut, style: "firmaDatos", margin: [0, 0, 0, 30] },
+    
+    // Pie de página
+    { text: "Gracias por su preferencia", style: "pie", alignment: "center", margin: [0, 30, 0, 0] }
+  ];
+
+  // Configuración del documento con marcas de agua
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
-    content: [
-      // Encabezado con logo
-      {
-        columns: [
-          images.logo ? { image: images.logo, width: 80, height: 80 } : { text: "DOMKA", style: "logo" },
-          {
-            stack: [
-              { text: "CUENTA DE COBRO", style: "header", alignment: "right" },
-              { text: `N°: ${id || "Sin ID"}`, style: "subheader", alignment: "right", margin: [0, 5] }
-            ],
-            width: "*"
-          }
-        ],
-        margin: [0, 0, 0, 20]
-      },
-      
-      // Información general
-      {
-        table: {
-          widths: ["*", "*"],
-          body: [
-            [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
-            [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
-            [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
-          ]
-        },
-        layout: "noBorders",
-        margin: [0, 0, 0, 15]
-      },
-      
-      // Detalle de items
-      { text: "Descripción del Servicio", style: "subheader" },
-      {
-        table: {
-          widths: ["*"],
-          body: [
-            [{ text: "Descripción", style: "tableHeader" }],
-            ...items.map(it => [it.descripcion || "-"])
-          ]
+    background: function(currentPage, pageSize) {
+      // Solo agregar marcas de agua en la primera página
+      if (currentPage === 1) {
+        const backgroundElements = [];
+        
+        // Logo como marca de agua (centrado)
+        if (images.logo) {
+          backgroundElements.push({
+            image: images.logo,
+            width: 300,
+            opacity: 0.05,
+            absolutePosition: { x: (pageSize.width - 300) / 2, y: (pageSize.height - 300) / 2 }
+          });
         }
-      },
-      
-      // Valor total
-      { text: " ", margin: [0, 10] },
-      {
-        table: {
-          widths: ["*", "auto"],
-          body: [
-            [{ text: "VALOR TOTAL", style: "totalLabel" }, { text: `$${Number(total || 0).toLocaleString("es-CO")}`, style: "totalValue" }]
-          ]
-        },
-        layout: "noBorders"
-      },
-      
-      // Valor en letras
-      ...(mostrarValorLetras ? [
-        { text: " ", margin: [0, 5] },
-        { text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 0, 0, 15] }
-      ] : []),
-      
-      // Notas
-      ...(notas ? [
-        { text: " ", margin: [0, 10] },
-        { text: "Notas", style: "subheader" },
-        { text: notas, margin: [0, 0, 0, 20] }
-      ] : []),
-      
-      // Términos y condiciones
-      { text: "Términos y Condiciones", style: "subheader" },
-      {
-        ul: terminosFijos,
-        margin: [0, 0, 0, 30]
-      },
-      
-      // Firma del cliente (si existe)
-      ...contenidoFirmaCliente,
-      
-      // Firma de la empresa
-      { text: " ", margin: [0, 20] },
-      { text: "Atentamente,", style: "firmaText" },
-      images.firma ? {
-        image: images.firma,
-        width: 150,
-        margin: [0, 10, 0, 5]
-      } : { text: " " },
-      { text: firmaNombre, style: "firmaNombre" },
-      { text: firmaTelefono, style: "firmaDatos" },
-      { text: firmaEmail, style: "firmaDatos" },
-      { text: firmaRut, style: "firmaDatos", margin: [0, 0, 0, 30] },
-      
-      // Pie de página
-      { text: "Gracias por su preferencia", style: "pie", alignment: "center", margin: [0, 30, 0, 0] }
-    ],
+        
+        // Muñeco en la esquina superior derecha (como en cotizaciones)
+        if (images.muneco) {
+          backgroundElements.push({
+            image: images.muneco,
+            width: 100,
+            opacity: 0.1,
+            absolutePosition: { x: pageSize.width - 120, y: 30 }
+          });
+        }
+        
+        return backgroundElements;
+      }
+      return [];
+    },
+    content: contenido,
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316" },
       logo: { fontSize: 22, bold: true, color: "#F97316" },
@@ -199,6 +244,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       firmaText: { fontSize: 12, bold: true, margin: [0, 20, 0, 5] },
       firmaNombre: { fontSize: 12, bold: true, color: "#F97316" },
       firmaDatos: { fontSize: 9, color: "#374151" },
+      firmaPlaceholder: { fontSize: 10, color: "#9CA3AF", italic: true, alignment: "center" },
       aprobacionHeader: { fontSize: 14, bold: true, color: "#059669", alignment: "center", margin: [0, 0, 0, 10] },
       aprobacionText: { fontSize: 10, color: "#374151", alignment: "center" },
       pie: { fontSize: 10, color: "#9CA3AF", italic: true }
@@ -206,9 +252,14 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     defaultStyle: { fontSize: 10 }
   };
 
-  // Crear y descargar PDF
-  const pdfDoc = pdfMake.createPdf(docDefinition);
-  pdfDoc.download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
+  try {
+    // Crear y descargar PDF
+    const pdfDoc = pdfMake.createPdf(docDefinition);
+    pdfDoc.download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
+    alert("Error al generar el PDF. Por favor, intente nuevamente.");
+  }
 }
 
 window.generarPDFCuenta = generarPDFCuenta;
