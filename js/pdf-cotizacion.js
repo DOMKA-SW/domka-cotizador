@@ -262,7 +262,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       image: images.muneco,
       width: 100,
       opacity: 0.1,
-      absolutePosition: { x: 20, y: 30 }
+      absolutePosition: { x: 100, y: 30 }
     },
       {
         image: images.logo, // Marca de agua centrada
