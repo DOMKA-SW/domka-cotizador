@@ -362,3 +362,4 @@ document.addEventListener("DOMContentLoaded", function() {
   cargarCotizaciones();
   toggleColumnasItems();
 });
+
