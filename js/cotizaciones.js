@@ -12,6 +12,45 @@ let items = [];
 let tipoCalculo = "por-items";
 
 // ============================
+// 🔹 Toggle columnas de items
+// ============================
+function toggleColumnasItems() {
+  const headers = document.querySelectorAll("#tabla-items th");
+  const cells = document.querySelectorAll("#tabla-items td");
+  
+  if (tipoCalculo === "valor-total") {
+    // Ocultar columnas de Cantidad, Precio y Subtotal
+    headers[1].classList.add("hidden");
+    headers[2].classList.add("hidden");
+    headers[3].classList.add("hidden");
+    
+    // Ocultar las celdas correspondientes
+    for (let i = 0; i < cells.length; i++) {
+      const position = i % 5;
+      if (position === 1 || position === 2 || position === 3) {
+        cells[i].classList.add("hidden");
+      }
+    }
+    
+    // Cambiar el texto del botón de agregar
+    document.getElementById("agregar-item").textContent = "+ Agregar Descripción";
+  } else {
+    // Mostrar todas las columnas
+    headers[1].classList.remove("hidden");
+    headers[2].classList.remove("hidden");
+    headers[3].classList.remove("hidden");
+    
+    // Mostrar todas las celdas
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].classList.remove("hidden");
+    }
+    
+    // Restaurar texto del botón
+    document.getElementById("agregar-item").textContent = "+ Agregar Ítem";
+  }
+}
+
+// ============================
 // 🔹 Cargar clientes en select
 // ============================
 async function cargarClientes() {
@@ -25,7 +64,6 @@ async function cargarClientes() {
     clienteSelect.appendChild(opt);
   });
 }
-cargarClientes();
 
 // ============================
 // 🔹 Manejar forma de pago
@@ -69,11 +107,12 @@ document.querySelectorAll('input[name="tipo-calculo"]').forEach(radio => {
     
     if (tipoCalculo === "valor-total") {
       campoValorTotal.classList.remove("hidden");
-      // NO deshabilitar la agregación de items, solo cambiar el cálculo
     } else {
       campoValorTotal.classList.add("hidden");
     }
     
+    // Actualizar visibilidad de columnas
+    toggleColumnasItems();
     recalcular();
   });
 });
@@ -103,6 +142,9 @@ document.getElementById("agregar-item").addEventListener("click", () => {
   });
 
   tablaItems.appendChild(row);
+  
+  // Actualizar visibilidad de columnas después de agregar
+  toggleColumnasItems();
   recalcular();
 });
 
@@ -143,16 +185,6 @@ function recalcular() {
     
     // El subtotal para el cálculo general es el valor total ingresado
     subtotal = total;
-    
-    // Agregar un ítem que representa el valor total
-    if (items.length === 0) {
-      items.push({
-        descripcion: "Valor total de la cotización",
-        cantidad: 1,
-        precio: total,
-        subtotal: total
-      });
-    }
   }
   
   // Actualizar la interfaz
@@ -184,7 +216,7 @@ form.addEventListener("submit", async (e) => {
   
   // Validar pagos personalizados
   if (formaPago === "personalizado" && !validarPagos()) {
-    alert("Los pagos personalizados deben sumar 100%");
+    alert("Los pagos personalizados deben sumen 100%");
     return;
   }
 
@@ -260,7 +292,6 @@ form.addEventListener("submit", async (e) => {
     estado: "pendiente",
     mostrarValorLetras,
     tipoCalculo
-    // NOTA: Ya no incluimos firma aquí
   };
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
@@ -280,6 +311,7 @@ form.addEventListener("submit", async (e) => {
   document.querySelector('input[name="tipo-calculo"][value="por-items"]').checked = true;
   tipoCalculo = "por-items";
   campoValorTotal.classList.add("hidden");
+  toggleColumnasItems();
   
   cargarCotizaciones();
 });
@@ -326,5 +358,7 @@ async function cargarCotizaciones() {
 
 // Inicializar cuando el documento esté listo
 document.addEventListener("DOMContentLoaded", function() {
+  cargarClientes();
   cargarCotizaciones();
+  toggleColumnasItems();
 });
