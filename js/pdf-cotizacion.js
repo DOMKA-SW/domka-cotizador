@@ -12,7 +12,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     mostrarValorLetras = true,
     id = "",
     firmaAprobacion = null,
-    fechaAprobacion = null,        
+    fechaAprobacion = null,
     tipoCalculo = "por-items"
   } = cotizacion;
 
@@ -40,29 +40,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     default: tipoTexto = tipo || "No especificado";
   }
 
-// js/pdf-cotizacion.js - En la sección de construcción de tabla de ítems
-// Construir tabla de ítems
-let tablaItems = [];
-
-if (tipoCalculo === "valor-total" && items.length > 0 && items[0].descripcion === "Valor total de la cotización") {
-  // Modo valor total - mostrar solo el total
-  tablaItems = [
-    [
-      { text: "Descripción", style: "tableHeader" },
-      { text: "Cantidad", style: "tableHeader" },
-      { text: "Precio", style: "tableHeader" },
-      { text: "Subtotal", style: "tableHeader" }
-    ],
-    [
-      items[0].descripcion || "",
-      items[0].cantidad || 0,
-      { text: `$${Number(items[0].precio || 0).toLocaleString("es-CO")}`, alignment: "right" },
-      { text: `$${Number(items[0].subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
-    ]
-  ];
-} else {
-  // Modo por ítems - mostrar todos los ítems
-  tablaItems = [
+  // Construir tabla de ítems
+  const tablaItems = [
     [
       { text: "Descripción", style: "tableHeader" },
       { text: "Cantidad", style: "tableHeader" },
@@ -76,7 +55,6 @@ if (tipoCalculo === "valor-total" && items.length > 0 && items[0].descripcion ==
       { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
     ])
   ];
-}
 
   // Construir plan de pagos si existe
   const contenidoPagos = planPagos.length > 0 ? [
@@ -319,7 +297,6 @@ if (tipoCalculo === "valor-total" && items.length > 0 && items[0].descripcion ==
     }
   };
 
-  // Descargar automáticamente el PDF
   pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
 }
 
