@@ -1,3 +1,4 @@
+// js/numero-letras.js
 function numeroALetras(num) {
   const n = Number(num || 0);
   const fmt = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP" }).format(n);
@@ -91,5 +92,6 @@ function convertirGrupo(num, unidades, decenas, especiales, centenas) {
   return resultado;
 }
 
+// Hacer accesible globalmente
 window.numeroALetras = numeroALetras;
 window.numeroAPalabras = numeroAPalabras;
