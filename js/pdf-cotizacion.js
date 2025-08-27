@@ -127,7 +127,16 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         }
       ]
     }
-  ] : [
+  ] : [];
+
+  // Información de la empresa DOMKA (firma de autorización)
+  const infoEmpresa = [
+    { text: " ", margin: [0, 20] },
+    { 
+      text: "Atentamente", 
+      style: "firmaText",
+      margin: [0, 0, 0, 10]
+    },
     {
       columns: [
         {
@@ -136,9 +145,19 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         },
         {
           stack: [
-            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-            { text: "Firma y Sello", alignment: "center", margin: [0, 5] },
-            { text: "DOMKA", style: "firma", alignment: "center" }
+            // Imagen de firma de DOMKA (reemplaza con la ruta correcta)
+            {
+              image: 'img/firma.png', // Cambia por la ruta correcta
+              width: 150,
+              margin: [0, 0, 0, 5],
+              fallback: { 
+                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] 
+              }
+            },
+            { text: "DOMKA", style: "firmaEmpresa", alignment: "center" },
+            { text: "Celular: +57 3058114595", style: "firmaDatos", alignment: "center" },
+            { text: "RUT: 79597683-1", style: "firmaDatos", alignment: "center" },
+            { text: "contacto@domka.com", style: "firmaDatos", alignment: "center" }
           ],
           width: 200
         }
@@ -147,6 +166,14 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   ];
 
   const contenido = [
+    // Marca de agua (logo DOMKA en fondo)
+    {
+      image: 'img/logo.png', // Cambia por la ruta correcta de tu logo
+      width: 100,
+      opacity: 0.1, // Transparencia para marca de agua
+      absolutePosition: { x: 40, y: 40 }
+    },
+    
     // Encabezado
     {
       columns: [
@@ -237,7 +264,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     {
       ul: [
         "Esta cotización tiene una validez de 30 días a partir de la fecha de emisión.",
-        "Los precios no incluyen transportes especiales ni instalaciones complejas.",
         "El tiempo de entrega se confirmará al momento de la aprobación.",
         formaPago !== "contado" ? "Se requiere anticipo para iniciar el trabajo." : "Pago al contado."
       ],
@@ -245,12 +271,21 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     },
     
     // Firmas
-    ...contenidoAprobacion
+    ...contenidoAprobacion,
+    ...infoEmpresa
   ];
 
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
+    background: [
+      {
+        image: 'img/logo.png', // Imagen específica para marca de agua
+        width: 300,
+        opacity: 0.05, // Muy transparente
+        absolutePosition: { x: 40, y: 150 }
+      }
+    ],
     content: contenido,
     styles: {
       header: {
@@ -314,6 +349,25 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         fontSize: 10,
         color: "#374151",
         alignment: "center"
+      },
+      firmaText: {
+        fontSize: 12,
+        bold: true,
+        alignment: "center",
+        margin: [0, 0, 0, 5]
+      },
+      firmaEmpresa: {
+        fontSize: 14,
+        bold: true,
+        color: "#F97316",
+        alignment: "center",
+        margin: [0, 5, 0, 2]
+      },
+      firmaDatos: {
+        fontSize: 9,
+        color: "#374151",
+        alignment: "center",
+        margin: [0, 1, 0, 0]
       }
     },
     defaultStyle: {
