@@ -174,15 +174,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   ];
 
   const contenido = [
-    // Logo pequeño arriba a la izquierda
-    {
-      backgroundImage: images.muneco,
-      width: 100,
-      opacity: 0.1,
-      alignment: "left",
-      margin: [0, 0, 0, 10]
-    },
-    
+
     // Encabezado
     {
       columns: [
@@ -266,6 +258,13 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
     background: [
+          {
+      image: images.muneco,
+      width: 100,
+      opacity: 0.1,
+      alignment: "left",
+      margin: [0, 0, 0, 10]
+    },
       {
         image: images.logo, // Marca de agua centrada
         width: 300,
