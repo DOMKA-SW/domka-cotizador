@@ -1,5 +1,24 @@
-// js/pdf-cotizacion.js
-function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
+// 🔹 Helpers para cargar imágenes dinámicamente
+async function imageToDataURL(path) {
+  const res = await fetch(path);
+  const blob = await res.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function preloadImages(imagePaths) {
+  const images = {};
+  for (const [key, path] of Object.entries(imagePaths)) {
+    images[key] = await imageToDataURL(path);
+  }
+  return images;
+}
+
+// 🔹 Función principal
+async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   const { 
     items = [], 
     subtotal = 0, 
@@ -16,6 +35,12 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     tipoCalculo = "por-items"
   } = cotizacion;
 
+  // 👇 Precargar imágenes
+  const images = await preloadImages({
+    firma: "img/firma.png",
+    logo: "img/logo.png"
+  });
+
   // Formatear fecha
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
     year: 'numeric',
@@ -23,7 +48,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     day: 'numeric'
   });
 
-  // Formatear fecha de aprobación si existe
   const fechaAprobacionFormateada = fechaAprobacion ? 
     new Date(fechaAprobacion.seconds ? fechaAprobacion.seconds * 1000 : fechaAprobacion).toLocaleDateString('es-CO', {
       year: 'numeric',
@@ -31,7 +55,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       day: 'numeric'
     }) : null;
 
-  // Traducir tipo de cotización
+  // Traducir tipo
   let tipoTexto = "";
   switch(tipo) {
     case "mano-obra": tipoTexto = "Mano de obra"; break;
@@ -40,79 +64,31 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     default: tipoTexto = tipo || "No especificado";
   }
 
-  // Construir tabla de ítems
+  // Construir tabla items
   let tablaItems = [];
-  const widths = tipoCalculo === "valor-total" 
-    ? ["*", "auto", "auto", "auto"] // Mismas proporciones pero columnas vacías
-    : ["*", "auto", "auto", "auto"];
+  const widths = ["*", "auto", "auto", "auto"];
+  tablaItems = [
+    [
+      { text: "Descripción", style: "tableHeader" },
+      { text: "Cantidad", style: "tableHeader" },
+      { text: "Precio", style: "tableHeader" },
+      { text: "Subtotal", style: "tableHeader" }
+    ],
+    ...items.map(it => [
+      it.descripcion || "",
+      it.cantidad || 0,
+      { text: `$${Number(it.precio || 0).toLocaleString("es-CO")}`, alignment: "right" },
+      { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
+    ])
+  ];
 
-  if (tipoCalculo === "valor-total") {
-    // Modo valor total - mostrar solo descripción
-    tablaItems = [
-      [
-        { text: "Descripción", style: "tableHeader" },
-        { text: "", style: "tableHeader" },
-        { text: "", style: "tableHeader" },
-        { text: "", style: "tableHeader" }
-      ],
-      ...items.map(it => [
-        it.descripcion || "",
-        { text: "", alignment: "right" },
-        { text: "", alignment: "right" },
-        { text: "", alignment: "right" }
-      ])
-    ];
-  } else {
-    // Modo por ítems - mostrar todos los datos
-    tablaItems = [
-      [
-        { text: "Descripción", style: "tableHeader" },
-        { text: "Cantidad", style: "tableHeader" },
-        { text: "Precio", style: "tableHeader" },
-        { text: "Subtotal", style: "tableHeader" }
-      ],
-      ...items.map(it => [
-        it.descripcion || "",
-        it.cantidad || 0,
-        { text: `$${Number(it.precio || 0).toLocaleString("es-CO")}`, alignment: "right" },
-        { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
-      ])
-    ];
-  }
-
-  // Construir plan de pagos si existe
-  const contenidoPagos = planPagos.length > 0 ? [
-    { text: " ", margin: [0, 10] },
-    { text: "Plan de Pagos", style: "subheader" },
-    {
-      table: {
-        widths: ["*", "auto", "auto"],
-        body: [
-          [
-            { text: "Descripción", style: "tableHeader" },
-            { text: "Porcentaje", style: "tableHeader" },
-            { text: "Valor", style: "tableHeader" }
-          ],
-          ...planPagos.map(p => [
-            p.descripcion || "",
-            { text: `${p.porcentaje}%`, alignment: "center" },
-            { text: `$${Number(p.monto || 0).toLocaleString("es-CO")}`, alignment: "right" }
-          ])
-        ]
-      }
-    }
-  ] : [];
-
-  // Contenido de aprobación con firma si existe
+  // Firma de aprobación (si existe)
   const contenidoAprobacion = firmaAprobacion ? [
     { text: " ", margin: [0, 20] },
     { text: "APROBACIÓN DEL CLIENTE", style: "aprobacionHeader" },
     {
       columns: [
-        {
-          text: " ",
-          width: "*"
-        },
+        { text: " ", width: "*" },
         {
           stack: [
             { text: `Fecha de aprobación: ${fechaAprobacionFormateada}`, style: "aprobacionText" },
@@ -129,31 +105,16 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // Información de la empresa DOMKA (firma de autorización)
+  // Info empresa con firma
   const infoEmpresa = [
     { text: " ", margin: [0, 20] },
-    { 
-      text: "Atentamente", 
-      style: "firmaText",
-      margin: [0, 0, 0, 10]
-    },
+    { text: "Atentamente", style: "firmaText", margin: [0, 0, 0, 10] },
     {
       columns: [
-        {
-          text: " ",
-          width: "*"
-        },
+        { text: " ", width: "*" },
         {
           stack: [
-            // Imagen de firma de DOMKA (reemplaza con la ruta correcta)
-            {
-              image: 'img/firma-domka.png', // Cambia por la ruta correcta
-              width: 150,
-              margin: [0, 0, 0, 5],
-              fallback: { 
-                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] 
-              }
-            },
+            { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
             { text: "DOMKA", style: "firmaEmpresa", alignment: "center" },
             { text: "Celular: +57 321 456 7890", style: "firmaDatos", alignment: "center" },
             { text: "RUT: 123456789-0", style: "firmaDatos", alignment: "center" },
@@ -165,23 +126,19 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ];
 
+  // Contenido PDF
   const contenido = [
-    // Marca de agua (logo DOMKA en fondo)
+    // Marca de agua
     {
-      image: 'img/logo-domka.png', // Cambia por la ruta correcta de tu logo
+      image: images.logo,
       width: 100,
-      opacity: 0.1, // Transparencia para marca de agua
+      opacity: 0.1,
       absolutePosition: { x: 40, y: 40 }
     },
-    
     // Encabezado
     {
       columns: [
-        {
-          text: "DOMKA",
-          style: "logo",
-          width: 100
-        },
+        { text: "DOMKA", style: "logo", width: 100 },
         {
           stack: [
             { text: "COTIZACIÓN", style: "header", alignment: "right" },
@@ -192,39 +149,24 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       ],
       margin: [0, 0, 0, 20]
     },
-    
-    // Información general
+    // Datos cliente
     {
       table: {
         widths: ["*", "*"],
         body: [
-          [
-            { text: "Cliente:", style: "label" },
-            { text: nombreCliente, style: "value" }
-          ],
-          [
-            { text: "Fecha:", style: "label" },
-            { text: fechaFormateada, style: "value" }
-          ],
-          [
-            { text: "Tipo de cotización:", style: "label" },
-            { text: tipoTexto, style: "value" }
-          ]
+          [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
+          [{ text: "Fecha:", style: "label" }, { text: fechaFormateada, style: "value" }],
+          [{ text: "Tipo de cotización:", style: "label" }, { text: tipoTexto, style: "value" }]
         ]
       },
       layout: "noBorders",
       margin: [0, 0, 0, 15]
     },
-    
-    // Detalle de items
+    // Items
     { text: "Detalle de la Cotización", style: "subheader" },
     {
-      table: {
-        widths: widths,
-        body: tablaItems
-      }
+      table: { widths: widths, body: tablaItems }
     },
-    
     // Totales
     { text: " ", margin: [0, 10] },
     {
@@ -237,29 +179,15 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       },
       layout: "lightHorizontalLines"
     },
-    
-    // Valor en letras
     ...(mostrarValorLetras ? [
       { text: " ", margin: [0, 5] },
-      { 
-        text: `Son: ${numeroAPalabras(total)}`, 
-        style: "valorLetras",
-        margin: [0, 0, 0, 15]
-      }
+      { text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 0, 0, 15] }
     ] : []),
-    
-    // Plan de pagos
-    ...contenidoPagos,
-    
     // Notas
     { text: " ", margin: [0, 10] },
     { text: "Notas", style: "subheader" },
-    {
-      text: notas || "—",
-      margin: [0, 0, 0, 20]
-    },
-    
-    // Términos y condiciones
+    { text: notas || "—", margin: [0, 0, 0, 20] },
+    // Términos
     { text: "Términos y Condiciones", style: "subheader" },
     {
       ul: [
@@ -270,7 +198,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       ],
       margin: [0, 0, 0, 30]
     },
-    
     // Firmas
     ...contenidoAprobacion,
     ...infoEmpresa
@@ -281,107 +208,38 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageMargins: [40, 60, 40, 60],
     background: [
       {
-        image: 'img/logo-domka-watermark.png', // Imagen específica para marca de agua
+        image: images.logo,
         width: 300,
-        opacity: 0.05, // Muy transparente
+        opacity: 0.05,
         absolutePosition: { x: 40, y: 150 }
       }
     ],
     content: contenido,
     styles: {
-      header: {
-        fontSize: 18,
-        bold: true,
-        color: "#F97316"
-      },
-      logo: {
-        fontSize: 22,
-        bold: true,
-        color: "#F97316"
-      },
-      subheader: {
-        fontSize: 14,
-        bold: true,
-        margin: [0, 10, 0, 5],
-        color: "#374151"
-      },
-      tableHeader: {
-        bold: true,
-        fillColor: "#F97316",
-        color: "white",
-        alignment: "center"
-      },
-      label: {
-        bold: true,
-        fontSize: 10,
-        color: "#374151"
-      },
-      value: {
-        fontSize: 10
-      },
-      totalLabel: {
-        bold: true,
-        fontSize: 12,
-        color: "#374151"
-      },
-      totalValue: {
-        bold: true,
-        fontSize: 12,
-        color: "#F97316",
-        alignment: "right"
-      },
-      valorLetras: {
-        italic: true,
-        fontSize: 10,
-        color: "#4B5563"
-      },
-      firma: {
-        bold: true,
-        color: "#F97316"
-      },
-      aprobacionHeader: {
-        fontSize: 14,
-        bold: true,
-        color: "#059669",
-        alignment: "center",
-        margin: [0, 0, 0, 10]
-      },
-      aprobacionText: {
-        fontSize: 10,
-        color: "#374151",
-        alignment: "center"
-      },
-      firmaText: {
-        fontSize: 12,
-        bold: true,
-        alignment: "center",
-        margin: [0, 0, 0, 5]
-      },
-      firmaEmpresa: {
-        fontSize: 14,
-        bold: true,
-        color: "#F97316",
-        alignment: "center",
-        margin: [0, 5, 0, 2]
-      },
-      firmaDatos: {
-        fontSize: 9,
-        color: "#374151",
-        alignment: "center",
-        margin: [0, 1, 0, 0]
-      }
+      header: { fontSize: 18, bold: true, color: "#F97316" },
+      logo: { fontSize: 22, bold: true, color: "#F97316" },
+      subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5], color: "#374151" },
+      tableHeader: { bold: true, fillColor: "#F97316", color: "white", alignment: "center" },
+      label: { bold: true, fontSize: 10, color: "#374151" },
+      value: { fontSize: 10 },
+      totalLabel: { bold: true, fontSize: 12, color: "#374151" },
+      totalValue: { bold: true, fontSize: 12, color: "#F97316", alignment: "right" },
+      valorLetras: { italic: true, fontSize: 10, color: "#4B5563" },
+      aprobacionHeader: { fontSize: 14, bold: true, color: "#059669", alignment: "center", margin: [0, 0, 0, 10] },
+      aprobacionText: { fontSize: 10, color: "#374151", alignment: "center" },
+      firmaText: { fontSize: 12, bold: true, alignment: "center", margin: [0, 0, 0, 5] },
+      firmaEmpresa: { fontSize: 14, bold: true, color: "#F97316", alignment: "center", margin: [0, 5, 0, 2] },
+      firmaDatos: { fontSize: 9, color: "#374151", alignment: "center", margin: [0, 1, 0, 0] }
     },
-    defaultStyle: {
-      fontSize: 10
-    }
+    defaultStyle: { fontSize: 10 }
   };
 
-  // Verificar que pdfMake esté disponible antes de usarlo
+  // Crear PDF
   if (typeof pdfMake !== 'undefined') {
     pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
   } else {
     console.error('pdfMake no está disponible');
-    alert('Error: No se puede generar el PDF. Por favor, recarga la página.');
+    alert('Error: No se puede generar el PDF.');
   }
 }
 
