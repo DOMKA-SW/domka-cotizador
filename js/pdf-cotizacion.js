@@ -147,7 +147,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
           stack: [
             // Imagen de firma de DOMKA (reemplaza con la ruta correcta)
             {
-              //image: 'img/firma.png' // Cambia por la ruta correcta
+              image: 'img/firma-domka.png', // Cambia por la ruta correcta
               width: 150,
               margin: [0, 0, 0, 5],
               fallback: { 
@@ -155,8 +155,8 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
               }
             },
             { text: "DOMKA", style: "firmaEmpresa", alignment: "center" },
-            { text: "Celular: +57 3058114595", style: "firmaDatos", alignment: "center" },
-            { text: "RUT: 79597683-1", style: "firmaDatos", alignment: "center" },
+            { text: "Celular: +57 321 456 7890", style: "firmaDatos", alignment: "center" },
+            { text: "RUT: 123456789-0", style: "firmaDatos", alignment: "center" },
             { text: "contacto@domka.com", style: "firmaDatos", alignment: "center" }
           ],
           width: 200
@@ -168,7 +168,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   const contenido = [
     // Marca de agua (logo DOMKA en fondo)
     {
-      //image: 'img/logo.png', // Cambia por la ruta correcta de tu logo
+      image: 'img/logo-domka.png', // Cambia por la ruta correcta de tu logo
       width: 100,
       opacity: 0.1, // Transparencia para marca de agua
       absolutePosition: { x: 40, y: 40 }
@@ -264,6 +264,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     {
       ul: [
         "Esta cotización tiene una validez de 30 días a partir de la fecha de emisión.",
+        "Los precios no incluyen transportes especiales ni instalaciones complejas.",
         "El tiempo de entrega se confirmará al momento de la aprobación.",
         formaPago !== "contado" ? "Se requiere anticipo para iniciar el trabajo." : "Pago al contado."
       ],
@@ -280,7 +281,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageMargins: [40, 60, 40, 60],
     background: [
       {
-        //image: 'img/logo.png', // Imagen específica para marca de agua
+        image: 'img/logo-domka-watermark.png', // Imagen específica para marca de agua
         width: 300,
         opacity: 0.05, // Muy transparente
         absolutePosition: { x: 40, y: 150 }
@@ -388,4 +389,3 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
 if (typeof window !== 'undefined') {
   window.generarPDFCotizacion = generarPDFCotizacion;
 }
-
