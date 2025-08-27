@@ -178,6 +178,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     {
       image: images.muneco,
       width: 100,
+      opacity: 0.1,
       alignment: "left",
       margin: [0, 0, 0, 10]
     },
@@ -273,14 +274,6 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       }
     ],
     content: contenido,
-    background: [
-  {
-    image: images.muneco,           // tu imagen "muneco"
-    width: 100,                      // tamaño
-    opacity: 0.1,                    // transparencia para marca de agua
-    absolutePosition: { x: 450, y: 40 } // ajusta según tamaño de la página A4
-  }
-],
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316" },
       logo: { fontSize: 22, bold: true, color: "#F97316" },
