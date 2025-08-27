@@ -130,17 +130,22 @@ formCuenta.addEventListener("submit", async (e) => {
   }
 });
 
-// Cargar cuentas de cobro
+// js/cuentas.js
+// ... (código anterior)
+
+// ============================
+// 🔹 Listar cuentas de cobro
+// ============================
 async function cargarCuentas() {
   tablaCuentas.innerHTML = "";
-  
+
   try {
     const snap = await db.collection("cuentas").orderBy("fecha", "desc").get();
-    
+
     snap.forEach(docu => {
       const c = docu.data();
       const id = docu.id;
-      
+
       const tr = document.createElement("tr");
       tr.className = "border-t hover:bg-gray-50";
       tr.innerHTML = `
@@ -165,16 +170,26 @@ async function cargarCuentas() {
       tablaCuentas.appendChild(tr);
     });
 
-// En la función de generación de PDF dentro de cargarCuentas():
-tablaCuentas.querySelectorAll(".btn-pdf").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const id = btn.getAttribute("data-id");
-    const docu = await db.collection("cuentas").doc(id).get();
-    const cuenta = docu.data();
-    cuenta.id = id; // Asegurar que el ID esté incluido
-    generarPDFCuenta(cuenta, cuenta.nombreCliente);
-  });
-});
+    // PDF handlers - CORRECCIÓN AQUÍ
+    tablaCuentas.querySelectorAll(".btn-pdf").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        try {
+          const docu = await db.collection("cuentas").doc(id).get();
+          if (docu.exists) {
+            const cuenta = docu.data();
+            cuenta.id = id; // Asegurar que el ID esté incluido
+            generarPDFCuenta(cuenta, cuenta.nombreCliente);
+          } else {
+            alert("Cuenta de cobro no encontrada.");
+          }
+        } catch (error) {
+          console.error("Error al cargar la cuenta:", error);
+          alert("Error al generar el PDF.");
+        }
+      });
+    });
+
     // Marcar pagada
     tablaCuentas.querySelectorAll(".btn-pagada").forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -190,6 +205,8 @@ tablaCuentas.querySelectorAll(".btn-pdf").forEach(btn => {
     console.error("Error cargando cuentas:", e);
   }
 }
+
+// ... (resto del código)
 
 // Inicializar
 agregarItemBtn.addEventListener("click", () => agregarItem());
