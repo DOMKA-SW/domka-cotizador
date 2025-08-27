@@ -39,11 +39,12 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   } = cotizacion;
 
   // 👇 Cargar imágenes necesarias
+  const basePath = "/domka-cotizador";
   const images = await preloadImages({
-    firma: "img/firma.png",   // firma "Atentamente"
-    logo: "img/logo.png",     // logo grande marca de agua
-    muneco: "img/muneco.png"  // logo pequeño superior
-  });
+  firma: `${basePath}/img/firma.png`,
+  logo: `${basePath}/img/logo.png`,
+  muneco: `${basePath}/img/muneco.png`
+});
 
   // Formatear fecha
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
@@ -272,6 +273,14 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       }
     ],
     content: contenido,
+    background: [
+  {
+    image: images.muneco,           // tu imagen "muneco"
+    width: 100,                      // tamaño
+    opacity: 0.1,                    // transparencia para marca de agua
+    absolutePosition: { x: 450, y: 40 } // ajusta según tamaño de la página A4
+  }
+],
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316" },
       logo: { fontSize: 22, bold: true, color: "#F97316" },
