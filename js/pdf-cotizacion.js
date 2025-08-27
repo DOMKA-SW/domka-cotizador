@@ -176,7 +176,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   const contenido = [
     // Logo pequeño arriba a la izquierda
     {
-      image: images.muneco,
+      backgroundImage: images.muneco,
       width: 100,
       opacity: 0.1,
       alignment: "left",
