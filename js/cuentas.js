@@ -165,16 +165,16 @@ async function cargarCuentas() {
       tablaCuentas.appendChild(tr);
     });
 
-    // PDF handlers
-    tablaCuentas.querySelectorAll(".btn-pdf").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-id");
-        const docu = await db.collection("cuentas").doc(id).get();
-        const cuenta = docu.data();
-        generarPDFCuenta(cuenta, cuenta.nombreCliente);
-      });
-    });
-
+// En la función de generación de PDF dentro de cargarCuentas():
+tablaCuentas.querySelectorAll(".btn-pdf").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const id = btn.getAttribute("data-id");
+    const docu = await db.collection("cuentas").doc(id).get();
+    const cuenta = docu.data();
+    cuenta.id = id; // Asegurar que el ID esté incluido
+    generarPDFCuenta(cuenta, cuenta.nombreCliente);
+  });
+});
     // Marcar pagada
     tablaCuentas.querySelectorAll(".btn-pagada").forEach(btn => {
       btn.addEventListener("click", async () => {
