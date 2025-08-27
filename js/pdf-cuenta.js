@@ -229,7 +229,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
             image: images.muneco,
             width: 100,
             opacity: 0.1,
-            absolutePosition: { x: 30, y: 30 } // Esquina superior izquierda
+            absolutePosition: { x: 455, y: 30 } // Esquina superior izquierda
           });
         }
         
