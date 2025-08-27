@@ -1,15 +1,62 @@
-/* === Opciones como tarjetas modernas === */
-.opciones-card {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.opciones-card label {
+/* === Tipo de Cotización y Tipo de cálculo === */
+.mb-4 .flex.gap-4 label,
+.mb-4 .flex.flex-col.gap-2 label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.8rem 1rem;
+  border: 2px solid #e5e7eb; /* gris claro */
+  border-radius: 0.75rem;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+/* Hover */
+.mb-4 .flex.gap-4 label:hover,
+.mb-4 .flex.flex-col.gap-2 label:hover {
+  border-color: #fb923c; /* naranja */
+  background: #fff7ed;
+}
+
+/* Ocultamos radios originales (pero accesibles) */
+input[type="radio"].form-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+  position: absolute;
+  opacity: 0;
+}
+
+/* Estado seleccionado → resaltamos tarjeta */
+input[type="radio"].form-radio:checked + span {
+  color: #fff;
+  background: #f97316; /* naranja */
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+/* === Checkbox "Mostrar valor total en letras" === */
+#mostrar-valor-letras {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+  position: absolute;
+  opacity: 0;
+}
+
+/* Estilo para su label */
+#mostrar-valor-letras + span {
+  display: inline-block;
+  padding: 0.6rem 1rem;
   border: 2px solid #e5e7eb;
   border-radius: 0.75rem;
   cursor: pointer;
@@ -18,21 +65,15 @@
   font-weight: 500;
 }
 
-.opciones-card label:hover {
+/* Hover */
+#mostrar-valor-letras + span:hover {
   border-color: #fb923c;
   background: #fff7ed;
 }
 
-.opciones-card input[type="radio"],
-.opciones-card input[type="checkbox"] {
-  display: none;
-}
-
-.opciones-card input[type="radio"]:checked + span,
-.opciones-card input[type="checkbox"]:checked + span {
+/* Estado activado */
+#mostrar-valor-letras:checked + span {
   color: #fff;
   background: #f97316;
-  padding: 0.3rem 0.6rem;
-  border-radius: 0.5rem;
   font-weight: 600;
 }
