@@ -40,8 +40,8 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
 
   // Cargar imágenes
   const images = await preloadImages({
-    logo: "img/logo.png",
-    firma: "img/firma.png"
+    logo: "../img/logo.png",
+    firma: "../img/firma.png"
   });
 
   // Formatear fecha
@@ -101,7 +101,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
           {
             stack: [
               { text: "CUENTA DE COBRO", style: "header", alignment: "right" },
-              { text: `N°: ${id.substring(0, 8)}`, style: "subheader", alignment: "right", margin: [0, 5] }
+              { text: `N°: ${id || "Sin ID"}`, style: "subheader", alignment: "right", margin: [0, 5] }
             ],
             width: "*"
           }
@@ -115,7 +115,8 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
           widths: ["*", "*"],
           body: [
             [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
-            [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }]
+            [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
+            [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
           ]
         },
         layout: "noBorders",
@@ -205,7 +206,9 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     defaultStyle: { fontSize: 10 }
   };
 
-  pdfMake.createPdf(docDefinition).download(`Cuenta_Cobro_DOMKA_${id.substring(0, 8)}.pdf`);
+  // Crear y descargar PDF
+  const pdfDoc = pdfMake.createPdf(docDefinition);
+  pdfDoc.download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
 }
 
 window.generarPDFCuenta = generarPDFCuenta;
