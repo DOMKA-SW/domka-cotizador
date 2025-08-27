@@ -7,45 +7,11 @@ async function imageToDataURL(path) {
     // Para imágenes locales en GitHub Pages, usar rutas absolutas
     let absolutePath = path;
     if (!path.startsWith('http') && !path.startsWith('data:')) {
+      // Usar la ruta absoluta correcta para GitHub Pages
       absolutePath = `https://domka-sw.github.io/domka-cotizador${path.startsWith('/') ? path : '/' + path}`;
     }
     
     const res = await fetch(absolutePath);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
-    const blob = await res.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.warn("No se pudo cargar la imagen:", path, e);
-    return null;
-  }
-}
-
-async function preloadImages(imagePaths) {
-  const images = {};
-  for (const [key, path] of Object.entries(imagePaths)) {
-    try {
-      images[key] = await imageToDataURL(path);
-    } catch (e) {
-      console.warn(`No se pudo cargar la imagen ${key}:`, path);
-      images[key] = null;
-    }
-  }
-  return images;
-}
-
-// js/pdf-cuenta.js
-async function imageToDataURL(path) {
-  try {
-    // Verificar si es una ruta local o ya es un data URL
-    if (path.startsWith('data:')) return path;
-    
-    const res = await fetch(path);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     
     const blob = await res.blob();
@@ -90,11 +56,11 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     firmaRut = "123456789-0"
   } = cuenta;
 
-  // Cargar imágenes con rutas relativas correctas
+  // Cargar imágenes con rutas absolutas para GitHub Pages
   const images = await preloadImages({
-    logo: "../img/logo.png",
-    firma: "../img/firma.png",
-    muneco: "../img/muneco.png"
+    logo: "/img/logo.png",
+    firma: "/img/firma.png",
+    muneco: "/img/muneco.png"
   });
 
   // Formatear fecha
@@ -247,7 +213,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       if (currentPage === 1) {
         const backgroundElements = [];
         
-        // Logo como marca de agua (centrado)
+        // Logo como marca de agua (centrado) - COMO EN COTIZACIONES
         if (images.logo) {
           backgroundElements.push({
             image: images.logo,
@@ -257,13 +223,13 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
           });
         }
         
-        // Muñeco en la esquina superior derecha (como en cotizaciones)
+        // Muñeco en la esquina superior izquierda (como en cotizaciones)
         if (images.muneco) {
           backgroundElements.push({
             image: images.muneco,
             width: 100,
             opacity: 0.1,
-            absolutePosition: { x: pageSize.width - 120, y: 30 }
+            absolutePosition: { x: 30, y: 30 } // Esquina superior izquierda
           });
         }
         
@@ -299,8 +265,67 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     pdfDoc.download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
   } catch (error) {
     console.error("Error al generar el PDF:", error);
-    alert("Error al generar el PDF. Por favor, intente nuevamente.");
+    
+    // Fallback: usar versión simple si falla
+    generarPDFCuentaSimple(cuenta, nombreCliente);
   }
+}
+
+// Función simple de respaldo
+function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
+  const { 
+    items = [], 
+    total = 0, 
+    notas = "", 
+    fecha = new Date(),
+    mostrarValorLetras = true,
+    id = "",
+    firmaConfirmacion = null
+  } = cuenta;
+
+  const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
+
+  const docDefinition = {
+    pageSize: 'A4',
+    pageMargins: [40, 60, 40, 60],
+    content: [
+      { text: "DOMKA - CUENTA DE COBRO", style: "header" },
+      { text: `N°: ${id || "Sin ID"}`, style: "subheader" },
+      { text: `Cliente: ${nombreCliente}`, margin: [0, 10, 0, 5] },
+      { text: `Fecha: ${fechaFormateada}`, margin: [0, 0, 0, 15] },
+      
+      { text: "Descripción del Servicio:", style: "subheader" },
+      {
+        ul: items.map(item => item.descripcion || "-"),
+        margin: [0, 0, 0, 15]
+      },
+      
+      { text: "Total:", style: "subheader" },
+      { text: `$${Number(total || 0).toLocaleString("es-CO")}`, style: "totalValue" },
+      
+      ...(mostrarValorLetras ? [
+        { text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 5, 0, 15] }
+      ] : []),
+      
+      ...(notas ? [
+        { text: "Notas:", style: "subheader" },
+        { text: notas, margin: [0, 0, 0, 15] }
+      ] : []),
+      
+      ...(firmaConfirmacion ? [
+        { text: "Firma de confirmación:", style: "subheader" },
+        { image: firmaConfirmacion, width: 150, margin: [0, 10] }
+      ] : [])
+    ],
+    styles: {
+      header: { fontSize: 18, bold: true, color: "#F97316", margin: [0, 0, 0, 5] },
+      subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
+      totalValue: { fontSize: 16, bold: true, color: "#F97316" },
+      valorLetras: { italic: true, fontSize: 10 }
+    }
+  };
+
+  pdfMake.createPdf(docDefinition).download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
 }
 
 window.generarPDFCuenta = generarPDFCuenta;
