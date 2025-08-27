@@ -8,6 +8,11 @@
   <!-- AGREGAR PDFMAKE -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center py-4">
   <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-4 md:p-6 mx-2">
@@ -124,6 +129,30 @@
       }
     }
 
+    // Función para ocultar columnas en modo valor total
+    function ocultarColumnasValorTotal() {
+      const tabla = document.getElementById("tabla-cotizacion-detalle");
+      if (!tabla) return;
+      
+      // Ocultar encabezados
+      const headers = tabla.querySelectorAll("th");
+      if (headers.length >= 4) {
+        headers[1].classList.add("hidden"); // Cantidad
+        headers[2].classList.add("hidden"); // Precio
+        headers[3].classList.add("hidden"); // Subtotal
+      }
+      
+      // Ocultar celdas
+      const cells = tabla.querySelectorAll("td");
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].classList.contains("col-cantidad") || 
+            cells[i].classList.contains("col-precio") || 
+            cells[i].classList.contains("col-subtotal")) {
+          cells[i].classList.add("hidden");
+        }
+      }
+    }
+
     // Cargar cotización
     async function cargarCotizacion() {
       if (!id) {
@@ -173,22 +202,22 @@
 
           <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cotización</h2>
           <div class="overflow-x-auto">
-            <table class="w-full mb-6">
+            <table class="w-full mb-6" id="tabla-cotizacion-detalle">
               <thead class="bg-orange-600 text-white">
                 <tr>
                   <th class="p-2 text-left">Descripción</th>
-                  <th class="p-2 text-center">Cantidad</th>
-                  <th class="p-2 text-right">Precio</th>
-                  <th class="p-2 text-right">Subtotal</th>
+                  <th class="p-2 text-center col-cantidad">Cantidad</th>
+                  <th class="p-2 text-right col-precio">Precio</th>
+                  <th class="p-2 text-right col-subtotal">Subtotal</th>
                 </tr>
               </thead>
               <tbody>
                 ${(c.items || []).map(item => `
                   <tr class="border-b">
                     <td class="p-2">${item.descripcion || ""}</td>
-                    <td class="p-2 text-center">${item.cantidad || 0}</td>
-                    <td class="p-2 text-right">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
-                    <td class="p-2 text-right">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
+                    <td class="p-2 text-center col-cantidad">${item.cantidad || 0}</td>
+                    <td class="p-2 text-right col-precio">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
+                    <td class="p-2 text-right col-subtotal">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
                   </tr>
                 `).join("")}
               </tbody>
@@ -219,6 +248,11 @@
             </div>
           ` : ""}
         `;
+
+        // Ocultar columnas si es modo valor total
+        if (c.tipoCalculo === "valor-total") {
+          setTimeout(ocultarColumnasValorTotal, 100);
+        }
 
         // Mostrar botones de acción solo si no está aprobada
         if (!c.estado || c.estado === "pendiente") {
