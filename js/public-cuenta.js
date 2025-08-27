@@ -7,15 +7,16 @@
     return;
   }
 
-  const elId     = document.getElementById("cuenta-id");
+  const elId = document.getElementById("cuenta-id");
   const elNombre = document.getElementById("cliente-nombre");
   const elContacto = document.getElementById("cliente-contacto");
-  const elFecha  = document.getElementById("cuenta-fecha");
+  const elFecha = document.getElementById("cuenta-fecha");
   const elEstado = document.getElementById("cuenta-estado");
-  const elItems  = document.getElementById("detalle-items");
-  const elSub    = document.getElementById("subtotal");
-  const elTot    = document.getElementById("total");
-  const elNotas  = document.getElementById("notas");
+  const elItems = document.getElementById("detalle-items");
+  const elSub = document.getElementById("subtotal");
+  const elTot = document.getElementById("total");
+  const elNotas = document.getElementById("notas");
+  const elTerminos = document.getElementById("terminos");
 
   elId.textContent = `ID: ${id}`;
 
@@ -50,19 +51,44 @@
     (c.items || []).forEach(it => {
       const tr = document.createElement("tr");
       tr.className = "border-t";
+      
+      // Ocultar columnas si es modo valor total
+      const cantidadStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
+      const precioStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
+      const subtotalStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
+      
       tr.innerHTML = `
         <td class="p-2">${it.descripcion || ""}</td>
-        <td class="p-2 text-right">${Number(it.cantidad || 0)}</td>
-        <td class="p-2 text-right">$${Number(it.precio || 0).toLocaleString("es-CO")}</td>
-        <td class="p-2 text-right">$${Number(it.subtotal || 0).toLocaleString("es-CO")}</td>
+        <td class="p-2 text-right ${cantidadStyle}">${Number(it.cantidad || 0)}</td>
+        <td class="p-2 text-right ${precioStyle}">$${Number(it.precio || 0).toLocaleString("es-CO")}</td>
+        <td class="p-2 text-right ${subtotalStyle}">$${Number(it.subtotal || 0).toLocaleString("es-CO")}</td>
       `;
       elItems.appendChild(tr);
     });
+
+    // Ocultar encabezados de columnas si es modo valor total
+    if (c.tipoCalculo === "valor-total") {
+      const headers = document.querySelectorAll("#detalle-items th");
+      if (headers.length >= 4) {
+        headers[1].classList.add("hidden");
+        headers[2].classList.add("hidden");
+        headers[3].classList.add("hidden");
+      }
+    }
 
     // Totales + notas
     elSub.textContent = `Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}`;
     elTot.textContent = `Total: $${Number(c.total || 0).toLocaleString("es-CO")}`;
     elNotas.textContent = c.notas || "—";
+    elTerminos.textContent = c.terminos || "—";
+
+    // Valor en letras si está habilitado
+    if (c.mostrarValorLetras && typeof numeroAPalabras === 'function') {
+      const valorLetrasEl = document.createElement("p");
+      valorLetrasEl.className = "text-sm italic mt-1 text-gray-600";
+      valorLetrasEl.textContent = `Son: ${numeroAPalabras(c.total || 0)}`;
+      elTot.parentNode.appendChild(valorLetrasEl);
+    }
 
   }).catch(err => {
     console.error(err);
