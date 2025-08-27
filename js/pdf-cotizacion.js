@@ -297,7 +297,12 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   };
 
+ // Verificar que pdfMake esté disponible antes de usarlo
+if (typeof pdfMake !== 'undefined') {
   pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
+} else {
+  console.error('pdfMake no está disponible');
+  alert('Error: No se puede generar el PDF. Por favor, recarga la página.');
 }
 
 // Hacer accesible globalmente
