@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <!-- Formulario Mejorado (similar a cotizaciones) -->
+    <!-- Formulario Mejorado -->
     <form id="form-cuenta" class="bg-white p-6 rounded shadow mb-6">
       <!-- Cliente -->
       <div class="mb-4">
@@ -36,35 +36,10 @@
         <input type="text" id="notas" class="w-full border rounded px-3 py-2" placeholder="Notas u observaciones" />
       </div>
 
-      <!-- Términos y Condiciones -->
+      <!-- Valor total -->
       <div class="mb-4">
-        <label class="block font-semibold mb-2">Términos y Condiciones</label>
-        <textarea id="terminos" class="w-full border rounded px-3 py-2" rows="3">
-Esta cuenta de cobro tiene una validez de 30 días a partir de la fecha de emisión.
-El pago debe realizarse dentro de los 15 días posteriores a la recepción.
-En caso de mora, se aplicará un interés del 1.5% mensual sobre el saldo pendiente.
-        </textarea>
-      </div>
-
-      <!-- Tipo de cálculo -->
-      <div class="mb-4">
-        <label class="block font-semibold mb-2">Tipo de cálculo:</label>
-        <div class="flex flex-col gap-2">
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo-calculo" value="por-items" checked class="form-radio text-orange-600">
-            <span class="ml-2">Calcular por ítems</span>
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo-calculo" value="valor-total" class="form-radio text-orange-600">
-            <span class="ml-2">Ingresar valor total directamente</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Campo para valor total (inicialmente oculto) -->
-      <div id="campo-valor-total" class="hidden mb-4">
-        <label class="block font-semibold mb-2">Valor total</label>
-        <input type="number" id="valor-total" class="w-full border rounded px-3 py-2" value="0" min="0">
+        <label class="block font-semibold mb-2">Valor Total</label>
+        <input type="number" id="valor-total" class="w-full border rounded px-3 py-2" value="0" min="0" required>
       </div>
 
       <!-- Mostrar valor en letras -->
@@ -75,36 +50,24 @@ En caso de mora, se aplicará un interés del 1.5% mensual sobre el saldo pendie
         </label>
       </div>
 
-      <!-- Tabla de Ítems -->
-      <h2 class="font-semibold mb-2">Ítems</h2>
-      <table class="w-full border mb-4" id="tabla-items">
-        <thead class="bg-orange-600 text-white">
-          <tr>
-            <th class="p-2">Descripción</th>
-            <th class="p-2 col-cantidad">Cantidad</th>
-            <th class="p-2 col-precio">Precio</th>
-            <th class="p-2 col-subtotal">Subtotal</th>
-            <th class="p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded">+ Agregar Ítem</button>
-
-      <!-- Totales -->
-      <div class="mt-4 text-right">
-        <p id="subtotal">Subtotal: $0</p>
-        <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
-        <p id="valor-letras" class="text-sm text-gray-600 italic mt-1">Cero pesos</p>
+      <!-- Ítems (solo descripción) -->
+      <div class="mb-4">
+        <h2 class="font-semibold mb-2">Ítems/Descripción del Servicio</h2>
+        <div id="items-container">
+          <!-- Los ítems se agregarán aquí dinámicamente -->
+        </div>
+        <button type="button" id="agregar-item" class="mt-2 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+          + Agregar Ítem
+        </button>
       </div>
 
       <!-- Guardar -->
-      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded mt-4 w-full">
+      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded w-full hover:bg-orange-700">
         Guardar Cuenta de Cobro
       </button>
     </form>
 
-    <!-- Lista Cuentas de Cobro -->
+    <!-- Lista de cuentas de cobro -->
     <div class="bg-white p-6 rounded shadow">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-bold text-lg">Cuentas de Cobro Guardadas</h2>
