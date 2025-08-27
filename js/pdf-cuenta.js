@@ -1,6 +1,47 @@
 // js/pdf-cuenta.js
 async function imageToDataURL(path) {
   try {
+    // Si ya es un data URL, retornarlo directamente
+    if (path.startsWith('data:')) return path;
+    
+    // Para imágenes locales en GitHub Pages, usar rutas absolutas
+    let absolutePath = path;
+    if (!path.startsWith('http') && !path.startsWith('data:')) {
+      absolutePath = `https://domka-sw.github.io/domka-cotizador${path.startsWith('/') ? path : '/' + path}`;
+    }
+    
+    const res = await fetch(absolutePath);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.warn("No se pudo cargar la imagen:", path, e);
+    return null;
+  }
+}
+
+async function preloadImages(imagePaths) {
+  const images = {};
+  for (const [key, path] of Object.entries(imagePaths)) {
+    try {
+      images[key] = await imageToDataURL(path);
+    } catch (e) {
+      console.warn(`No se pudo cargar la imagen ${key}:`, path);
+      images[key] = null;
+    }
+  }
+  return images;
+}
+
+// js/pdf-cuenta.js
+async function imageToDataURL(path) {
+  try {
     // Verificar si es una ruta local o ya es un data URL
     if (path.startsWith('data:')) return path;
     
