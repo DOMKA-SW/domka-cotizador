@@ -1,5 +1,10 @@
 // js/pdf-cotizacion.js
 function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
+  // URLs RAW de GitHub para las imágenes
+  const baseUrl = 'https://raw.githubusercontent.com/DOMKA-SW/domka-cotizador/main';
+  const logoUrl = `${baseUrl}/img/logo.png`;
+  const firmaUrl = `${baseUrl}/img/firma.png`;
+  
   const { 
     items = [], 
     subtotal = 0, 
@@ -15,14 +20,6 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     fechaAprobacion = null,
     tipoCalculo = "por-items"
   } = cotizacion;
-
-  // Obtener la URL base de GitHub Pages
-  const repoName = window.location.pathname.split('/')[1];
-  const baseUrl = 'https://github.com/DOMKA-SW/domka-cotizador/tree/main';
-  
-  // URLs absolutas para las imágenes
-  const logoUrl = `${baseUrl}/img/logo.png`;
-  const firmaUrl = `${baseUrl}/img/firma.png`;
 
   // Formatear fecha
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
@@ -153,11 +150,12 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         },
         {
           stack: [
-            // Usar URL absoluta para la firma
+            // Usar URL RAW de GitHub para la firma
             {
               image: firmaUrl,
               width: 150,
               margin: [0, 0, 0, 5],
+              // Fallback por si la imagen no carga
               fallback: { 
                 canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] 
               }
@@ -174,7 +172,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   ];
 
   const contenido = [
-    // Marca de agua (logo DOMKA en fondo) - usar URL absoluta
+    // Marca de agua (logo DOMKA en fondo) - usar URL RAW de GitHub
     {
       image: logoUrl,
       width: 100,
@@ -288,7 +286,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageMargins: [40, 60, 40, 60],
     background: [
       {
-        image: logoUrl, // Usar URL absoluta para el fondo
+        image: logoUrl, // Usar URL RAW de GitHub para el fondo
         width: 300,
         opacity: 0.05,
         absolutePosition: { x: 40, y: 150 }
@@ -392,7 +390,49 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   }
 }
 
+// Función auxiliar para convertir números a palabras (necesaria para mostrarValorLetras)
+function numeroAPalabras(numero) {
+  // Implementación básica - puedes expandir esta función según tus necesidades
+  const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
+  const decenas = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+  
+  if (numero === 0) return 'cero pesos';
+  if (numero > 999999) return 'demasiado grande para convertir';
+  
+  let palabras = '';
+  
+  // Convertir miles
+  const miles = Math.floor(numero / 1000);
+  if (miles > 0) {
+    palabras += unidades[miles] + ' mil ';
+    numero %= 1000;
+  }
+  
+  // Convertir centenas
+  const centenas = Math.floor(numero / 100);
+  if (centenas > 0) {
+    palabras += unidades[centenas] + 'cientos ';
+    numero %= 100;
+  }
+  
+  // Convertir decenas y unidades
+  if (numero > 0) {
+    const decena = Math.floor(numero / 10);
+    const unidad = numero % 10;
+    
+    if (decena > 0) {
+      palabras += decenas[decena];
+      if (unidad > 0) palabras += ' y ' + unidades[unidad];
+    } else {
+      palabras += unidades[unidad];
+    }
+  }
+  
+  return palabras + ' pesos';
+}
+
 // Hacer accesible globalmente
 if (typeof window !== 'undefined') {
   window.generarPDFCotizacion = generarPDFCotizacion;
+  window.numeroAPalabras = numeroAPalabras;
 }
