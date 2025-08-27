@@ -41,20 +41,44 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   }
 
   // Construir tabla de ítems
-  const tablaItems = [
-    [
-      { text: "Descripción", style: "tableHeader" },
-      { text: "Cantidad", style: "tableHeader" },
-      { text: "Precio", style: "tableHeader" },
-      { text: "Subtotal", style: "tableHeader" }
-    ],
-    ...items.map(it => [
-      it.descripcion || "",
-      it.cantidad || 0,
-      { text: `$${Number(it.precio || 0).toLocaleString("es-CO")}`, alignment: "right" },
-      { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
-    ])
-  ];
+  let tablaItems = [];
+  const widths = tipoCalculo === "valor-total" 
+    ? ["*", "auto", "auto", "auto"] // Mismas proporciones pero columnas vacías
+    : ["*", "auto", "auto", "auto"];
+
+  if (tipoCalculo === "valor-total") {
+    // Modo valor total - mostrar solo descripción
+    tablaItems = [
+      [
+        { text: "Descripción", style: "tableHeader" },
+        { text: "", style: "tableHeader" },
+        { text: "", style: "tableHeader" },
+        { text: "", style: "tableHeader" }
+      ],
+      ...items.map(it => [
+        it.descripcion || "",
+        { text: "", alignment: "right" },
+        { text: "", alignment: "right" },
+        { text: "", alignment: "right" }
+      ])
+    ];
+  } else {
+    // Modo por ítems - mostrar todos los datos
+    tablaItems = [
+      [
+        { text: "Descripción", style: "tableHeader" },
+        { text: "Cantidad", style: "tableHeader" },
+        { text: "Precio", style: "tableHeader" },
+        { text: "Subtotal", style: "tableHeader" }
+      ],
+      ...items.map(it => [
+        it.descripcion || "",
+        it.cantidad || 0,
+        { text: `$${Number(it.precio || 0).toLocaleString("es-CO")}`, alignment: "right" },
+        { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
+      ])
+    ];
+  }
 
   // Construir plan de pagos si existe
   const contenidoPagos = planPagos.length > 0 ? [
@@ -169,7 +193,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     { text: "Detalle de la Cotización", style: "subheader" },
     {
       table: {
-        widths: ["*", "auto", "auto", "auto"],
+        widths: widths,
         body: tablaItems
       }
     },
@@ -297,13 +321,16 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   };
 
- // Verificar que pdfMake esté disponible antes de usarlo
-if (typeof pdfMake !== 'undefined') {
-  pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
-} else {
-  console.error('pdfMake no está disponible');
-  alert('Error: No se puede generar el PDF. Por favor, recarga la página.');
+  // Verificar que pdfMake esté disponible antes de usarlo
+  if (typeof pdfMake !== 'undefined') {
+    pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
+  } else {
+    console.error('pdfMake no está disponible');
+    alert('Error: No se puede generar el PDF. Por favor, recarga la página.');
+  }
 }
 
 // Hacer accesible globalmente
-window.generarPDFCotizacion = generarPDFCotizacion;
+if (typeof window !== 'undefined') {
+  window.generarPDFCotizacion = generarPDFCotizacion;
+}
