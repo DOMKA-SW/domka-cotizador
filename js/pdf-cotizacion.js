@@ -18,7 +18,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
 
   // Obtener la URL base de GitHub Pages
   const repoName = window.location.pathname.split('/')[1];
-  const baseUrl = repoName ? `/${repoName}` : '';
+  const baseUrl = 'https://github.com/DOMKA-SW/domka-cotizador';
   
   // URLs absolutas para las imágenes
   const logoUrl = `${baseUrl}/img/logo.png`;
