@@ -1,4 +1,6 @@
-// 🔹 Helpers para convertir imágenes a base64 dinámicamente
+// js/pdf-cotizacion.js
+
+// 🔹 Convierte imágenes a base64 dinámicamente
 async function imageToDataURL(path) {
   const res = await fetch(path);
   const blob = await res.blob();
@@ -9,6 +11,7 @@ async function imageToDataURL(path) {
   });
 }
 
+// 🔹 Pre-carga varias imágenes y devuelve un diccionario
 async function preloadImages(imagePaths) {
   const images = {};
   for (const [key, path] of Object.entries(imagePaths)) {
@@ -17,7 +20,7 @@ async function preloadImages(imagePaths) {
   return images;
 }
 
-// 🔹 Función principal
+// 🔹 Generar PDF Cotización
 async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   const { 
     items = [], 
@@ -35,10 +38,11 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     tipoCalculo = "por-items"
   } = cotizacion;
 
-  // 👇 Precargar imágenes (ya corregido)
+  // 👇 Cargar imágenes necesarias
   const images = await preloadImages({
-    firma: "img/firma.png",   // firma de atentamente
-    logo: "img/logo.png"      // logo / marca de agua
+    firma: "img/firma.png",   // firma "Atentamente"
+    logo: "img/logo.png",     // logo grande marca de agua
+    muneco: "img/muñeco.png"  // logo pequeño superior
   });
 
   // Formatear fecha
@@ -67,9 +71,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
 
   // Construir tabla de ítems
   let tablaItems = [];
-  const widths = tipoCalculo === "valor-total" 
-    ? ["*", "auto", "auto", "auto"]
-    : ["*", "auto", "auto", "auto"];
+  const widths = ["*", "auto", "auto", "auto"];
 
   if (tipoCalculo === "valor-total") {
     tablaItems = [
@@ -152,31 +154,31 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   // Información de la empresa DOMKA (firma de autorización)
   const infoEmpresa = [
     { text: " ", margin: [0, 20] },
-    { text: "Atentamente", style: "firmaText", margin: [0, 0, 0, 10] },
+    { 
+      text: "Atentamente", 
+      style: "firmaText",
+      margin: [0, 0, 0, 10],
+      alignment: "left"
+    },
     {
-      columns: [
-        { text: " ", width: "*" },
-        {
-          stack: [
-            { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
-            { text: "DOMKA", style: "firmaEmpresa", alignment: "center" },
-            { text: "Celular: +57 321 456 7890", style: "firmaDatos", alignment: "center" },
-            { text: "RUT: 123456789-0", style: "firmaDatos", alignment: "center" },
-            { text: "contacto@domka.com", style: "firmaDatos", alignment: "center" }
-          ],
-          width: 200
-        }
-      ]
+      stack: [
+        { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
+        { text: "DOMKA", style: "firmaEmpresa", alignment: "left" },
+        { text: "Celular: +57 321 456 7890", style: "firmaDatos", alignment: "left" },
+        { text: "RUT: 123456789-0", style: "firmaDatos", alignment: "left" },
+        { text: "contacto@domka.com", style: "firmaDatos", alignment: "left" }
+      ],
+      width: 250
     }
   ];
 
   const contenido = [
-    // Marca de agua (logo DOMKA en fondo)
+    // Logo pequeño arriba a la izquierda
     {
-      image: images.logo,
+      image: images.muneco,
       width: 100,
-      opacity: 0.1,
-      absolutePosition: { x: 40, y: 40 }
+      alignment: "left",
+      margin: [0, 0, 0, 10]
     },
     
     // Encabezado
@@ -210,7 +212,9 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     
     // Detalle de items
     { text: "Detalle de la Cotización", style: "subheader" },
-    { table: { widths: widths, body: tablaItems } },
+    {
+      table: { widths: widths, body: tablaItems }
+    },
     
     // Totales
     { text: " ", margin: [0, 10] },
@@ -261,10 +265,10 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageMargins: [40, 60, 40, 60],
     background: [
       {
-        image: images.logo,
+        image: images.logo, // Marca de agua centrada
         width: 300,
         opacity: 0.05,
-        absolutePosition: { x: 40, y: 150 }
+        absolutePosition: { x: 150, y: 200 }
       }
     ],
     content: contenido,
@@ -278,25 +282,23 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       totalLabel: { bold: true, fontSize: 12, color: "#374151" },
       totalValue: { bold: true, fontSize: 12, color: "#F97316", alignment: "right" },
       valorLetras: { italic: true, fontSize: 10, color: "#4B5563" },
+      firmaText: { fontSize: 12, bold: true, alignment: "left", margin: [0, 0, 0, 5] },
+      firmaEmpresa: { fontSize: 14, bold: true, color: "#F97316", alignment: "left", margin: [0, 5, 0, 2] },
+      firmaDatos: { fontSize: 9, color: "#374151", alignment: "left", margin: [0, 1, 0, 0] },
       aprobacionHeader: { fontSize: 14, bold: true, color: "#059669", alignment: "center", margin: [0, 0, 0, 10] },
-      aprobacionText: { fontSize: 10, color: "#374151", alignment: "center" },
-      firmaText: { fontSize: 12, bold: true, alignment: "center", margin: [0, 0, 0, 5] },
-      firmaEmpresa: { fontSize: 14, bold: true, color: "#F97316", alignment: "center", margin: [0, 5, 0, 2] },
-      firmaDatos: { fontSize: 9, color: "#374151", alignment: "center", margin: [0, 1, 0, 0] }
+      aprobacionText: { fontSize: 10, color: "#374151", alignment: "center" }
     },
     defaultStyle: { fontSize: 10 }
   };
 
-  // Verificar pdfMake
   if (typeof pdfMake !== 'undefined') {
     pdfMake.createPdf(docDefinition).download(`Cotización_DOMKA_${id.substring(0, 8)}.pdf`);
   } else {
     console.error('pdfMake no está disponible');
-    alert('Error: No se puede generar el PDF.');
+    alert('Error: No se puede generar el PDF. Por favor, recarga la página.');
   }
 }
 
-// Hacer accesible globalmente
 if (typeof window !== 'undefined') {
   window.generarPDFCotizacion = generarPDFCotizacion;
 }
