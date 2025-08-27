@@ -16,6 +16,14 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     tipoCalculo = "por-items"
   } = cotizacion;
 
+  // Obtener la URL base de GitHub Pages
+  const repoName = window.location.pathname.split('/')[1];
+  const baseUrl = repoName ? `/${repoName}` : '';
+  
+  // URLs absolutas para las imágenes
+  const logoUrl = `${baseUrl}/img/logo.png`;
+  const firmaUrl = `${baseUrl}/img/firma.png`;
+
   // Formatear fecha
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
     year: 'numeric',
@@ -43,7 +51,7 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   // Construir tabla de ítems
   let tablaItems = [];
   const widths = tipoCalculo === "valor-total" 
-    ? ["*", "auto", "auto", "auto"] // Mismas proporciones pero columnas vacías
+    ? ["*", "auto", "auto", "auto"]
     : ["*", "auto", "auto", "auto"];
 
   if (tipoCalculo === "valor-total") {
@@ -145,9 +153,9 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         },
         {
           stack: [
-            // Imagen de firma de DOMKA (reemplaza con la ruta correcta)
+            // Usar URL absoluta para la firma
             {
-              image: 'img/firma.png', // Cambia por la ruta correcta
+              image: firmaUrl,
               width: 150,
               margin: [0, 0, 0, 5],
               fallback: { 
@@ -166,11 +174,11 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   ];
 
   const contenido = [
-    // Marca de agua (logo DOMKA en fondo)
+    // Marca de agua (logo DOMKA en fondo) - usar URL absoluta
     {
-      image: 'img/logo.png', // Cambia por la ruta correcta de tu logo
+      image: logoUrl,
       width: 100,
-      opacity: 0.1, // Transparencia para marca de agua
+      opacity: 0.1,
       absolutePosition: { x: 40, y: 40 }
     },
     
@@ -280,9 +288,9 @@ function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageMargins: [40, 60, 40, 60],
     background: [
       {
-        image: 'img/logo.png', // Imagen específica para marca de agua
+        image: logoUrl, // Usar URL absoluta para el fondo
         width: 300,
-        opacity: 0.05, // Muy transparente
+        opacity: 0.05,
         absolutePosition: { x: 40, y: 150 }
       }
     ],
