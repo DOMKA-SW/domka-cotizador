@@ -46,7 +46,7 @@
       <p class="text-green-600 font-semibold">✅ Cuenta de cobro confirmada con firma digital</p>
       <p class="text-sm text-gray-600 mt-2">Hemos registrado su confirmación correctamente.</p>
       <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
-      <p class="text-sm text-gray-600 mt-4">Puede descargar el PDF con el botón de arriba.</p>
+      <p class="text-sm text-gray-600 mt-4">El PDF se está descargando automáticamente...</p>
     </div>
   </div>
 
@@ -131,6 +131,7 @@
         }
 
         cuentaData = doc.data();
+        cuentaData.id = id; // Asegurar que el ID esté incluido
         const c = cuentaData;
         const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds * 1000 : c.fecha) : new Date();
         
@@ -143,6 +144,7 @@
             <div>
               <p class="font-semibold">Cliente:</p>
               <p>${c.nombreCliente || "No especificado"}</p>
+              <p class="text-sm text-gray-600 mt-1">ID: ${id}</p>
             </div>
             <div class="md:text-right">
               <p class="font-semibold">Fecha:</p>
@@ -228,6 +230,13 @@
         // Ocultar botón de confirmación
         document.getElementById("confirmar").classList.add("hidden");
         
+        // DESCARGAR PDF AUTOMÁTICAMENTE después de guardar la firma
+        setTimeout(() => {
+          if (cuentaData) {
+            generarPDFCuenta(cuentaData, cuentaData.nombreCliente);
+          }
+        }, 1000);
+        
       } catch (error) {
         console.error("Error al guardar firma:", error);
         alert("❌ Error al guardar la firma. Por favor, intente nuevamente.");
@@ -240,7 +249,7 @@
     // Descargar PDF manualmente
     descargarPdfBtn.addEventListener("click", () => {
       if (cuentaData) {
-        generarPDFCuenta({...cuentaData, id: id}, cuentaData.nombreCliente);
+        generarPDFCuenta(cuentaData, cuentaData.nombreCliente);
       }
     });
 
