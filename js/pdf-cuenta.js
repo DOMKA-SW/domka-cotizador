@@ -49,19 +49,13 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     mostrarValorLetras = true,
     id = "",
     firmaConfirmacion = null,
-    fechaConfirmacion = null,
-    // DATOS OBLIGATORIOS - deben venir en el objeto 'cuenta'
-    firmaNombre,
-    firmaTelefono, 
-    firmaRut
+    fechaConfirmacion = null
   } = cuenta;
 
-  // Validar que los datos requeridos estén presentes
-  if (!firmaNombre || !firmaTelefono || !firmaRut) {
-    console.error("Faltan datos de firma en el objeto cuenta:", { firmaNombre, firmaTelefono, firmaRut });
-    alert("Error: Faltan datos de contacto en la configuración");
-    return;
-  }
+  // DATOS FIJOS - ESTOS SON LOS VALORES CORRECTOS
+  const firmaNombre = "Alex Otalora";
+  const firmaTelefono = "+57 305 811 4595";
+  const firmaRut = "RUT: 79597683-1";
 
   // Cargar imágenes con rutas absolutas para GitHub Pages
   const images = await preloadImages({
@@ -285,17 +279,13 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
     fecha = new Date(),
     mostrarValorLetras = true,
     id = "",
-    firmaConfirmacion = null,
-    firmaNombre,
-    firmaTelefono,
-    firmaRut
+    firmaConfirmacion = null
   } = cuenta;
 
-  // Validar datos requeridos
-  if (!firmaNombre || !firmaTelefono || !firmaRut) {
-    console.error("Faltan datos de firma en la versión simple");
-    return;
-  }
+  // DATOS FIJOS - ESTOS SON LOS VALORES CORRECTOS
+  const firmaNombre = "Alex Otalora";
+  const firmaTelefono = "+57 305 811 4595";
+  const firmaRut = "RUT: 79597683-1";
 
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
 
