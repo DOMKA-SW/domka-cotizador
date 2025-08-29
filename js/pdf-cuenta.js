@@ -197,7 +197,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     } : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
     { text: firmaNombre, style: "firmaNombre" },
     { text: firmaTelefono, style: "firmaDatos" },
-    { text: firmaEmail, style: "firmaDatos" },
+    //{ text: firmaEmail, style: "firmaDatos" },
     { text: firmaRut, style: "firmaDatos", margin: [0, 0, 0, 30] },
     
     // Pie de página
