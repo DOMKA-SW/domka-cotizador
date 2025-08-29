@@ -164,10 +164,10 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     {
       stack: [
         { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
-        { text: "DOMKA", style: "firmaEmpresa", alignment: "left" },
-        { text: "Celular: +57 321 456 7890", style: "firmaDatos", alignment: "left" },
-        { text: "RUT: 123456789-0", style: "firmaDatos", alignment: "left" },
-        { text: "contacto@domka.com", style: "firmaDatos", alignment: "left" }
+        { text: "Alex Otalora", style: "firmaEmpresa", alignment: "left" },
+        { text: "Celular: +57 305 811 4595", style: "firmaDatos", alignment: "left" },
+        { text: "RUT: 79597683-1", style: "firmaDatos", alignment: "left" }
+        //{ text: "contacto@domka.com", style: "firmaDatos", alignment: "left" }
       ],
       width: 250
     }
@@ -242,7 +242,6 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     {
       ul: [
         "Esta cotización tiene una validez de 30 días a partir de la fecha de emisión.",
-        "Los precios no incluyen transportes especiales ni instalaciones complejas.",
         "El tiempo de entrega se confirmará al momento de la aprobación.",
         formaPago !== "contado" ? "Se requiere anticipo para iniciar el trabajo." : "Pago al contado."
       ],
