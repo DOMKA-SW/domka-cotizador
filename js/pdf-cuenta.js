@@ -50,10 +50,10 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     id = "",
     firmaConfirmacion = null,
     fechaConfirmacion = null,
-    firmaNombre = "DOMKA",
-    firmaTelefono = "+57 321 456 7890",
-    firmaEmail = "contacto@domka.com",
-    firmaRut = "123456789-0"
+    firmaNombre = "Alex Otalora",
+    firmaTelefono = "+57 305 811 4595",
+    //firmaEmail = "contacto@domka.com",
+    firmaRut = "79597683-1"
   } = cuenta;
 
   // Cargar imágenes con rutas absolutas para GitHub Pages
