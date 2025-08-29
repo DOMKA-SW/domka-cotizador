@@ -50,11 +50,16 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     id = "",
     firmaConfirmacion = null,
     fechaConfirmacion = null,
+    // DATOS ACTUALIZABLES - Estos valores deben venir en el objeto 'cuenta'
     firmaNombre = "Alex Otalora",
     firmaTelefono = "+57 305 811 4595",
-    //firmaEmail = "contacto@domka.com",
     firmaRut = "79597683-1"
   } = cuenta;
+
+  // Extraer datos actualizables del objeto cuenta (si existen)
+  const nombreFirma = cuenta.firmaNombre || firmaNombre;
+  const telefonoFirma = cuenta.firmaTelefono || firmaTelefono;
+  const rutFirma = cuenta.firmaRut || firmaRut;
 
   // Cargar imágenes con rutas absolutas para GitHub Pages
   const images = await preloadImages({
@@ -194,10 +199,9 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       width: 150,
       margin: [0, 10, 0, 5]
     } : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
-    { text: firmaNombre, style: "firmaNombre" },
-    { text: firmaTelefono, style: "firmaDatos" },
-    //{ text: firmaEmail, style: "firmaDatos" },
-    { text: firmaRut, style: "firmaDatos", margin: [0, 0, 0, 30] },
+    { text: nombreFirma, style: "firmaNombre" },
+    { text: telefonoFirma, style: "firmaDatos" },
+    { text: rutFirma, style: "firmaDatos", margin: [0, 0, 0, 30] },
     
     // Pie de página
     { text: "Gracias por su preferencia", style: "pie", alignment: "center", margin: [0, 30, 0, 0] }
@@ -279,8 +283,16 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
     fecha = new Date(),
     mostrarValorLetras = true,
     id = "",
-    firmaConfirmacion = null
+    firmaConfirmacion = null,
+    firmaNombre = "Alex Otalora",
+    firmaTelefono = "+57 305 811 4595",
+    firmaRut = "79597683-1"
   } = cuenta;
+
+  // Extraer datos actualizables
+  const nombreFirma = cuenta.firmaNombre || firmaNombre;
+  const telefonoFirma = cuenta.firmaTelefono || firmaTelefono;
+  const rutFirma = cuenta.firmaRut || firmaRut;
 
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
 
@@ -314,13 +326,21 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
       ...(firmaConfirmacion ? [
         { text: "Firma de confirmación:", style: "subheader" },
         { image: firmaConfirmacion, width: 150, margin: [0, 10] }
-      ] : [])
+      ] : []),
+      
+      { text: "Atentamente,", style: "firmaText" },
+      { text: nombreFirma, style: "firmaNombre" },
+      { text: telefonoFirma, style: "firmaDatos" },
+      { text: rutFirma, style: "firmaDatos" }
     ],
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316", margin: [0, 0, 0, 5] },
       subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
       totalValue: { fontSize: 16, bold: true, color: "#F97316" },
-      valorLetras: { italic: true, fontSize: 10 }
+      valorLetras: { italic: true, fontSize: 10 },
+      firmaText: { fontSize: 12, bold: true, margin: [0, 20, 0, 5] },
+      firmaNombre: { fontSize: 12, bold: true, color: "#F97316" },
+      firmaDatos: { fontSize: 9, color: "#374151" }
     }
   };
 
