@@ -50,16 +50,18 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     id = "",
     firmaConfirmacion = null,
     fechaConfirmacion = null,
-    // DATOS ACTUALIZABLES - Estos valores deben venir en el objeto 'cuenta'
-    firmaNombre = "Alex Otalora",
-    firmaTelefono = "+57 305 811 4595",
-    firmaRut = "79597683-1"
+    // DATOS OBLIGATORIOS - deben venir en el objeto 'cuenta'
+    firmaNombre,
+    firmaTelefono, 
+    firmaRut
   } = cuenta;
 
-  // Extraer datos actualizables del objeto cuenta (si existen)
-  const nombreFirma = cuenta.firmaNombre || firmaNombre;
-  const telefonoFirma = cuenta.firmaTelefono || firmaTelefono;
-  const rutFirma = cuenta.firmaRut || firmaRut;
+  // Validar que los datos requeridos estén presentes
+  if (!firmaNombre || !firmaTelefono || !firmaRut) {
+    console.error("Faltan datos de firma en el objeto cuenta:", { firmaNombre, firmaTelefono, firmaRut });
+    alert("Error: Faltan datos de contacto en la configuración");
+    return;
+  }
 
   // Cargar imágenes con rutas absolutas para GitHub Pages
   const images = await preloadImages({
@@ -199,9 +201,9 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       width: 150,
       margin: [0, 10, 0, 5]
     } : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
-    { text: nombreFirma, style: "firmaNombre" },
-    { text: telefonoFirma, style: "firmaDatos" },
-    { text: rutFirma, style: "firmaDatos", margin: [0, 0, 0, 30] },
+    { text: firmaNombre, style: "firmaNombre" },
+    { text: firmaTelefono, style: "firmaDatos" },
+    { text: firmaRut, style: "firmaDatos", margin: [0, 0, 0, 30] },
     
     // Pie de página
     { text: "Gracias por su preferencia", style: "pie", alignment: "center", margin: [0, 30, 0, 0] }
@@ -284,15 +286,16 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
     mostrarValorLetras = true,
     id = "",
     firmaConfirmacion = null,
-    firmaNombre = "Alex Otalora",
-    firmaTelefono = "+57 305 811 4595",
-    firmaRut = "79597683-1"
+    firmaNombre,
+    firmaTelefono,
+    firmaRut
   } = cuenta;
 
-  // Extraer datos actualizables
-  const nombreFirma = cuenta.firmaNombre || firmaNombre;
-  const telefonoFirma = cuenta.firmaTelefono || firmaTelefono;
-  const rutFirma = cuenta.firmaRut || firmaRut;
+  // Validar datos requeridos
+  if (!firmaNombre || !firmaTelefono || !firmaRut) {
+    console.error("Faltan datos de firma en la versión simple");
+    return;
+  }
 
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
 
@@ -329,9 +332,9 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
       ] : []),
       
       { text: "Atentamente,", style: "firmaText" },
-      { text: nombreFirma, style: "firmaNombre" },
-      { text: telefonoFirma, style: "firmaDatos" },
-      { text: rutFirma, style: "firmaDatos" }
+      { text: firmaNombre, style: "firmaNombre" },
+      { text: firmaTelefono, style: "firmaDatos" },
+      { text: firmaRut, style: "firmaDatos" }
     ],
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316", margin: [0, 0, 0, 5] },
