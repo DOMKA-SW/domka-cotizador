@@ -25,7 +25,7 @@
       document.body.innerHTML = "<div class='p-6 text-center'>❌ Cuenta de cobro no encontrada.</div>";
       return;
     }
-    const c = docu.data();
+    const c = docu.data() || {};
 
     // Cliente
     let nombre = "(sin nombre)";
@@ -46,25 +46,42 @@
     elEstado.textContent = c.estado || "pendiente";
     elEstado.className = `inline-block mt-2 px-2 py-1 rounded text-xs ${c.estado === "pagada" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`;
 
+    // 🔹 Mostrar "Debe a" y "Por concepto de"
+    if (c.concepto) {
+      const conceptoEl = document.createElement("div");
+      conceptoEl.className = "my-4";
+      conceptoEl.innerHTML = `
+        <p class="font-semibold">Debe a:</p>
+        <p>Alexander Otalora Camayo</p>
+        <p class="font-semibold mt-2">Por concepto de:</p>
+        <p>${c.concepto}</p>
+      `;
+      elNombre.parentNode.appendChild(conceptoEl);
+    }
+
     // Items
     elItems.innerHTML = "";
-    (c.items || []).forEach(it => {
-      const tr = document.createElement("tr");
-      tr.className = "border-t";
-      
-      // Ocultar columnas si es modo valor total
-      const cantidadStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
-      const precioStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
-      const subtotalStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
-      
-      tr.innerHTML = `
-        <td class="p-2">${it.descripcion || ""}</td>
-        <td class="p-2 text-right ${cantidadStyle}">${Number(it.cantidad || 0)}</td>
-        <td class="p-2 text-right ${precioStyle}">$${Number(it.precio || 0).toLocaleString("es-CO")}</td>
-        <td class="p-2 text-right ${subtotalStyle}">$${Number(it.subtotal || 0).toLocaleString("es-CO")}</td>
-      `;
-      elItems.appendChild(tr);
-    });
+    if (Array.isArray(c.items) && c.items.length > 0) {
+      c.items.forEach(it => {
+        const tr = document.createElement("tr");
+        tr.className = "border-t";
+
+        // Ocultar columnas si es modo valor total
+        const cantidadStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
+        const precioStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
+        const subtotalStyle = c.tipoCalculo === "valor-total" ? "hidden" : "";
+
+        tr.innerHTML = `
+          <td class="p-2">${it.descripcion || ""}</td>
+          <td class="p-2 text-right ${cantidadStyle}">${Number(it.cantidad || 0)}</td>
+          <td class="p-2 text-right ${precioStyle}">$${Number(it.precio || 0).toLocaleString("es-CO")}</td>
+          <td class="p-2 text-right ${subtotalStyle}">$${Number(it.subtotal || 0).toLocaleString("es-CO")}</td>
+        `;
+        elItems.appendChild(tr);
+      });
+    } else {
+      elItems.innerHTML = `<tr><td colspan="4" class="p-2 text-center text-gray-500">Sin actividades registradas</td></tr>`;
+    }
 
     // Ocultar encabezados de columnas si es modo valor total
     if (c.tipoCalculo === "valor-total") {
