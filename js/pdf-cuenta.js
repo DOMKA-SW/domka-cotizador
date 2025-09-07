@@ -126,33 +126,46 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       margin: [0, 0, 0, 20]
     },
     
-    // Información general
-    {
-      table: {
-        widths: ["*", "*"],
-        body: [
-          [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
-          [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
-          [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }],
-          [{ text: "Debe a:", style: "label" }, { text: "Alexander Otalora Camayo", style: "value" }],
-          [{ text: "Por concepto de:", style: "label" }, { text: cuenta.concepto || "-", style: "value" }]
-        ]
-      },
-      layout: "noBorders",
-      margin: [0, 0, 0, 15]
-    },
-    
-    // Detalle de items
-    { text: "Descripción del Servicio", style: "subheader" },
-    {
-      table: {
-        widths: ["*"],
-        body: [
-          [{ text: "Descripción", style: "tableHeader" }],
-          ...items.map(it => [it.descripcion || "-"])
-        ]
-      }
-    },
+// Información general (cliente, fecha, ID)
+{
+  table: {
+    widths: ["*", "*"],
+    body: [
+      [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
+      [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
+      [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
+    ]
+  },
+  layout: "noBorders",
+  margin: [0, 0, 0, 15]
+},
+
+// 🔹 "Debe a" centrado
+{
+  text: "Debe a: Alexander Otalora Camayo",
+  alignment: "center",
+  style: "subheader",
+  margin: [0, 10, 0, 20]
+},
+
+// 🔹 "Por concepto de" como subtítulo antes de los items
+{
+  text: `Por concepto de: ${cuenta.concepto || "-"}`,
+  style: "subheader",
+  margin: [0, 0, 0, 10]
+},
+
+// Detalle de items
+{ text: "Descripción del Servicio", style: "subheader" },
+{
+  table: {
+    widths: ["*"],
+    body: [
+      [{ text: "Descripción", style: "tableHeader" }],
+      ...items.map(it => [it.descripcion || "-"])
+    ]
+  }
+},
     
     // Valor total
     { text: " ", margin: [0, 10] },
