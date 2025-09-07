@@ -16,7 +16,7 @@
   const elSub = document.getElementById("subtotal");
   const elTot = document.getElementById("total");
   const elNotas = document.getElementById("notas");
-  const elTerminos = document.getElementById("terminos");
+  //const elTerminos = document.getElementById("terminos");
 
   elId.textContent = `ID: ${id}`;
 
@@ -80,7 +80,7 @@
     elSub.textContent = `Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}`;
     elTot.textContent = `Total: $${Number(c.total || 0).toLocaleString("es-CO")}`;
     elNotas.textContent = c.notas || "—";
-    elTerminos.textContent = c.terminos || "—";
+    //elTerminos.textContent = c.terminos || "—";
 
     // Valor en letras si está habilitado
     if (c.mostrarValorLetras && typeof numeroAPalabras === 'function') {
