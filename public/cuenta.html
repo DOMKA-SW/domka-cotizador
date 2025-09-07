@@ -156,6 +156,15 @@
             </div>
           </div>
 
+            <!-- 🔹 Aquí agregamos el bloque de "Debe a" y "Por concepto de" -->
+          <div class="mb-6">
+           <p class="font-semibold">Debe a:</p>
+           <p>Alexander Otalora Camayo</p>
+
+           <p class="font-semibold mt-2">Por concepto de:</p>
+           <p>${c.concepto || "-"}</p>
+          </div>
+
           <h2 class="text-lg font-semibold border-b pb-2 mb-4">Descripción del Servicio</h2>
           <div class="mb-6">
             ${(c.items || []).map(item => `
