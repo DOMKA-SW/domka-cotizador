@@ -79,12 +79,12 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       day: 'numeric'
     }) : null;
 
-  // Términos y condiciones fijos
+  /* Términos y condiciones fijos
   const terminosFijos = [
     "Esta cuenta de cobro tiene una validez de 30 días a partir de la fecha de emisión.",
     "El pago debe realizarse dentro de los 15 días posteriores a la recepción.",
     "En caso de mora, se aplicará un interés del 1.5% mensual sobre el saldo pendiente."
-  ];
+  ]; */
 
   // Contenido de firma del cliente si existe
   const contenidoFirmaCliente = firmaConfirmacion ? [
@@ -177,12 +177,12 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       { text: notas, margin: [0, 0, 0, 20] }
     ] : []),
     
-    // Términos y condiciones
+    /* Términos y condiciones
     { text: "Términos y Condiciones", style: "subheader" },
     {
       ul: terminosFijos,
       margin: [0, 0, 0, 30]
-    },
+    }, */
     
     // Firma del cliente (si existe)
     ...contenidoFirmaCliente,
