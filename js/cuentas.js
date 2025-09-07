@@ -16,7 +16,7 @@ async function cargarClientes() {
     selectCliente.innerHTML = '<option value="">-- Selecciona un cliente --</option>';
     
     snap.forEach(docu => {
-      t c = docu.data();
+      const c = docu.data();
       const opt = document.createElement("option");
       opt.value = docu.id;
       opt.textContent = c.nombreEmpresa || c.nombre || `(sin nombre)`;
