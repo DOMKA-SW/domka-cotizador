@@ -16,7 +16,7 @@ async function cargarClientes() {
     selectCliente.innerHTML = '<option value="">-- Selecciona un cliente --</option>';
     
     snap.forEach(docu => {
-      const c = docu.data();
+      t c = docu.data();
       const opt = document.createElement("option");
       opt.value = docu.id;
       opt.textContent = c.nombreEmpresa || c.nombre || `(sin nombre)`;
@@ -67,6 +67,12 @@ formCuenta.addEventListener("submit", async (e) => {
   const notas = document.getElementById("notas").value.trim();
   const valorTotal = Number(valorTotalInput.value) || 0;
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
+
+  // 🔹 Nuevos campos
+  const concepto = document.getElementById("concepto").value.trim();
+  const fechaEmision = document.getElementById("fecha-emision").value 
+    ? new Date(document.getElementById("fecha-emision").value)
+    : new Date();
   
   actualizarItems();
   
@@ -97,11 +103,12 @@ formCuenta.addEventListener("submit", async (e) => {
       clienteId,
       nombreCliente,
       telefonoCliente,
+      concepto,        // 👈 se guarda el concepto
       notas,
       items,
       total: valorTotal,
       subtotal: valorTotal,
-      fecha: new Date(),
+      fecha: fechaEmision,  // 👈 ahora la fecha viene del formulario
       estado: "pendiente",
       mostrarValorLetras,
       firmaNombre: "DOMKA",
@@ -129,6 +136,7 @@ formCuenta.addEventListener("submit", async (e) => {
     alert("Error guardando la cuenta de cobro.");
   }
 });
+
 
 // js/cuentas.js
 // ... (código anterior)
