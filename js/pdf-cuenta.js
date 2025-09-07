@@ -136,7 +136,6 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
           [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
           [{ text: "Debe a:", style: "label" }, { text: "Alexander Otalora Camayo", style: "value" }],
           [{ text: "Por concepto de:", style: "label" }, { text: cuenta.concepto || "-", style: "value" }]
-    ]
         ]
       },
       layout: "noBorders",
