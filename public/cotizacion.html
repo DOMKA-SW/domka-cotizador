@@ -6,22 +6,32 @@
   <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <!-- AGREGAR PDFMAKE -->
+  <!-- PDFMake (ya lo usas en pdf-cotizacion.js también) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
   <style>
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center py-4">
   <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-4 md:p-6 mx-2">
     <h1 class="text-2xl font-bold text-orange-600 mb-4 text-center">Cotización DOMKA</h1>
+
+    <!-- Contenedor donde se renderiza la cotización -->
     <div id="cotizacion" class="text-gray-800">
       <p>Cargando cotización...</p>
     </div>
-    
+
+    <!-- Estado visible siempre -->
+    <div id="estado-cotizacion" class="mt-4 text-center"></div>
+
+    <!-- Botón de descarga PÚBLICO: siempre visible (se ejecutará cuando la cotización esté cargada) -->
+    <div class="text-center mt-4">
+      <button id="descargar-pdf-publico" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+        📥 Descargar PDF
+      </button>
+    </div>
+
     <!-- Firma digital -->
     <div id="firma-container" class="hidden mt-6">
       <h3 class="font-semibold mb-2">Firma de aprobación</h3>
@@ -33,7 +43,7 @@
       </div>
     </div>
 
-    <!-- Botones acción -->
+    <!-- Botones acción (aprobar / rechazar) -->
     <div id="acciones" class="hidden flex flex-col sm:flex-row justify-center gap-4 mt-6">
       <button id="aprobar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 mb-2 sm:mb-0">✅ Aprobar</button>
       <button id="rechazar" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">❌ Rechazar</button>
@@ -55,6 +65,7 @@
   <script src="../js/firebase.js"></script>
   <script src="../js/numero-letras.js"></script>
   <script src="../js/pdf-cotizacion.js"></script>
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
@@ -255,6 +266,20 @@
           setTimeout(ocultarColumnasValorTotal, 100);
         }
 
+        // --- NUEVO: mostrar estado visible siempre ---
+        const estadoDiv = document.getElementById("estado-cotizacion");
+        if (estadoDiv) {
+          if (c.estado === "pendiente" || !c.estado) {
+            estadoDiv.innerHTML = `<p class="text-yellow-600 font-semibold">⏳ Cotización pendiente de aprobación</p>`;
+          } else if (c.estado === "aprobada") {
+            estadoDiv.innerHTML = `<p class="text-green-600 font-semibold">✅ Cotización aprobada</p>`;
+          } else if (c.estado === "rechazada") {
+            estadoDiv.innerHTML = `<p class="text-red-600 font-semibold">❌ Cotización rechazada</p>`;
+          } else {
+            estadoDiv.innerHTML = `<p class="text-gray-700 font-semibold">Estado: ${c.estado}</p>`;
+          }
+        }
+
         // Mostrar botones de acción solo si no está aprobada
         if (!c.estado || c.estado === "pendiente") {
           acciones.classList.remove("hidden");
@@ -264,6 +289,18 @@
             acciones.innerHTML = `<p class="text-center text-green-600 font-semibold">✅ Cotización aprobada</p>`;
             acciones.classList.remove("hidden");
           }
+        }
+
+        // --- NUEVO: asignar funcionalidad al botón público de descarga (siempre visible) ---
+        const btnPub = document.getElementById("descargar-pdf-publico");
+        if (btnPub) {
+          btnPub.onclick = () => {
+            if (cotizacionData) {
+              generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
+            } else {
+              alert('La cotización aún se está cargando. Por favor espera unos segundos.');
+            }
+          };
         }
         
       } catch (error) {
@@ -301,7 +338,7 @@
           <p class="text-sm mt-2">Firma guardada correctamente</p>
         `;
         
-        // Descargar automáticamente el PDF
+        // Descargar automáticamente el PDF (opcional)
         setTimeout(() => {
           generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
         }, 1000);
@@ -316,12 +353,17 @@
       }
     }
 
-    // Descargar PDF manualmente
-    document.getElementById("descargar-pdf").addEventListener("click", () => {
-      if (cotizacionData) {
-        generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
-      }
-    });
+    // Descargar PDF (botón dentro de confirmación)
+    const descargarPdfBtn = document.getElementById("descargar-pdf");
+    if (descargarPdfBtn) {
+      descargarPdfBtn.addEventListener("click", () => {
+        if (cotizacionData) {
+          generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
+        } else {
+          alert('La cotización aún se está cargando. Por favor espera unos segundos.');
+        }
+      });
+    }
 
     // Manejar aprobación/rechazo
     document.getElementById("aprobar").addEventListener("click", () => {
