@@ -147,9 +147,8 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       stack: [
         { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
         { text: "Alex Otalora", style: "firmaEmpresa" },
-        { text: "Gerente General", style: "firmaDatos" },
         { text: "Cel: +57 305 811 4595", style: "firmaDatos" },
-        { text: "Email: contacto@domka.com.co", style: "firmaDatos" }
+        { text: "RUT: 79.597.683-1", style: "firmaDatos" }
       ],
       width: 250
     }
