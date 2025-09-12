@@ -151,7 +151,7 @@
       container.innerHTML=`
         <!-- Datos principales -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Cliente</p><p class="font-semibold text-gray-800">${c.nombreCliente||"—"}</p></div>
+          <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Nombre/Empresa</p><p class="font-semibold text-gray-800">${c.nombreCliente||"—"}</p></div>
           <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Fecha</p><p class="font-semibold text-gray-800">${fecha.toLocaleDateString("es-CO")}</p></div>
           ${c.ubicacion?`<div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Ubicación</p><p class="font-semibold text-gray-800">${c.ubicacion}</p></div>`:""}
           <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Forma de pago</p><p class="font-semibold text-gray-800">${formatearFormaPago(c.formaPago,c.planPagos||[])}</p></div>
