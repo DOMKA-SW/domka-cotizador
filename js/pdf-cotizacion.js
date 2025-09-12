@@ -75,14 +75,12 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   let widths = [];
 
   if (tipoCalculo === "valor-total") {
-    // SOLO una columna: Descripción
     tablaItems = [
       [{ text: "Descripción", style: "tableHeader" }],
       ...items.map(it => [ it.descripcion || "" ])
     ];
     widths = ["*"];
   } else {
-    // Tabla normal con 4 columnas
     tablaItems = [
       [
         { text: "Descripción", style: "tableHeader" },
@@ -146,32 +144,30 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // Información de la empresa DOMKA (firma de autorización)
+  // Información de la empresa DOMKA
   const infoEmpresa = [
     { text: " ", margin: [0, 20] },
-    { 
-      text: "Atentamente", 
-      style: "firmaText",
-      margin: [0, 0, 0, 10],
-      alignment: "left"
-    },
+    { text: "Atentamente,", style: "firmaText" },
     {
       stack: [
         { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
-        { text: "Alex Otalora", style: "firmaEmpresa", alignment: "left" },
-        { text: "Celular: +57 305 811 4595", style: "firmaDatos", alignment: "left" },
-        { text: "RUT: 79597683-1", style: "firmaDatos", alignment: "left" }
+        { text: "Alex Otalora", style: "firmaEmpresa" },
+        { text: "Gerente General", style: "firmaDatos" },
+        { text: "Cel: +57 305 811 4595", style: "firmaDatos" },
+        { text: "Email: contacto@domka.com.co", style: "firmaDatos" },
+        { text: "www.domka.com.co", style: "firmaDatos" }
       ],
       width: 250
     }
   ];
 
+  // Contenido del PDF
   const contenido = [
 
     // Encabezado
     {
       columns: [
-        { text: "DOMKA", style: "logo", width: 100 },
+        { image: images.logo, width: 80 },
         {
           stack: [
             { text: "COTIZACIÓN", style: "header", alignment: "right" },
@@ -235,18 +231,27 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     { text: "Términos y Condiciones", style: "subheader" },
     {
       ul: [
-        "Esta cotización tiene una validez de 30 días a partir de la fecha de emisión.",
-        "El tiempo de entrega se confirmará al momento de la aprobación.",
-        formaPago !== "contado" ? "Se requiere anticipo para iniciar el trabajo." : "Pago al contado."
+        "Esta cotización tiene una validez de 30 días calendario a partir de la fecha de emisión.",
+        "El tiempo de entrega será confirmado una vez recibida la aprobación del cliente.",
+        "Los precios aquí indicados no incluyen imprevistos no contemplados en esta cotización.",
+        formaPago !== "contado" 
+          ? "Se requiere anticipo para iniciar los trabajos, de acuerdo al plan de pagos establecido." 
+          : "El pago se realizará al contado a la entrega del servicio/producto.",
+        "La aprobación de la presente cotización implica aceptación de los términos aquí descritos."
       ],
       margin: [0, 0, 0, 30]
     },
     
     // Firmas
     ...contenidoAprobacion,
-    ...infoEmpresa
+    ...infoEmpresa,
+
+    // Footer
+    { text: " ", margin: [0, 40] },
+    { text: "DOMKA Construcciones © 2025 — Todos los derechos reservados", style: "footer", alignment: "center" }
   ];
 
+  // Documento PDF
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
@@ -258,7 +263,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         absolutePosition: { x: 445, y: 30 }
       },
       {
-        image: images.logo, // Marca de agua centrada
+        image: images.logo,
         width: 300,
         opacity: 0.05,
         absolutePosition: { x: 150, y: 200 }
@@ -266,22 +271,22 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     ],
     content: contenido,
     styles: {
-      header: { fontSize: 18, bold: true, color: "#F97316" },
-      logo: { fontSize: 22, bold: true, color: "#F97316" },
-      subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5], color: "#374151" },
-      tableHeader: { bold: true, fillColor: "#F97316", color: "white", alignment: "center" },
-      label: { bold: true, fontSize: 10, color: "#374151" },
-      value: { fontSize: 10 },
-      totalLabel: { bold: true, fontSize: 12, color: "#374151" },
-      totalValue: { bold: true, fontSize: 12, color: "#F97316", alignment: "right" },
-      valorLetras: { italic: true, fontSize: 10, color: "#4B5563" },
-      firmaText: { fontSize: 12, bold: true, alignment: "left", margin: [0, 0, 0, 5] },
-      firmaEmpresa: { fontSize: 14, bold: true, color: "#F97316", alignment: "left", margin: [0, 5, 0, 2] },
-      firmaDatos: { fontSize: 9, color: "#374151", alignment: "left", margin: [0, 1, 0, 0] },
-      aprobacionHeader: { fontSize: 14, bold: true, color: "#059669", alignment: "center", margin: [0, 0, 0, 10] },
-      aprobacionText: { fontSize: 10, color: "#374151", alignment: "center" }
+      header: { fontSize: 18, bold: true, color: "#F97316", font: "Roboto" },
+      subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5], color: "#374151", font: "Roboto" },
+      tableHeader: { bold: true, fillColor: "#F97316", color: "white", alignment: "center", font: "Roboto" },
+      label: { bold: true, fontSize: 10, color: "#374151", font: "Roboto" },
+      value: { fontSize: 10, font: "Roboto" },
+      totalLabel: { bold: true, fontSize: 12, color: "#374151", font: "Roboto" },
+      totalValue: { bold: true, fontSize: 12, color: "#F97316", alignment: "right", font: "Roboto" },
+      valorLetras: { italic: true, fontSize: 10, color: "#4B5563", font: "Roboto" },
+      firmaText: { fontSize: 12, bold: true, margin: [0, 0, 0, 5], font: "Roboto" },
+      firmaEmpresa: { fontSize: 14, bold: true, color: "#F97316", margin: [0, 5, 0, 2], font: "Roboto" },
+      firmaDatos: { fontSize: 9, color: "#374151", margin: [0, 1, 0, 0], font: "Roboto" },
+      aprobacionHeader: { fontSize: 14, bold: true, color: "#059669", alignment: "center", margin: [0, 0, 0, 10], font: "Roboto" },
+      aprobacionText: { fontSize: 10, color: "#374151", alignment: "center", font: "Roboto" },
+      footer: { fontSize: 9, color: "#9CA3AF", font: "Roboto" }
     },
-    defaultStyle: { fontSize: 10 }
+    defaultStyle: { font: "Roboto", fontSize: 10 }
   };
 
   if (typeof pdfMake !== 'undefined') {
