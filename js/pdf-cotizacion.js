@@ -41,10 +41,10 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   // 👇 Cargar imágenes necesarias
   const basePath = "/domka-cotizador";
   const images = await preloadImages({
-  firma: `${basePath}/img/firma.png`,
-  logo: `${basePath}/img/logo.png`,
-  muneco: `${basePath}/img/muneco.png`
-});
+    firma: `${basePath}/img/firma.png`,
+    logo: `${basePath}/img/logo.png`,
+    muneco: `${basePath}/img/muneco.png`
+  });
 
   // Formatear fecha
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
@@ -72,24 +72,17 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
 
   // Construir tabla de ítems
   let tablaItems = [];
-  const widths = ["*", "auto", "auto", "auto"];
+  let widths = [];
 
   if (tipoCalculo === "valor-total") {
+    // SOLO una columna: Descripción
     tablaItems = [
-      [
-        { text: "Descripción", style: "tableHeader" },
-        { text: "", style: "tableHeader" },
-        { text: "", style: "tableHeader" },
-        { text: "", style: "tableHeader" }
-      ],
-      ...items.map(it => [
-        it.descripcion || "",
-        { text: "", alignment: "right" },
-        { text: "", alignment: "right" },
-        { text: "", alignment: "right" }
-      ])
+      [{ text: "Descripción", style: "tableHeader" }],
+      ...items.map(it => [ it.descripcion || "" ])
     ];
+    widths = ["*"];
   } else {
+    // Tabla normal con 4 columnas
     tablaItems = [
       [
         { text: "Descripción", style: "tableHeader" },
@@ -104,6 +97,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         { text: `$${Number(it.subtotal || 0).toLocaleString("es-CO")}`, alignment: "right" }
       ])
     ];
+    widths = ["*", "auto", "auto", "auto"];
   }
 
   // Construir plan de pagos si existe
@@ -167,7 +161,6 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
         { text: "Alex Otalora", style: "firmaEmpresa", alignment: "left" },
         { text: "Celular: +57 305 811 4595", style: "firmaDatos", alignment: "left" },
         { text: "RUT: 79597683-1", style: "firmaDatos", alignment: "left" }
-        //{ text: "contacto@domka.com", style: "firmaDatos", alignment: "left" }
       ],
       width: 250
     }
@@ -257,12 +250,12 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
     background: [
-          {
-      image: images.muneco,
-      width: 100,
-      opacity: 0.1,
-      absolutePosition: { x: 445, y: 30 }
-    },
+      {
+        image: images.muneco,
+        width: 100,
+        opacity: 0.1,
+        absolutePosition: { x: 445, y: 30 }
+      },
       {
         image: images.logo, // Marca de agua centrada
         width: 300,
