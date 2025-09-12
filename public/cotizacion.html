@@ -6,7 +6,7 @@
   <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <!-- PDFMake (ya lo usas en pdf-cotizacion.js también) -->
+  <!-- PDFMake (usado por pdf-cotizacion.js) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
   <style>
@@ -62,17 +62,24 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
+  <!-- Tus scripts locales -->
   <script src="../js/firebase.js"></script>
   <script src="../js/numero-letras.js"></script>
   <script src="../js/pdf-cotizacion.js"></script>
 
   <script>
+    // Inicializar referencias
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     const container = document.getElementById("cotizacion");
     const acciones = document.getElementById("acciones");
     const firmaContainer = document.getElementById("firma-container");
     const confirmacionFirma = document.getElementById("confirmacion-firma");
+    const estadoDiv = document.getElementById("estado-cotizacion");
+    const btnDescargaPublico = document.getElementById("descargar-pdf-publico");
+
+    // Asegúrate que firebase ya esté cargado
+    const db = firebase.firestore();
 
     let cotizacionRef;
     let signaturePad;
@@ -112,13 +119,12 @@
           alert("Por favor, proporcione su firma primero");
           return;
         }
-
         const firmaData = signaturePad.toDataURL();
         guardarAprobacionConFirma(firmaData);
       });
     }
 
-    // Traducir tipo de cotización
+    // Traducciones y utilidades
     function traducirTipo(tipo) {
       switch(tipo) {
         case "mano-obra": return "Mano de obra";
@@ -128,7 +134,6 @@
       }
     }
 
-    // Formatear forma de pago
     function formatearFormaPago(formaPago, planPagos) {
       switch(formaPago) {
         case "contado": return "Pago al contado";
@@ -136,25 +141,21 @@
         case "50-50": return "50% al inicio - 50% al finalizar";
         case "tres-pagos": return "Tres pagos (40%-30%-30%)";
         case "personalizado": 
-          return planPagos.map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
+          return (planPagos || []).map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
         default: return formaPago;
       }
     }
 
-    // Función para ocultar columnas en modo valor total
+    // Ocultar columnas cuando tipoCalculo === "valor-total" en la vista pública
     function ocultarColumnasValorTotal() {
       const tabla = document.getElementById("tabla-cotizacion-detalle");
       if (!tabla) return;
-      
-      // Ocultar encabezados
       const headers = tabla.querySelectorAll("th");
       if (headers.length >= 4) {
         headers[1].classList.add("hidden"); // Cantidad
         headers[2].classList.add("hidden"); // Precio
         headers[3].classList.add("hidden"); // Subtotal
       }
-      
-      // Ocultar celdas
       const cells = tabla.querySelectorAll("td");
       for (let i = 0; i < cells.length; i++) {
         if (cells[i].classList.contains("col-cantidad") || 
@@ -175,7 +176,7 @@
       try {
         cotizacionRef = db.collection("cotizaciones").doc(id);
         const doc = await cotizacionRef.get();
-        
+
         if (!doc.exists) {
           container.innerHTML = "<p class='text-red-600'>Error: Cotización no encontrada</p>";
           return;
@@ -184,12 +185,11 @@
         cotizacionData = doc.data();
         const c = cotizacionData;
         const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds * 1000 : c.fecha) : new Date();
-        
-        // Verificar si la función numeroAPalabras existe antes de usarla
-        const valorEnLetras = (typeof numeroAPalabras === 'function') ? 
-          numeroAPalabras(c.total || 0) : 
-          `$${Number(c.total || 0).toLocaleString("es-CO")}`;
-        
+
+        // Valor en letras (si existe la función)
+        const valorEnLetras = (typeof numeroAPalabras === 'function') ? numeroAPalabras(c.total || 0) : `$${Number(c.total || 0).toLocaleString("es-CO")}`;
+
+        // Construir HTML dinámico (incluye Ubicación si existe)
         container.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
@@ -211,6 +211,13 @@
             <p class="font-semibold">Forma de pago:</p>
             <p>${formatearFormaPago(c.formaPago, c.planPagos || [])}</p>
           </div>
+
+          ${c.ubicacion ? `
+            <div class="mb-4">
+              <p class="font-semibold">Ubicación:</p>
+              <p>${c.ubicacion}</p>
+            </div>
+          ` : ""}
 
           <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cotización</h2>
           <div class="overflow-x-auto">
@@ -252,7 +259,7 @@
           ${c.firmaAprobacion ? `
             <div class="mt-6 p-4 border rounded bg-gray-50">
               <p class="font-semibold text-green-600">✅ Cotización aprobada</p>
-              <p class="text-sm">Aprobada el: ${new Date(c.fechaAprobacion?.seconds * 1000 || Date.now()).toLocaleDateString('es-CO')}</p>
+              <p class="text-sm">Aprobada el: ${new Date(c.fechaAprobacion?.seconds ? c.fechaAprobacion.seconds * 1000 : c.fechaAprobacion || Date.now()).toLocaleDateString('es-CO')}</p>
               <div class="mt-2">
                 <p class="text-sm font-semibold">Firma de aprobación:</p>
                 <img src="${c.firmaAprobacion}" alt="Firma" class="max-w-xs mx-auto border rounded mt-2">
@@ -261,13 +268,12 @@
           ` : ""}
         `;
 
-        // Ocultar columnas si es modo valor total
+        // Si es valor-total, ocultar columnas (tanto en la vista como para que quede consistente con el PDF)
         if (c.tipoCalculo === "valor-total") {
           setTimeout(ocultarColumnasValorTotal, 100);
         }
 
-        /*  --- NUEVO: mostrar estado visible siempre ---
-        const estadoDiv = document.getElementById("estado-cotizacion");
+        // Mostrar estado (siempre visible)
         if (estadoDiv) {
           if (c.estado === "pendiente" || !c.estado) {
             estadoDiv.innerHTML = `<p class="text-yellow-600 font-semibold">⏳ Cotización pendiente de aprobación</p>`;
@@ -278,23 +284,18 @@
           } else {
             estadoDiv.innerHTML = `<p class="text-gray-700 font-semibold">Estado: ${c.estado}</p>`;
           }
-        } */
-
-        // Mostrar botones de acción solo si no está aprobada
-        if (!c.estado || c.estado === "pendiente") {
-          acciones.classList.remove("hidden");
-        } else if (c.estado === "aprobada") {
-          acciones.classList.add("hidden");
-          if (!c.firmaAprobacion) {
-            acciones.innerHTML = `<p class="text-center text-green-600 font-semibold">✅ Cotización aprobada</p>`;
-            acciones.classList.remove("hidden");
-          }
         }
 
-        // --- NUEVO: asignar funcionalidad al botón público de descarga (siempre visible) ---
-        const btnPub = document.getElementById("descargar-pdf-publico");
-        if (btnPub) {
-          btnPub.onclick = () => {
+        // Botones de acción (solo si está pendiente)
+        if (!c.estado || c.estado === "pendiente") {
+          acciones.classList.remove("hidden");
+        } else {
+          acciones.classList.add("hidden");
+        }
+
+        // Botón público de descarga: asignar handler
+        if (btnDescargaPublico) {
+          btnDescargaPublico.onclick = () => {
             if (cotizacionData) {
               generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
             } else {
@@ -302,7 +303,7 @@
             }
           };
         }
-        
+
       } catch (error) {
         console.error("Error cargando cotización:", error);
         container.innerHTML = "<p class='text-red-600'>Error al cargar la cotización</p>";
@@ -312,58 +313,57 @@
     // Guardar aprobación con firma
     async function guardarAprobacionConFirma(firmaData) {
       try {
-        // Mostrar indicador de carga
-        document.getElementById("guardar-firma").textContent = "Guardando...";
-        document.getElementById("guardar-firma").disabled = true;
-        
+        const btnGuardar = document.getElementById("guardar-firma");
+        if (btnGuardar) {
+          btnGuardar.textContent = "Guardando...";
+          btnGuardar.disabled = true;
+        }
+
         await cotizacionRef.update({ 
           estado: "aprobada",
           firmaAprobacion: firmaData,
           fechaAprobacion: new Date()
         });
-        
+
         // Actualizar datos locales
         cotizacionData.estado = "aprobada";
         cotizacionData.firmaAprobacion = firmaData;
         cotizacionData.fechaAprobacion = new Date();
-        
-        // Mostrar confirmación
+
+        // UI
         confirmacionFirma.classList.remove("hidden");
         firmaContainer.classList.add("hidden");
         acciones.classList.add("hidden");
-        
-        // Mostrar la firma guardada
+
         document.getElementById("firma-guardada").innerHTML = `
           <img src="${firmaData}" alt="Su firma" class="border rounded mx-auto max-w-full">
           <p class="text-sm mt-2">Firma guardada correctamente</p>
         `;
-        
-        // Descargar automáticamente el PDF (opcional)
+
+        // Descargar automáticamente el PDF
         setTimeout(() => {
           generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
-        }, 1000);
-        
+        }, 800);
+
       } catch (error) {
         console.error("Error al guardar firma:", error);
         alert("❌ Error al guardar la firma. Por favor, intente nuevamente.");
-        
-        // Restaurar botón
-        document.getElementById("guardar-firma").textContent = "Guardar firma";
-        document.getElementById("guardar-firma").disabled = false;
+        const btnGuardar = document.getElementById("guardar-firma");
+        if (btnGuardar) {
+          btnGuardar.textContent = "Guardar firma";
+          btnGuardar.disabled = false;
+        }
       }
     }
 
     // Descargar PDF (botón dentro de confirmación)
-    const descargarPdfBtn = document.getElementById("descargar-pdf");
-    if (descargarPdfBtn) {
-      descargarPdfBtn.addEventListener("click", () => {
-        if (cotizacionData) {
-          generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
-        } else {
-          alert('La cotización aún se está cargando. Por favor espera unos segundos.');
-        }
-      });
-    }
+    document.getElementById("descargar-pdf")?.addEventListener("click", () => {
+      if (cotizacionData) {
+        generarPDFCotizacion({...cotizacionData, id: id}, cotizacionData.nombreCliente);
+      } else {
+        alert('La cotización aún se está cargando. Por favor espera unos segundos.');
+      }
+    });
 
     // Manejar aprobación/rechazo
     document.getElementById("aprobar").addEventListener("click", () => {
@@ -379,6 +379,7 @@
           alert("❌ Cotización rechazada");
           location.reload();
         } catch (error) {
+          console.error(error);
           alert("❌ Error al rechazar cotización");
         }
       }
