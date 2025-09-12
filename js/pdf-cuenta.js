@@ -131,7 +131,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
   table: {
     widths: ["*", "*"],
     body: [
-      [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
+      [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
       [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
       [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
     ]
