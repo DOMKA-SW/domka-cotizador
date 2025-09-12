@@ -9,13 +9,19 @@
   <!-- PDFMake -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-  <style>
-    .hidden { display: none; }
-  </style>
+  <style>.hidden{display:none;}</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center py-4">
-  <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-4 md:p-6 mx-2">
-    <h1 class="text-2xl font-bold text-orange-600 mb-4 text-center">Cotización DOMKA</h1>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-6">
+  <div class="max-w-4xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 mx-2">
+
+    <!-- Encabezado -->
+    <div class="bg-gradient-to-r from-orange-600 to-orange-400 text-white p-6 rounded-lg shadow-md mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Cotización</h1>
+        <p class="text-sm">DOMKA Construcciones</p>
+      </div>
+      <img src="../img/logo.png" alt="DOMKA Logo" class="h-12">
+    </div>
 
     <!-- Contenedor cotización -->
     <div id="cotizacion" class="text-gray-800">
@@ -27,7 +33,7 @@
 
     <!-- Botón de descarga PDF -->
     <div class="text-center mt-4">
-      <button id="descargar-pdf-publico" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+      <button id="descargar-pdf-publico" class="flex items-center justify-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-lg hover:bg-orange-700 shadow">
         📥 Descargar PDF
       </button>
     </div>
@@ -45,8 +51,8 @@
 
     <!-- Botones aprobar/rechazar -->
     <div id="acciones" class="hidden flex flex-col sm:flex-row justify-center gap-4 mt-6">
-      <button id="aprobar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 mb-2 sm:mb-0">✅ Aprobar</button>
-      <button id="rechazar" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">❌ Rechazar</button>
+      <button id="aprobar" class="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 mb-2 sm:mb-0">✅ Aprobar</button>
+      <button id="rechazar" class="flex items-center gap-2 bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">❌ Rechazar</button>
     </div>
 
     <!-- Confirmación con firma -->
@@ -56,6 +62,11 @@
       <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
       <button id="descargar-pdf" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Descargar PDF</button>
     </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 text-center text-sm text-gray-500 border-t pt-4">
+      <p>DOMKA Construcciones © 2025 — Todos los derechos reservados</p>
+    </footer>
   </div>
 
   <!-- Firebase -->
@@ -75,189 +86,129 @@
     const confirmacionFirma = document.getElementById("confirmacion-firma");
     const estadoDiv = document.getElementById("estado-cotizacion");
     const btnDescargaPublico = document.getElementById("descargar-pdf-publico");
-
-
     let cotizacionRef, signaturePad, cotizacionData;
 
-    // Firma
-    function inicializarFirma() {
-      const canvas = document.getElementById("firma-pad");
-      signaturePad = new SignaturePad(canvas, { penColor: 'rgb(0,0,0)', minWidth: 1.5, maxWidth: 2.5 });
+    function inicializarFirma(){
+      const canvas=document.getElementById("firma-pad");
+      signaturePad=new SignaturePad(canvas,{penColor:"rgb(0,0,0)",minWidth:1.5,maxWidth:2.5});
     }
 
-    // Utilidades
-    function traducirTipo(tipo) {
-      switch(tipo) {
+    function traducirTipo(tipo){
+      switch(tipo){
         case "mano-obra": return "Mano de obra";
         case "materiales": return "Materiales";
         case "ambos": return "Mano de obra y materiales";
-        default: return tipo || "No especificado";
+        default: return tipo||"No especificado";
       }
     }
 
-    function formatearFormaPago(formaPago, planPagos) {
-      switch(formaPago) {
-        case "contado": return "Pago al contado";
-        case "60-40": return "60% al inicio - 40% al finalizar";
-        case "50-50": return "50% al inicio - 50% al finalizar";
-        case "tres-pagos": return "Tres pagos (40%-30%-30%)";
-        case "personalizado": return (planPagos || []).map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
-        default: return formaPago;
+    function formatearFormaPago(formaPago,planPagos){
+      switch(formaPago){
+        case "contado":return"Pago al contado";
+        case "60-40":return"60% al inicio - 40% al finalizar";
+        case "50-50":return"50% al inicio - 50% al finalizar";
+        case "tres-pagos":return"Tres pagos (40%-30%-30%)";
+        case "personalizado":return(planPagos||[]).map(p=>`${p.porcentaje}% ${p.descripcion}`).join(", ");
+        default:return formaPago;
       }
     }
 
-    function ocultarColumnasValorTotal() {
-      const tabla = document.getElementById("tabla-cotizacion-detalle");
-      if (!tabla) return;
-
-      const headers = tabla.querySelectorAll("th");
-      if (headers.length >= 4) {
-        headers[1].classList.add("hidden"); // Cantidad
-        headers[2].classList.add("hidden"); // Precio
-        headers[3].classList.add("hidden"); // Subtotal
-      }
-
-      const cells = tabla.querySelectorAll("td");
-      cells.forEach(celda => {
-        if (celda.classList.contains("col-cantidad") ||
-            celda.classList.contains("col-precio") ||
-            celda.classList.contains("col-subtotal")) {
-          celda.classList.add("hidden");
-        }
+    function ocultarColumnasValorTotal(){
+      const tabla=document.getElementById("tabla-cotizacion-detalle");
+      if(!tabla)return;
+      tabla.querySelectorAll("th")[1].classList.add("hidden");
+      tabla.querySelectorAll("th")[2].classList.add("hidden");
+      tabla.querySelectorAll("th")[3].classList.add("hidden");
+      tabla.querySelectorAll("td").forEach(celda=>{
+        if(celda.classList.contains("col-cantidad")||celda.classList.contains("col-precio")||celda.classList.contains("col-subtotal"))celda.classList.add("hidden");
       });
     }
 
-    // Guardar aprobación con firma
-    async function guardarAprobacionConFirma(firmaData) {
-      try {
-        await cotizacionRef.update({
-          estado: "aprobada",
-          firmaAprobacion: firmaData,
-          fechaAprobacion: new Date()
-        });
-
-        cotizacionData.estado = "aprobada";
-        cotizacionData.firmaAprobacion = firmaData;
-        cotizacionData.fechaAprobacion = new Date();
-
+    async function guardarAprobacionConFirma(firmaData){
+      try{
+        await cotizacionRef.update({estado:"aprobada",firmaAprobacion:firmaData,fechaAprobacion:new Date()});
+        cotizacionData.estado="aprobada";
+        cotizacionData.firmaAprobacion=firmaData;
+        cotizacionData.fechaAprobacion=new Date();
         confirmacionFirma.classList.remove("hidden");
         firmaContainer.classList.add("hidden");
         acciones.classList.add("hidden");
-
-        document.getElementById("firma-guardada").innerHTML = `
-          <img src="${firmaData}" alt="Firma" class="border rounded mx-auto max-w-full">
-        `;
-      } catch (e) {
-        alert("❌ Error al guardar la firma");
-      }
+        document.getElementById("firma-guardada").innerHTML=`<img src="${firmaData}" alt="Firma" class="border rounded mx-auto max-w-full">`;
+      }catch(e){alert("❌ Error al guardar la firma");}
     }
 
-    // Cargar cotización
-    async function cargarCotizacion() {
-      if (!id) { container.innerHTML = "<p class='text-red-600'>Error: No se especificó ID</p>"; return; }
+    async function cargarCotizacion(){
+      if(!id){container.innerHTML="<p class='text-red-600'>Error: No se especificó ID</p>";return;}
+      cotizacionRef=db.collection("cotizaciones").doc(id);
+      const doc=await cotizacionRef.get();
+      if(!doc.exists){container.innerHTML="<p class='text-red-600'>No encontrada</p>";return;}
 
-      cotizacionRef = db.collection("cotizaciones").doc(id);
-      const doc = await cotizacionRef.get();
-      if (!doc.exists) { container.innerHTML = "<p class='text-red-600'>No encontrada</p>"; return; }
+      cotizacionData=doc.data();
+      const c=cotizacionData;
+      const fecha=c.fecha?new Date(c.fecha.seconds?c.fecha.seconds*1000:c.fecha):new Date();
+      const valorEnLetras=(typeof numeroAPalabras==="function")?numeroAPalabras(c.total||0):"";
 
-      cotizacionData = doc.data();
-      const c = cotizacionData;
-      const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds*1000 : c.fecha) : new Date();
-      const valorEnLetras = (typeof numeroAPalabras === "function") ? numeroAPalabras(c.total || 0) : "";
-
-      container.innerHTML = `
+      container.innerHTML=`
+        <!-- Datos principales -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div><p class="font-semibold">Cliente:</p><p>${c.nombreCliente || "—"}</p></div>
-          <div class="md:text-right"><p class="font-semibold">Fecha:</p><p>${fecha.toLocaleDateString("es-CO")}</p></div>
+          <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Cliente</p><p class="font-semibold text-gray-800">${c.nombreCliente||"—"}</p></div>
+          <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Fecha</p><p class="font-semibold text-gray-800">${fecha.toLocaleDateString("es-CO")}</p></div>
+          ${c.ubicacion?`<div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Ubicación</p><p class="font-semibold text-gray-800">${c.ubicacion}</p></div>`:""}
+          <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Forma de pago</p><p class="font-semibold text-gray-800">${formatearFormaPago(c.formaPago,c.planPagos||[])}</p></div>
+          <div class="p-4 bg-gray-50 border rounded-lg shadow-sm"><p class="text-sm text-gray-500">Tipo</p><p class="font-semibold text-gray-800">${traducirTipo(c.tipo)}</p></div>
         </div>
 
-        <div class="mb-4"><p class="font-semibold">Tipo de cotización:</p><p>${traducirTipo(c.tipo)}</p></div>
-        <div class="mb-4"><p class="font-semibold">Forma de pago:</p><p>${formatearFormaPago(c.formaPago, c.planPagos || [])}</p></div>
-        ${c.ubicacion ? `<div class="mb-4"><p class="font-semibold">Ubicación:</p><p>${c.ubicacion}</p></div>` : ""}
-
+        <!-- Tabla -->
         <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cotización</h2>
         <div class="overflow-x-auto">
-          <table class="w-full mb-6" id="tabla-cotizacion-detalle">
-            <thead class="bg-orange-600 text-white">
-              <tr>
-                <th class="p-2 text-left">Descripción</th>
-                <th class="p-2 text-center col-cantidad">Cantidad</th>
-                <th class="p-2 text-right col-precio">Precio</th>
-                <th class="p-2 text-right col-subtotal">Subtotal</th>
-              </tr>
+          <table class="w-full text-sm text-left border rounded-lg overflow-hidden shadow-md" id="tabla-cotizacion-detalle">
+            <thead class="bg-orange-600 text-white text-sm uppercase">
+              <tr><th class="px-4 py-2">Descripción</th><th class="px-4 py-2 text-center col-cantidad">Cantidad</th><th class="px-4 py-2 text-right col-precio">Precio</th><th class="px-4 py-2 text-right col-subtotal">Subtotal</th></tr>
             </thead>
-            <tbody>
-              ${(c.items || []).map(item => `
-                <tr class="border-b">
-                  <td class="p-2">${item.descripcion || ""}</td>
-                  <td class="p-2 text-center col-cantidad">${item.cantidad || 0}</td>
-                  <td class="p-2 text-right col-precio">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
-                  <td class="p-2 text-right col-subtotal">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
-                </tr>
-              `).join("")}
+            <tbody class="divide-y divide-gray-200 bg-white">
+              ${(c.items||[]).map(item=>`
+                <tr>
+                  <td class="px-4 py-2">${item.descripcion||""}</td>
+                  <td class="px-4 py-2 text-center col-cantidad">${item.cantidad||0}</td>
+                  <td class="px-4 py-2 text-right col-precio">$${Number(item.precio||0).toLocaleString("es-CO")}</td>
+                  <td class="px-4 py-2 text-right col-subtotal">$${Number(item.subtotal||0).toLocaleString("es-CO")}</td>
+                </tr>`).join("")}
             </tbody>
           </table>
         </div>
 
-        <div class="text-right mb-4">
-          <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
-          <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
-          ${c.mostrarValorLetras ? `<p class="text-sm italic mt-1">Son: ${valorEnLetras}</p>` : ""}
+        <!-- Totales -->
+        <div class="bg-orange-50 border border-orange-200 p-4 rounded-lg shadow-sm text-right mt-4">
+          <p class="text-gray-700">Subtotal: <span class="font-semibold">$${Number(c.subtotal||0).toLocaleString("es-CO")}</span></p>
+          <p class="text-xl font-bold text-orange-700">Total: $${Number(c.total||0).toLocaleString("es-CO")}</p>
+          ${c.mostrarValorLetras?`<p class="text-sm italic mt-1 text-gray-600">Son: ${valorEnLetras}</p>`:""}
         </div>
 
-        ${c.notas ? `<div class="mb-4 p-3 bg-gray-50 rounded"><p class="font-semibold">Notas:</p><p>${c.notas}</p></div>` : ""}
+        <!-- Notas -->
+        ${c.notas?`<div class="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm mt-4"><p class="text-sm text-gray-800">${c.notas}</p></div>`:""}
       `;
 
-      // Ocultar columnas si es "valor total"
-      if (c.tipoCalculo === "valor-total") {
-        setTimeout(ocultarColumnasValorTotal, 100);
-      }
+      if(c.tipoCalculo==="valor-total"){setTimeout(ocultarColumnasValorTotal,100);}
 
       // Estado
-      if (!c.estado || c.estado === "pendiente") {
-        estadoDiv.innerHTML = `<p class="text-yellow-600 font-semibold">⏳ Pendiente</p>`;
+      if(!c.estado||c.estado==="pendiente"){
+        estadoDiv.innerHTML=`<span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">⏳ Pendiente</span>`;
         acciones.classList.remove("hidden");
-      } else if (c.estado === "aprobada") {
-        estadoDiv.innerHTML = `<p class="text-green-600 font-semibold">✅ Aprobada</p>`;
-      } else if (c.estado === "rechazada") {
-        estadoDiv.innerHTML = `<p class="text-red-600 font-semibold">❌ Rechazada</p>`;
+      }else if(c.estado==="aprobada"){
+        estadoDiv.innerHTML=`<span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">✅ Aprobada</span>`;
+      }else if(c.estado==="rechazada"){
+        estadoDiv.innerHTML=`<span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">❌ Rechazada</span>`;
       }
 
-      // Botón PDF
-      btnDescargaPublico.onclick = () => generarPDFCotizacion({...c, id}, c.nombreCliente);
+      btnDescargaPublico.onclick=()=>generarPDFCotizacion({...c,id},c.nombreCliente);
     }
 
-    // Eventos de firma/aprobación
-    document.getElementById("aprobar").addEventListener("click", () => {
-      acciones.classList.add("hidden");
-      firmaContainer.classList.remove("hidden");
-      inicializarFirma();
-    });
-
-    document.getElementById("rechazar").addEventListener("click", async () => {
-      if (confirm("¿Está seguro de que desea rechazar esta cotización?")) {
-        await cotizacionRef.update({ estado: "rechazada" });
-        location.reload();
-      }
-    });
-
-    document.getElementById("guardar-firma").addEventListener("click", () => {
-      if (signaturePad.isEmpty()) {
-        alert("Por favor, firme primero.");
-        return;
-      }
-      guardarAprobacionConFirma(signaturePad.toDataURL());
-    });
-
-    document.getElementById("limpiar-firma").addEventListener("click", () => {
-      signaturePad.clear();
-    });
-
-    document.getElementById("descargar-pdf").addEventListener("click", () => {
-      if (cotizacionData) generarPDFCotizacion({...cotizacionData, id}, cotizacionData.nombreCliente);
-    });
-
-    document.addEventListener("DOMContentLoaded", cargarCotizacion);
+    document.getElementById("aprobar").addEventListener("click",()=>{acciones.classList.add("hidden");firmaContainer.classList.remove("hidden");inicializarFirma();});
+    document.getElementById("rechazar").addEventListener("click",async()=>{if(confirm("¿Está seguro de que desea rechazar esta cotización?")){await cotizacionRef.update({estado:"rechazada"});location.reload();}});
+    document.getElementById("guardar-firma").addEventListener("click",()=>{if(signaturePad.isEmpty()){alert("Por favor, firme primero.");return;}guardarAprobacionConFirma(signaturePad.toDataURL());});
+    document.getElementById("limpiar-firma").addEventListener("click",()=>{signaturePad.clear();});
+    document.getElementById("descargar-pdf").addEventListener("click",()=>{if(cotizacionData)generarPDFCotizacion({...cotizacionData,id},cotizacionData.nombreCliente);});
+    document.addEventListener("DOMContentLoaded",cargarCotizacion);
   </script>
 </body>
 </html>
