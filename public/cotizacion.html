@@ -266,7 +266,7 @@
           setTimeout(ocultarColumnasValorTotal, 100);
         }
 
-        // --- NUEVO: mostrar estado visible siempre ---
+        /*  --- NUEVO: mostrar estado visible siempre ---
         const estadoDiv = document.getElementById("estado-cotizacion");
         if (estadoDiv) {
           if (c.estado === "pendiente" || !c.estado) {
@@ -278,7 +278,7 @@
           } else {
             estadoDiv.innerHTML = `<p class="text-gray-700 font-semibold">Estado: ${c.estado}</p>`;
           }
-        }
+        } */
 
         // Mostrar botones de acción solo si no está aprobada
         if (!c.estado || c.estado === "pendiente") {
