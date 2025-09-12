@@ -6,7 +6,7 @@
   <title>DOMKA - Cotización</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <!-- PDFMake (usado por pdf-cotizacion.js) -->
+  <!-- PDFMake -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
   <style>
@@ -17,12 +17,12 @@
   <div class="max-w-3xl w-full bg-white shadow-lg rounded-lg p-4 md:p-6 mx-2">
     <h1 class="text-2xl font-bold text-orange-600 mb-4 text-center">Cotización DOMKA</h1>
 
-    <!-- Contenedor donde se renderiza la cotización -->
+    <!-- Contenedor cotización -->
     <div id="cotizacion" class="text-gray-800">
       <p>Cargando cotización...</p>
     </div>
 
-    <!-- Estado visible siempre -->
+    <!-- Estado -->
     <div id="estado-cotizacion" class="mt-4 text-center"></div>
 
     <!-- Botón de descarga PDF -->
@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <!-- Botones acción (aprobar / rechazar) -->
+    <!-- Botones aprobar/rechazar -->
     <div id="acciones" class="hidden flex flex-col sm:flex-row justify-center gap-4 mt-6">
       <button id="aprobar" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 mb-2 sm:mb-0">✅ Aprobar</button>
       <button id="rechazar" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">❌ Rechazar</button>
@@ -55,17 +55,6 @@
       <p class="text-sm text-gray-600 mt-2">Hemos registrado su aprobación correctamente.</p>
       <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
       <button id="descargar-pdf" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Descargar PDF</button>
-    </div>
-  </div>
-
-  <!-- Modal para detalle de ítem -->
-  <div id="modal-detalle" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
-      <h3 class="text-lg font-semibold mb-4">Detalle del ítem</h3>
-      <div id="modal-contenido"></div>
-      <div class="text-right mt-4">
-        <button id="cerrar-modal" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Cerrar</button>
-      </div>
     </div>
   </div>
 
@@ -86,13 +75,17 @@
     const confirmacionFirma = document.getElementById("confirmacion-firma");
     const estadoDiv = document.getElementById("estado-cotizacion");
     const btnDescargaPublico = document.getElementById("descargar-pdf-publico");
-    const modalDetalle = document.getElementById("modal-detalle");
-    const modalContenido = document.getElementById("modal-contenido");
 
-    let cotizacionRef;
-    let signaturePad;
-    let cotizacionData = null;
+    const db = firebase.firestore();
+    let cotizacionRef, signaturePad, cotizacionData;
 
+    // Firma
+    function inicializarFirma() {
+      const canvas = document.getElementById("firma-pad");
+      signaturePad = new SignaturePad(canvas, { penColor: 'rgb(0,0,0)', minWidth: 1.5, maxWidth: 2.5 });
+    }
+
+    // Utilidades
     function traducirTipo(tipo) {
       switch(tipo) {
         case "mano-obra": return "Mano de obra";
@@ -108,139 +101,151 @@
         case "60-40": return "60% al inicio - 40% al finalizar";
         case "50-50": return "50% al inicio - 50% al finalizar";
         case "tres-pagos": return "Tres pagos (40%-30%-30%)";
-        case "personalizado": 
-          return (planPagos || []).map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
+        case "personalizado": return (planPagos || []).map(p => `${p.porcentaje}% ${p.descripcion}`).join(", ");
         default: return formaPago;
       }
     }
 
-    async function cargarCotizacion() {
-      if (!id) {
-        container.innerHTML = "<p class='text-red-600'>Error: No se especificó ID de cotización</p>";
-        return;
-      }
-
+    // Guardar aprobación con firma
+    async function guardarAprobacionConFirma(firmaData) {
       try {
-        cotizacionRef = db.collection("cotizaciones").doc(id);
-        const doc = await cotizacionRef.get();
-
-        if (!doc.exists) {
-          container.innerHTML = "<p class='text-red-600'>Error: Cotización no encontrada</p>";
-          return;
-        }
-
-        cotizacionData = doc.data();
-        const c = cotizacionData;
-        const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds * 1000 : c.fecha) : new Date();
-
-        const valorEnLetras = (typeof numeroAPalabras === 'function') 
-          ? numeroAPalabras(c.total || 0) 
-          : `$${Number(c.total || 0).toLocaleString("es-CO")}`;
-
-        container.innerHTML = `
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <p class="font-semibold">Cliente:</p>
-              <p>${c.nombreCliente || "No especificado"}</p>
-            </div>
-            <div class="md:text-right">
-              <p class="font-semibold">Fecha:</p>
-              <p>${fecha.toLocaleDateString('es-CO')}</p>
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <p class="font-semibold">Tipo de cotización:</p>
-            <p>${traducirTipo(c.tipo)}</p>
-          </div>
-
-          <div class="mb-4">
-            <p class="font-semibold">Forma de pago:</p>
-            <p>${formatearFormaPago(c.formaPago, c.planPagos || [])}</p>
-          </div>
-
-          ${c.ubicacion ? `
-            <div class="mb-4">
-              <p class="font-semibold">Ubicación:</p>
-              <p>${c.ubicacion}</p>
-            </div>
-          ` : ""}
-
-          <h2 class="text-lg font-semibold border-b pb-2 mb-4">Ítems</h2>
-          <div class="overflow-x-auto">
-            <table class="w-full mb-6">
-              <thead class="bg-orange-600 text-white">
-                <tr>
-                  <th class="p-2 text-left">Descripción</th>
-                  <th class="p-2 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(c.items || []).map((item, idx) => `
-                  <tr class="border-b">
-                    <td class="p-2">${item.descripcion || "—"}</td>
-                    <td class="p-2 text-center">
-                      <button class="ver-detalle bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700" data-idx="${idx}">
-                        Ver detalle
-                      </button>
-                    </td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="text-right mb-4">
-            <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
-            <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
-            ${c.mostrarValorLetras ? `<p class="text-sm italic mt-1">Son: ${valorEnLetras}</p>` : ""}
-          </div>
-
-          ${c.notas ? `
-            <div class="mb-4 p-3 bg-gray-50 rounded">
-              <p class="font-semibold">Notas:</p>
-              <p>${c.notas}</p>
-            </div>
-          ` : ""}
-        `;
-
-        // Estado visible
-        if (estadoDiv) {
-          if (c.estado === "pendiente" || !c.estado) {
-            estadoDiv.innerHTML = `<p class="text-yellow-600 font-semibold">⏳ Cotización pendiente de aprobación</p>`;
-          } else if (c.estado === "aprobada") {
-            estadoDiv.innerHTML = `<p class="text-green-600 font-semibold">✅ Cotización aprobada</p>`;
-          } else if (c.estado === "rechazada") {
-            estadoDiv.innerHTML = `<p class="text-red-600 font-semibold">❌ Cotización rechazada</p>`;
-          }
-        }
-
-        // Asignar botones de detalle
-        document.querySelectorAll(".ver-detalle").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const idx = btn.dataset.idx;
-            const item = (c.items || [])[idx];
-            if (!item) return;
-
-            modalContenido.innerHTML = `
-              <p><span class="font-semibold">Descripción:</span> ${item.descripcion || "—"}</p>
-              <p><span class="font-semibold">Cantidad:</span> ${item.cantidad || 0}</p>
-              <p><span class="font-semibold">Precio:</span> $${Number(item.precio || 0).toLocaleString("es-CO")}</p>
-              <p><span class="font-semibold">Subtotal:</span> $${Number(item.subtotal || 0).toLocaleString("es-CO")}</p>
-            `;
-            modalDetalle.classList.remove("hidden");
-          });
+        await cotizacionRef.update({
+          estado: "aprobada",
+          firmaAprobacion: firmaData,
+          fechaAprobacion: new Date()
         });
 
-      } catch (error) {
-        console.error("Error cargando cotización:", error);
-        container.innerHTML = "<p class='text-red-600'>Error al cargar la cotización</p>";
+        cotizacionData.estado = "aprobada";
+        cotizacionData.firmaAprobacion = firmaData;
+        cotizacionData.fechaAprobacion = new Date();
+
+        confirmacionFirma.classList.remove("hidden");
+        firmaContainer.classList.add("hidden");
+        acciones.classList.add("hidden");
+
+        document.getElementById("firma-guardada").innerHTML = `
+          <img src="${firmaData}" alt="Firma" class="border rounded mx-auto max-w-full">
+        `;
+      } catch (e) {
+        alert("❌ Error al guardar la firma");
       }
     }
 
-    // Cerrar modal
-    document.getElementById("cerrar-modal").addEventListener("click", () => {
-      modalDetalle.classList.add("hidden");
+    // Cargar cotización
+    async function cargarCotizacion() {
+      if (!id) { container.innerHTML = "<p class='text-red-600'>Error: No se especificó ID</p>"; return; }
+
+      cotizacionRef = db.collection("cotizaciones").doc(id);
+      const doc = await cotizacionRef.get();
+      if (!doc.exists) { container.innerHTML = "<p class='text-red-600'>No encontrada</p>"; return; }
+
+      cotizacionData = doc.data();
+      const c = cotizacionData;
+      const fecha = c.fecha ? new Date(c.fecha.seconds ? c.fecha.seconds*1000 : c.fecha) : new Date();
+      const valorEnLetras = (typeof numeroAPalabras === "function") ? numeroAPalabras(c.total || 0) : "";
+
+      const totalItems = (c.items || []).length;
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div><p class="font-semibold">Cliente:</p><p>${c.nombreCliente || "—"}</p></div>
+          <div class="md:text-right"><p class="font-semibold">Fecha:</p><p>${fecha.toLocaleDateString("es-CO")}</p></div>
+        </div>
+
+        <div class="mb-4"><p class="font-semibold">Tipo de cotización:</p><p>${traducirTipo(c.tipo)}</p></div>
+        <div class="mb-4"><p class="font-semibold">Forma de pago:</p><p>${formatearFormaPago(c.formaPago, c.planPagos || [])}</p></div>
+        ${c.ubicacion ? `<div class="mb-4"><p class="font-semibold">Ubicación:</p><p>${c.ubicacion}</p></div>` : ""}
+
+        <h2 class="text-lg font-semibold border-b pb-2 mb-4">Detalle de la cotización</h2>
+        <div class="mb-4">
+          <button id="toggle-items" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+            📦 Ver ítems (${totalItems})
+          </button>
+        </div>
+        <div id="items-container" class="hidden overflow-x-auto">
+          <table class="w-full mb-6">
+            <thead class="bg-orange-600 text-white">
+              <tr>
+                <th class="p-2 text-left">Descripción</th>
+                <th class="p-2 text-center">Cantidad</th>
+                <th class="p-2 text-right">Precio</th>
+                <th class="p-2 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(c.items || []).map(item => `
+                <tr class="border-b">
+                  <td class="p-2">${item.descripcion || ""}</td>
+                  <td class="p-2 text-center">${item.cantidad || 0}</td>
+                  <td class="p-2 text-right">$${Number(item.precio || 0).toLocaleString("es-CO")}</td>
+                  <td class="p-2 text-right">$${Number(item.subtotal || 0).toLocaleString("es-CO")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-right mb-4">
+          <p>Subtotal: $${Number(c.subtotal || 0).toLocaleString("es-CO")}</p>
+          <p class="text-lg font-semibold text-orange-600">Total: $${Number(c.total || 0).toLocaleString("es-CO")}</p>
+          ${c.mostrarValorLetras ? `<p class="text-sm italic mt-1">Son: ${valorEnLetras}</p>` : ""}
+        </div>
+
+        ${c.notas ? `<div class="mb-4 p-3 bg-gray-50 rounded"><p class="font-semibold">Notas:</p><p>${c.notas}</p></div>` : ""}
+      `;
+
+      // Estado
+      if (!c.estado || c.estado === "pendiente") {
+        estadoDiv.innerHTML = `<p class="text-yellow-600 font-semibold">⏳ Pendiente</p>`;
+        acciones.classList.remove("hidden");
+      } else if (c.estado === "aprobada") {
+        estadoDiv.innerHTML = `<p class="text-green-600 font-semibold">✅ Aprobada</p>`;
+      } else if (c.estado === "rechazada") {
+        estadoDiv.innerHTML = `<p class="text-red-600 font-semibold">❌ Rechazada</p>`;
+      }
+
+      // Toggle ítems
+      const btnToggle = document.getElementById("toggle-items");
+      const itemsContainer = document.getElementById("items-container");
+      btnToggle.addEventListener("click", () => {
+        itemsContainer.classList.toggle("hidden");
+        btnToggle.textContent = itemsContainer.classList.contains("hidden")
+          ? `📦 Ver ítems (${totalItems})`
+          : `📦 Ocultar ítems (${totalItems})`;
+      });
+
+      // Botón PDF
+      btnDescargaPublico.onclick = () => generarPDFCotizacion({...c, id}, c.nombreCliente);
+    }
+
+    // Eventos de firma/aprobación
+    document.getElementById("aprobar").addEventListener("click", () => {
+      acciones.classList.add("hidden");
+      firmaContainer.classList.remove("hidden");
+      inicializarFirma();
+    });
+
+    document.getElementById("rechazar").addEventListener("click", async () => {
+      if (confirm("¿Está seguro de que desea rechazar esta cotización?")) {
+        await cotizacionRef.update({ estado: "rechazada" });
+        location.reload();
+      }
+    });
+
+    document.getElementById("guardar-firma").addEventListener("click", () => {
+      if (signaturePad.isEmpty()) {
+        alert("Por favor, firme primero.");
+        return;
+      }
+      guardarAprobacionConFirma(signaturePad.toDataURL());
+    });
+
+    document.getElementById("limpiar-firma").addEventListener("click", () => {
+      signaturePad.clear();
+    });
+
+    document.getElementById("descargar-pdf").addEventListener("click", () => {
+      if (cotizacionData) generarPDFCotizacion({...cotizacionData, id}, cotizacionData.nombreCliente);
     });
 
     document.addEventListener("DOMContentLoaded", cargarCotizacion);
