@@ -177,7 +177,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       table: {
         widths: ["*", "*"],
         body: [
-          [{ text: "Cliente:", style: "label" }, { text: nombreCliente, style: "value" }],
+          [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
           ...(cotizacion.ubicacion ? [[{ text: "Ubicación:", style: "label" }, { text: cotizacion.ubicacion, style: "value" }]] : []),
           [{ text: "Fecha:", style: "label" }, { text: fechaFormateada, style: "value" }],
           [{ text: "Tipo de cotización:", style: "label" }, { text: tipoTexto, style: "value" }]
