@@ -178,12 +178,10 @@ function recalcular() {
       const precio = Number(tr.querySelector(".precio").value) || 0;
       const sub = cant * precio;
       
-      // Mostrar el subtotal calculado pero no usarlo para el total general
       tr.querySelector(".subtotal").textContent = sub.toLocaleString("es-CO");
       items.push({ descripcion: desc, cantidad: cant, precio, subtotal: sub });
     });
     
-    // El subtotal para el cálculo general es el valor total ingresado
     subtotal = total;
   }
   
@@ -191,7 +189,6 @@ function recalcular() {
   document.getElementById("subtotal").textContent = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
   document.getElementById("total").textContent = `Total: $${total.toLocaleString("es-CO")}`;
   
-  // Actualizar valor en letras
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
   if (mostrarValorLetras) {
     document.getElementById("valor-letras").textContent = numeroAPalabras(total);
@@ -209,12 +206,12 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const clienteId = clienteSelect.value;
   const notas = document.getElementById("notas").value;
+  const ubicacion = document.getElementById("ubicacion").value || ""; // 👈 NUEVO CAMPO
   const tipoCotizacion = document.querySelector('input[name="tipo"]:checked').value;
   const formaPago = formaPagoSelect.value;
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
   const { subtotal, total } = recalcular();
   
-  // Validar pagos personalizados
   if (formaPago === "personalizado" && !validarPagos()) {
     alert("Los pagos personalizados deben sumen 100%");
     return;
@@ -235,11 +232,9 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // Buscar cliente seleccionado
   const clienteDoc = await db.collection("clientes").doc(clienteId).get();
   const clienteData = clienteDoc.data() || {};
 
-  // Calcular plan de pagos
   let planPagos = [];
   if (formaPago === "contado") {
     planPagos = [{ porcentaje: 100, monto: total, descripcion: "Pago completo al contado" }];
@@ -282,6 +277,7 @@ form.addEventListener("submit", async (e) => {
     nombreCliente: clienteData.nombre || clienteData.nombreEmpresa || "Sin nombre",
     telefono: clienteData.telefono || "",
     notas,
+    ubicacion, // 👈 NUEVO CAMPO
     tipo: tipoCotizacion,
     formaPago,
     planPagos,
@@ -296,7 +292,6 @@ form.addEventListener("submit", async (e) => {
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
 
-  // Guardar link público
   await db.collection("cotizaciones").doc(docRef.id).update({
     linkPublico: `https://domka-sw.github.io/domka-cotizador/public/cotizacion.html?id=${docRef.id}`
   });
@@ -307,7 +302,6 @@ form.addEventListener("submit", async (e) => {
   pagosPersonalizadosDiv.classList.add("hidden");
   document.getElementById("valor-letras").textContent = "Cero pesos";
   
-  // Resetear tipo de cálculo a por defecto
   document.querySelector('input[name="tipo-calculo"][value="por-items"]').checked = true;
   tipoCalculo = "por-items";
   campoValorTotal.classList.add("hidden");
@@ -326,7 +320,6 @@ async function cargarCotizaciones() {
     const c = doc.data();
     const nombreCliente = c.nombreCliente || c.clienteId;
     
-    // Traducir tipo de cotización
     let tipoTexto = "";
     switch(c.tipo) {
       case "mano-obra": tipoTexto = "Mano de obra"; break;
@@ -347,7 +340,6 @@ async function cargarCotizaciones() {
       </td>
     `;
 
-    // Botón PDF
     tr.querySelector(".btn-pdf").addEventListener("click", () => {
       generarPDFCotizacion({...c, id: doc.id}, nombreCliente);
     });
@@ -356,10 +348,8 @@ async function cargarCotizaciones() {
   });
 }
 
-// Inicializar cuando el documento esté listo
 document.addEventListener("DOMContentLoaded", function() {
   cargarClientes();
   cargarCotizaciones();
   toggleColumnasItems();
 });
-
