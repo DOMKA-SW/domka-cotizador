@@ -210,5 +210,50 @@
     document.getElementById("descargar-pdf").addEventListener("click",()=>{if(cotizacionData)generarPDFCotizacion({...cotizacionData,id},cotizacionData.nombreCliente);});
     document.addEventListener("DOMContentLoaded",cargarCotizacion);
   </script>
+
+  <!-- Bloque nuevo para tracking de visitas -->
+  <script>
+    (function() {
+      const id = new URLSearchParams(window.location.search).get("id");
+      if (!id) return;
+
+      async function fetchIpInfo() {
+        try {
+          const resp = await fetch("https://ipapi.co/json/");
+          if (!resp.ok) throw new Error("ip lookup failed");
+          return await resp.json();
+        } catch (e) {
+          console.warn("IP lookup failed:", e);
+          return {};
+        }
+      }
+
+      async function logView() {
+        const ipInfo = await fetchIpInfo();
+        const payload = {
+          docId: id,
+          event: "view",
+          userAgent: navigator.userAgent || null,
+          referer: document.referrer || null,
+          pagePath: window.location.pathname + window.location.search,
+          ip: ipInfo.ip || null,
+          city: ipInfo.city || null,
+          region: ipInfo.region || null,
+          country: ipInfo.country_name || null,
+          timezone: ipInfo.timezone || null,
+          org: ipInfo.org || null,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+          await db.collection("logs").add(payload);
+        } catch (err) {
+          console.warn("Error guardando log:", err);
+        }
+      }
+
+      window.addEventListener("load", logView);
+    })();
+  </script>
 </body>
 </html>
