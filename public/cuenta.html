@@ -275,25 +275,6 @@
 
     // Cargar la cuenta cuando la página esté lista
     document.addEventListener('DOMContentLoaded', cargarCuenta);
-
-    // 🔹 Tracking de visitas (se ejecuta al cargar la página)
-    async function registrarVisita() {
-      if (!id) return;
-      try {
-        await db.collection("cuentas").doc(id).collection("visitas").add({
-          fecha: new Date(),
-          userAgent: navigator.userAgent,
-          idioma: navigator.language,
-          plataforma: navigator.platform
-        });
-        console.log("✅ Visita registrada");
-      } catch (error) {
-        console.error("❌ Error registrando visita:", error);
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", registrarVisita);
-
   </script>
 </body>
 </html>
