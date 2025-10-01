@@ -27,7 +27,7 @@ function login() {
 function logout() {
   window.auth.signOut()
     .then(() => {
-      window.location.href = "home.html";  // 🔹 Redirige a home.html
+      window.location.href = "home.html";  // 🔹 Redirige al home al salir
     })
     .catch((error) => {
       console.error("Error al cerrar sesión:", error);
@@ -36,8 +36,10 @@ function logout() {
 
 // --- PROTECCIÓN DE PÁGINAS PRIVADAS ---
 window.auth.onAuthStateChanged(function(user) {
-  // Evitar que corra en home.html (página pública inicial)
-  if (window.location.pathname.includes("home.html")) return;
+  const path = window.location.pathname;
+
+  // Evitar que corra en páginas públicas
+  if (path.includes("home.html") || path.includes("index.html")) return;
 
   if (!user) {
     // No logueado → redirigir a home.html
