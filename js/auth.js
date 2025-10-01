@@ -16,7 +16,7 @@ function login() {
 
   window.auth.signInWithEmailAndPassword(email, password)
     .then(() => {
-      window.location.href = "dashboard.html";
+      window.location.href = "dashboard.html"; // al iniciar sesión
     })
     .catch((error) => {
       alert("Error en login: " + error.message);
@@ -27,7 +27,7 @@ function login() {
 function logout() {
   window.auth.signOut()
     .then(() => {
-      window.location.href = "home.html";  // 🔹 Redirige al home al salir
+      window.location.href = "home.html";  // al cerrar sesión
     })
     .catch((error) => {
       console.error("Error al cerrar sesión:", error);
@@ -36,15 +36,17 @@ function logout() {
 
 // --- PROTECCIÓN DE PÁGINAS PRIVADAS ---
 window.auth.onAuthStateChanged(function(user) {
-  // Obtener el archivo actual (ej: "clientes.html", "index.html")
   const page = window.location.pathname.split("/").pop();
 
-  // Páginas públicas → no aplicar redirección
-  if (page === "" || page === "home.html" || page === "index.html") {
+  // Páginas públicas
+  const publicPages = ["", "home.html", "index.html", "cotizacion.html", "cuenta.html"];
+
+  // Si estamos en una página pública → no hacer nada
+  if (publicPages.includes(page)) {
     return;
   }
 
-  // Si no hay usuario y la página NO es pública → mandar al home
+  // Si no hay usuario en una página privada → mandar al home
   if (!user) {
     window.location.href = "home.html";
   }
