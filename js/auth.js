@@ -27,7 +27,7 @@ function login() {
 function logout() {
   window.auth.signOut()
     .then(() => {
-      window.location.href = "home.html";  // al cerrar sesión
+      window.location.href = "home.html"; // al cerrar sesión
     })
     .catch((error) => {
       console.error("Error al cerrar sesión:", error);
@@ -38,11 +38,17 @@ function logout() {
 window.auth.onAuthStateChanged(function(user) {
   const page = window.location.pathname.split("/").pop();
 
-  // Páginas públicas
-  const publicPages = ["", "home.html", "index.html", "cotizacion.html", "cuenta.html"];
+  // ✅ Solo estas páginas son públicas
+  const publicPages = [
+    "",              // ruta vacía → index.html por defecto en GitHub Pages
+    "index.html",
+    "home.html",
+    "cotizacion.html",
+    "cuenta.html"
+  ];
 
-  // Si estamos en una página pública → no hacer nada
-  if (publicPages.includes(page)) {
+  // Si estamos en /public → también es público
+  if (publicPages.includes(page) || window.location.pathname.includes("/public/")) {
     return;
   }
 
