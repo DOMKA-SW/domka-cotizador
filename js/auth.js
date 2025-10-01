@@ -36,13 +36,16 @@ function logout() {
 
 // --- PROTECCIÓN DE PÁGINAS PRIVADAS ---
 window.auth.onAuthStateChanged(function(user) {
-  const path = window.location.pathname;
+  // Obtener el archivo actual (ej: "clientes.html", "index.html")
+  const page = window.location.pathname.split("/").pop();
 
-  // Evitar que corra en páginas públicas
-  if (path.includes("home.html") || path.includes("index.html")) return;
+  // Páginas públicas → no aplicar redirección
+  if (page === "" || page === "home.html" || page === "index.html") {
+    return;
+  }
 
+  // Si no hay usuario y la página NO es pública → mandar al home
   if (!user) {
-    // No logueado → redirigir a home.html
     window.location.href = "home.html";
   }
 });
