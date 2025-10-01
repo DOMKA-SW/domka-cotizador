@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotizador Inteligente</title>
+  <style>
+    /* ================== ESTILOS BASE ================== */
+    :root {
+      --primary: #ff6600;
+      --primary-light: #ffa366;
+      --light: #ffffff;
+      --gray: #f9f9f9;
+      --dark: #333333;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--dark);
+      background: var(--light);
+    }
+    a { text-decoration: none; }
+
+    /* ================== HEADER ================== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: var(--light);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header img {
+      height: 50px;
+    }
+    nav a {
+      margin-left: 1.5rem;
+      color: var(--dark);
+      font-weight: 500;
+    }
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    /* ================== HERO ================== */
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      color: var(--light);
+    }
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn {
+      background: var(--light);
+      color: var(--primary);
+      padding: 1rem 2rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      transition: 0.3s;
+      display: inline-block;
+    }
+    .btn:hover {
+      background: #ffe6d5;
+      transform: scale(1.05);
+    }
+
+    /* ================== FEATURES ================== */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 4rem 2rem;
+      background: var(--gray);
+    }
+    .feature {
+      background: var(--light);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+    }
+    .feature img {
+      width: 100%;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .feature h2 {
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    /* ================== HOW IT WORKS ================== */
+    .steps {
+      padding: 4rem 2rem;
+      text-align: center;
+      background: var(--light);
+    }
+    .steps h2 {
+      color: var(--primary);
+      margin-bottom: 2rem;
+    }
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--gray);
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      text-align: left;
+    }
+    .step span {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    /* ================== CTA FINAL ================== */
+    .cta {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--primary);
+      color: var(--light);
+    }
+    .cta h2 {
+      margin-bottom: 1rem;
+    }
+    .cta .btn {
+      background: var(--light);
+      color: var(--primary);
+    }
+
+    /* ================== FOOTER ================== */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--light);
+      color: var(--dark);
+      font-size: 0.9rem;
+      border-top: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <img src="img/logo.png" alt="Logo Cotizador">
+    <nav>
+      <a href="#features">Características</a>
+      <a href="#steps">Cómo funciona</a>
+      <a href="#contact">Contacto</a>
+      <a href="index.html">Login</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Cotizador Inteligente</h1>
+    <p>Convierte el proceso de cotizar en una experiencia ágil, moderna y confiable. Toda tu información en un solo lugar.</p>
+    <a href="index.html" class="btn">Entrar</a>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="features">
+    <div class="feature">
+      <img src="img/dashboard.png" alt="Dashboard">
+      <h2>Dashboard en tiempo real</h2>
+      <p>Visualiza y gestiona todas tus cotizaciones con un panel intuitivo.</p>
+    </div>
+    <div class="feature">
+      <img src="img/cotizacion.png" alt="Cotización">
+      <h2>Cotiza en segundos</h2>
+      <p>Genera cotizaciones personalizadas con unos pocos clics.</p>
+    </div>
+    <div class="feature">
+      <img src="img/estadisticas.png" alt="Estadísticas">
+      <h2>Estadísticas claras</h2>
+      <p>Toma mejores decisiones con reportes automáticos y gráficos.</p>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="steps" class="steps">
+    <h2>Cómo funciona</h2>
+    <div class="step-list">
+      <div class="step">
+        <span>1</span>
+        <p>Inicia sesión de manera segura con tu cuenta.</p>
+      </div>
+      <div class="step">
+        <span>2</span>
+        <p>Configura tus productos, precios y condiciones.</p>
+      </div>
+      <div class="step">
+        <span>3</span>
+        <p>Genera cotizaciones y compártelas al instante.</p>
+      </div>
+      <div class="step">
+        <span>4</span>
+        <p>Accede a estadísticas y reportes en tiempo real.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta">
+    <h2>¿Listo para empezar?</h2>
+    <p>Tu nueva forma de cotizar te espera.</p>
+    <a href="https://wa.link/u0hlni" class="btn">Contacto</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contact">
+    DOMKA
+  </footer>
+</body>
+</html>
