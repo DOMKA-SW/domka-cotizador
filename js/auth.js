@@ -27,13 +27,24 @@ function login() {
 function logout() {
   window.auth.signOut()
     .then(() => {
-      window.location.href = "index.html";
+      window.location.href = "home.html";  // 🔹 Redirige a home.html
     })
     .catch((error) => {
       console.error("Error al cerrar sesión:", error);
     });
 }
 
-// Exponer en window
+// --- PROTECCIÓN DE PÁGINAS PRIVADAS ---
+window.auth.onAuthStateChanged(function(user) {
+  // Evitar que corra en home.html (página pública inicial)
+  if (window.location.pathname.includes("home.html")) return;
+
+  if (!user) {
+    // No logueado → redirigir a home.html
+    window.location.href = "home.html";
+  }
+});
+
+// Exponer funciones en window
 window.login = login;
 window.logout = logout;
