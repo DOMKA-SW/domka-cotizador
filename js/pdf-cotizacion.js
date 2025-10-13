@@ -123,13 +123,13 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   // Firma del cliente
   const contenidoAprobacion = firmaAprobacion ? [
     { text: " ", margin: [0, 20] },
-    { text: "APROBACIÓN DEL CLIENTE", style: "aprobacionHeader" },
+    { text: "RECIBIDO", style: "aprobacionHeader" },
     {
       columns: [
         { text: " ", width: "*" },
         {
           stack: [
-            { text: `Fecha de aprobación: ${fechaAprobacionFormateada}`, style: "aprobacionText" },
+            { text: `Fecha de recibido: ${fechaAprobacionFormateada}`, style: "aprobacionText" },
             { image: firmaAprobacion, width: 150, margin: [0, 10, 0, 5] },
             { text: "Firma del cliente", alignment: "center", style: "aprobacionText" }
           ],
