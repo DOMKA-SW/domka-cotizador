@@ -18,10 +18,15 @@
     .modal-backdrop {
       background-color: rgba(0, 0, 0, 0.5);
     }
+    /* Mejorar el canvas de firma */
+    #firma-pad {
+      touch-action: none;
+      cursor: crosshair;
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center py-6">
-  <!-- Modal de Recomendación - NUEVO -->
+  <!-- Modal de Recomendación -->
   <div id="modal-recomendacion" class="fixed inset-0 z-50 hidden">
     <div class="modal-backdrop absolute inset-0"></div>
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -104,7 +109,6 @@
     </div>
   </div>
 
-  <!-- TODO TU CÓDIGO ORIGINAL SE MANTIENE IGUAL -->
   <div class="max-w-4xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 mx-2">
 
     <!-- Encabezado -->
@@ -180,34 +184,64 @@
     const estadoDiv = document.getElementById("estado-cotizacion");
     const btnDescargaPublico = document.getElementById("descargar-pdf-publico");
     
-    // NUEVAS VARIABLES PARA EL MODAL
+    // Variables para el modal
     const modalRecomendacion = document.getElementById("modal-recomendacion");
     const btnCerrarModal = document.getElementById("btn-cerrar-modal");
     const btnEmpezarFirma = document.getElementById("btn-empezar-firma");
     
     let cotizacionRef, signaturePad, cotizacionData;
 
-    // FUNCIONES NUEVAS PARA EL MODAL
+    // Función para mostrar el modal automáticamente
     function mostrarModalRecomendacion() {
-      modalRecomendacion.classList.remove('hidden');
-      // Track en analytics
-      try {
-        db.collection("logs").add({
-          docId: id,
-          event: "modal_recomendacion_mostrado",
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      } catch (e) { console.warn("Error en analytics modal:", e); }
+      // Pequeño delay para que se cargue primero la cotización
+      setTimeout(() => {
+        modalRecomendacion.classList.remove('hidden');
+        // Track en analytics
+        try {
+          db.collection("logs").add({
+            docId: id,
+            event: "modal_recomendacion_mostrado",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (e) { console.warn("Error en analytics modal:", e); }
+      }, 1000);
     }
 
     function ocultarModalRecomendacion() {
       modalRecomendacion.classList.add('hidden');
     }
 
-    // TODO TU CÓDIGO ORIGINAL SE MANTIENE IGUAL
     function inicializarFirma(){
-      const canvas=document.getElementById("firma-pad");
-      signaturePad=new SignaturePad(canvas,{penColor:"rgb(0,0,0)",minWidth:1.5,maxWidth:2.5});
+      const canvas = document.getElementById("firma-pad");
+      
+      // Configuración mejorada para la firma
+      signaturePad = new SignaturePad(canvas, {
+        penColor: "rgb(0, 0, 0)",
+        minWidth: 1.5,
+        maxWidth: 2.5,
+        throttle: 16, // Mejor rendimiento
+        minDistance: 2 // Mejor precisión
+      });
+
+      // Ajustar el canvas para alta resolución
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      signaturePad.clear(); // Limpiar después del ajuste
+
+      // Solucionar problema de coordenadas del mouse/touch
+      function resizeCanvas() {
+        const canvas = document.getElementById("firma-pad");
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
     }
 
     function traducirTipo(tipo){
@@ -321,6 +355,10 @@
       if(!c.estado||c.estado==="pendiente"){
         estadoDiv.innerHTML=`<span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">⏳ Pendiente</span>`;
         acciones.classList.remove("hidden");
+        
+        // NUEVO: Mostrar modal automáticamente para cotizaciones pendientes
+        mostrarModalRecomendacion();
+        
       }else if(c.estado==="aprobada"){
         estadoDiv.innerHTML=`<span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">✅ Aprobada</span>`;
       }else if(c.estado==="rechazada"){
@@ -330,10 +368,11 @@
       btnDescargaPublico.onclick=()=>generarPDFCotizacion({...c,id},c.nombreCliente);
     }
 
-    // EVENT LISTENERS ORIGINALES MODIFICADOS PARA EL MODAL
+    // Event Listeners
     document.getElementById("aprobar").addEventListener("click",()=>{
       acciones.classList.add("hidden");
-      mostrarModalRecomendacion(); // NUEVO: muestra el modal en lugar de la firma directa
+      firmaContainer.classList.remove("hidden");
+      inicializarFirma();
     });
     
     document.getElementById("rechazar").addEventListener("click",async()=>{
@@ -359,10 +398,11 @@
       if(cotizacionData)generarPDFCotizacion({...cotizacionData,id},cotizacionData.nombreCliente);
     });
 
-    // NUEVOS EVENT LISTENERS PARA EL MODAL
+    // Event listeners del modal
     btnCerrarModal.addEventListener("click", ocultarModalRecomendacion);
     btnEmpezarFirma.addEventListener("click", () => {
       ocultarModalRecomendacion();
+      acciones.classList.add("hidden");
       firmaContainer.classList.remove("hidden");
       inicializarFirma();
     });
