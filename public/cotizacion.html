@@ -40,8 +40,8 @@
 
     <!-- Firma digital -->
     <div id="firma-container" class="hidden mt-6">
-      <h3 class="font-semibold mb-2">Firma de aprobación</h3>
-      <p class="text-sm text-gray-600 mb-3">Por favor, firme en el recuadro para aprobar la cotización</p>
+      <h3 class="font-semibold mb-2">Firma de recibido</h3>
+      <p class="text-sm text-gray-600 mb-3">Por favor, firme en el recuadro para confirma recibido de la cotización</p>
       <canvas id="firma-pad" class="border rounded w-full" width="500" height="200"></canvas>
       <div class="flex justify-between mt-2">
         <button id="limpiar-firma" class="text-sm text-gray-600 hover:text-gray-800 px-3 py-1 border rounded">Limpiar firma</button>
@@ -51,14 +51,14 @@
 
     <!-- Botones aprobar/rechazar -->
     <div id="acciones" class="hidden flex flex-col sm:flex-row justify-center gap-4 mt-6">
-      <button id="aprobar" class="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 mb-2 sm:mb-0">✅ Aprobar</button>
+      <button id="aprobar" class="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 mb-2 sm:mb-0">✅ Recibido</button>
       <button id="rechazar" class="flex items-center gap-2 bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700">❌ Rechazar</button>
     </div>
 
     <!-- Confirmación con firma -->
     <div id="confirmacion-firma" class="hidden mt-6 text-center">
-      <p class="text-green-600 font-semibold">✅ Cotización aprobada con firma digital</p>
-      <p class="text-sm text-gray-600 mt-2">Hemos registrado su aprobación correctamente.</p>
+      <p class="text-green-600 font-semibold">✅ Cotización recibida con firma digital</p>
+      <p class="text-sm text-gray-600 mt-2">Hemos registrado su recepción correctamente.</p>
       <div id="firma-guardada" class="mt-4 mx-auto max-w-xs"></div>
       <button id="descargar-pdf" class="mt-4 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Descargar PDF</button>
     </div>
