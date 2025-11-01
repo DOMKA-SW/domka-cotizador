@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>DOMKA - Cotizador</title>
+  <title>DOMKA - Cotizador Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -15,41 +15,84 @@
     }
   </script>
 </head>
-<body class="h-screen bg-gradient-to-r from-orange-50 via-white to-orange-100 flex items-center justify-center">
+<body class="bg-gray-50 text-gray-800">
 
-  <div class="flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden max-w-5xl w-full m-4">
-    
-    <!-- Lado izquierdo: Branding -->
-    <div class="md:w-1/2 bg-domka text-white flex flex-col justify-center items-center p-8 text-center">
-      <img src="img/logo.png" alt="Logo DOMKA" class="w-48 mb-6">
-      <h2 class="text-3xl font-bold mb-3">Bienvenido a DOMKA</h2>
-      <p class="text-white/90 text-sm max-w-md">
-        Plataforma inteligente para cotización y gestión ágil de proyectos.
-        Inicia sesión para acceder a tu panel de control.
+  <!-- Sección Hero -->
+  <section class="bg-gradient-to-r from-domka to-orange-400 text-white py-20">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <img src="img/logo.png" alt="DOMKA Logo" class="mx-auto w-48 mb-6 drop-shadow-lg">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4">Cotiza fácil, rápido y desde cualquier lugar</h1>
+      <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto">
+        DOMKA es una plataforma inteligente que te permite generar cotizaciones profesionales y enviarlas por correo o WhatsApp con solo unos clics.
       </p>
+      <a href="#registro" class="bg-white text-domka font-semibold px-6 py-3 rounded-full shadow hover:bg-gray-100 transition">
+        ¡Empieza ahora!
+      </a>
     </div>
+  </section>
 
-    <!-- Lado derecho: Formulario de login -->
-    <div class="md:w-1/2 p-10 flex flex-col justify-center bg-white">
-      <h1 class="text-2xl font-bold text-domka mb-6 text-center">Iniciar Sesión</h1>
-
-      <input id="email" type="email" placeholder="Correo electrónico" 
-             class="border border-gray-300 w-full p-3 mb-4 rounded-lg focus:ring-2 focus:ring-domka outline-none transition">
-      <input id="password" type="password" placeholder="Contraseña" 
-             class="border border-gray-300 w-full p-3 mb-4 rounded-lg focus:ring-2 focus:ring-domka outline-none transition">
-
-      <button onclick="login()" 
-              class="bg-domka text-white w-full py-3 rounded-lg font-semibold hover:bg-orange-700 transition">
-        Ingresar
-      </button>
-
-      <p id="error" class="text-red-500 text-sm mt-3 text-center"></p>
-
-      <div class="mt-8 text-center text-gray-500 text-sm">
-        <p>¿Olvidaste tu contraseña? <a href="#" class="text-domka hover:underline">Recupérala aquí</a></p>
+  <!-- Sección Beneficios -->
+  <section class="py-16 bg-white" id="beneficios">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <h2 class="text-3xl font-bold text-domka mb-10">¿Por qué usar DOMKA?</h2>
+      <div class="grid md:grid-cols-3 gap-10 text-left">
+        <div class="p-6 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+          <h3 class="text-xl font-semibold mb-3">💡 Cotiza en minutos</h3>
+          <p>Genera cotizaciones profesionales de forma rápida y sencilla, sin hojas de cálculo ni complicaciones.</p>
+        </div>
+        <div class="p-6 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+          <h3 class="text-xl font-semibold mb-3">📤 Envía por WhatsApp o email</h3>
+          <p>Comparte tus cotizaciones directamente con tus clientes a través de los canales más usados.</p>
+        </div>
+        <div class="p-6 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
+          <h3 class="text-xl font-semibold mb-3">📈 Administra tus proyectos</h3>
+          <p>Guarda, organiza y haz seguimiento de tus cotizaciones desde tu panel personalizado.</p>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Sección Registro / Login -->
+  <section id="registro" class="bg-gray-100 py-20">
+    <div class="max-w-5xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden md:flex">
+      
+      <!-- Información lateral -->
+      <div class="md:w-1/2 bg-domka text-white flex flex-col justify-center p-10 text-center">
+        <h2 class="text-3xl font-bold mb-4">Únete a DOMKA</h2>
+        <p class="text-white/90 mb-6">Crea tu cuenta o inicia sesión para acceder a todas las funcionalidades del cotizador.</p>
+        <a href="https://wa.link/54lg8f" target="_blank" class="bg-white text-domka font-semibold py-3 px-6 rounded-full hover:bg-gray-100 transition inline-block">
+          📞 Contáctanos por WhatsApp
+        </a>
+      </div>
+
+      <!-- Formulario -->
+      <div class="md:w-1/2 p-10 flex flex-col justify-center">
+        <h3 class="text-2xl font-bold text-domka mb-6 text-center">Accede a tu cuenta</h3>
+
+        <input id="email" type="email" placeholder="Correo electrónico"
+          class="border border-gray-300 w-full p-3 mb-4 rounded-lg focus:ring-2 focus:ring-domka outline-none transition">
+        <input id="password" type="password" placeholder="Contraseña"
+          class="border border-gray-300 w-full p-3 mb-4 rounded-lg focus:ring-2 focus:ring-domka outline-none transition">
+
+        <button onclick="login()"
+          class="bg-domka text-white w-full py-3 rounded-lg font-semibold hover:bg-orange-700 transition">
+          Ingresar
+        </button>
+
+        <p id="error" class="text-red-500 text-sm mt-3 text-center"></p>
+
+        <div class="mt-6 text-center text-gray-500 text-sm">
+          <p>¿Aún no tienes cuenta? <a href="https://wa.link/54lg8f" target="_blank" class="text-domka hover:underline">Regístrate por WhatsApp</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-6 text-center text-sm">
+    <p>© 2025 DOMKA. Todos los derechos reservados.</p>
+    <p>Hecho con ❤️ en Colombia</p>
+  </footer>
 
   <!-- Scripts originales -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
