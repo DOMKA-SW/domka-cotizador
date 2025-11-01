@@ -4,119 +4,314 @@
   <meta charset="UTF-8">
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <title>DOMKA - Cotizador Inteligente</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { domka: "#f97316" },
-          fontFamily: { sans: ["Inter", "sans-serif"] }
-        }
+
+  <style>
+    /* ====== ESTILOS GENERALES ====== */
+    body {
+      margin: 0;
+      font-family: "Inter", Arial, sans-serif;
+      background-color: #f9fafb;
+      color: #333;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+    }
+
+    /* ====== HERO ====== */
+    .hero {
+      background: linear-gradient(135deg, #f97316, #fb923c);
+      color: #fff;
+      padding: 100px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .hero-content {
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .hero-logo {
+      background-color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .hero-logo img {
+      width: 180px;
+      height: auto;
+      display: block;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      line-height: 1.2;
+      max-width: 700px;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin-bottom: 30px;
+    }
+
+    .hero .cta {
+      background: white;
+      color: #f97316;
+      font-weight: 600;
+      padding: 15px 35px;
+      border-radius: 50px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+    }
+
+    .hero .cta:hover {
+      background: #f1f1f1;
+    }
+
+    /* ====== SECCIÓN BENEFICIOS ====== */
+    .benefits {
+      background: #fff;
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .benefits h2 {
+      font-size: 2rem;
+      color: #f97316;
+      margin-bottom: 40px;
+    }
+
+    .benefit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .benefit {
+      background: #f9fafb;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .benefit:hover {
+      transform: translateY(-5px);
+    }
+
+    .benefit h3 {
+      color: #f97316;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+    }
+
+    /* ====== SECCIÓN LOGIN ====== */
+    .login-section {
+      background: #f3f4f6;
+      padding: 100px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .login-info {
+      background: #f97316;
+      color: white;
+      flex: 1;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .login-info h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .login-info p {
+      margin-bottom: 25px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .login-info a {
+      background: white;
+      color: #f97316;
+      padding: 12px 25px;
+      border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    .login-form {
+      flex: 1;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-form h3 {
+      text-align: center;
+      color: #f97316;
+      font-size: 1.8rem;
+      margin-bottom: 25px;
+    }
+
+    .login-form input {
+      padding: 14px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+      width: 100%;
+    }
+
+    .login-form button {
+      background: #f97316;
+      color: white;
+      font-weight: 600;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .login-form button:hover {
+      background: #ea580c;
+    }
+
+    .login-form p {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: red;
+    }
+
+    .login-form .small {
+      text-align: center;
+      color: #555;
+      font-size: 0.9rem;
+      margin-top: 15px;
+    }
+
+    /* ====== FOOTER ====== */
+    footer {
+      background: #111;
+      color: #aaa;
+      text-align: center;
+      padding: 25px;
+      font-size: 0.9rem;
+    }
+
+    /* ====== RESPONSIVE ====== */
+    @media (min-width: 768px) {
+      .hero-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+      }
+
+      .login-container {
+        flex-direction: row;
       }
     }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  </style>
 </head>
 
-<body class="bg-gray-50 font-sans text-gray-800">
+<body>
 
-  <!-- HERO PRINCIPAL -->
-  <section class="relative bg-gradient-to-br from-domka to-orange-500 text-white py-24 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
-
-      <!-- Lado Izquierdo -->
-      <div class="md:w-1/2 text-center md:text-left">
-        <img src="img/logo.png" alt="DOMKA Logo" class="mx-auto md:mx-0 w-48 mb-8 brightness-0 invert">
-        <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
-          Cotiza fácil, rápido y <span class="text-yellow-200">sin complicaciones</span>
-        </h1>
-        <p class="text-lg md:text-xl text-white/90 mb-8">
-          Con DOMKA podrás crear cotizaciones profesionales, enviarlas por correo o WhatsApp, y gestionar todo desde un solo lugar.
-        </p>
-        <a href="#registro" class="bg-white text-domka font-semibold px-8 py-4 rounded-full shadow-lg hover:bg-gray-100 transition">
-          🚀 Empieza ahora
-        </a>
-      </div>
-
-      <!-- Lado Derecho: Mockup de Dashboard -->
-      <div class="md:w-1/2 relative">
-        <div class="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-white/20">
-          <img src="https://cdn.dribbble.com/userupload/8476612/file/original-27e3ce44f28f2eb22ac15a968b86c998.png?resize=1200x900" 
-               alt="Ejemplo Dashboard DOMKA"
-               class="rounded-xl border border-white/30 shadow-lg">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div>
+        <div class="hero-logo">
+          <img src="img/logo.png" alt="DOMKA Logo">
         </div>
-        <div class="absolute -bottom-8 -right-6 bg-white/10 p-4 rounded-lg border border-white/30 text-sm text-white/90 hidden md:block">
-          💡 Plataforma en la nube - Accede desde cualquier dispositivo.
-        </div>
+        <h1>Cotiza fácil, rápido y sin complicaciones</h1>
+        <p>DOMKA es la herramienta que te permite crear cotizaciones profesionales, enviarlas por correo o WhatsApp y administrarlas desde un solo lugar.</p>
+        <a href="#login" class="cta">🚀 Empezar ahora</a>
       </div>
-
     </div>
   </section>
 
   <!-- BENEFICIOS -->
-  <section class="py-20 bg-white">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <h2 class="text-3xl md:text-4xl font-bold text-domka mb-10">¿Por qué elegir DOMKA?</h2>
-      <div class="grid md:grid-cols-3 gap-10">
-        <div class="p-8 rounded-2xl shadow hover:shadow-xl transition bg-gray-50">
-          <div class="text-domka text-4xl mb-4">⚡</div>
-          <h3 class="text-xl font-semibold mb-2">Cotiza en minutos</h3>
-          <p>Genera propuestas profesionales con plantillas personalizables y envío automático.</p>
-        </div>
-        <div class="p-8 rounded-2xl shadow hover:shadow-xl transition bg-gray-50">
-          <div class="text-domka text-4xl mb-4">💬</div>
-          <h3 class="text-xl font-semibold mb-2">Comparte al instante</h3>
-          <p>Envía tus cotizaciones por <strong>WhatsApp</strong> o <strong>email</strong> directamente desde la plataforma.</p>
-        </div>
-        <div class="p-8 rounded-2xl shadow hover:shadow-xl transition bg-gray-50">
-          <div class="text-domka text-4xl mb-4">📊</div>
-          <h3 class="text-xl font-semibold mb-2">Control total</h3>
-          <p>Administra clientes, historial de cotizaciones y seguimiento desde tu panel.</p>
-        </div>
+  <section class="benefits">
+    <h2>¿Por qué usar DOMKA?</h2>
+    <div class="benefit-grid">
+      <div class="benefit">
+        <h3>⚡ Cotiza en minutos</h3>
+        <p>Crea cotizaciones personalizadas sin hojas de cálculo, de forma sencilla y rápida.</p>
+      </div>
+      <div class="benefit">
+        <h3>💬 Envíos instantáneos</h3>
+        <p>Comparte tus cotizaciones directamente por WhatsApp o correo electrónico.</p>
+      </div>
+      <div class="benefit">
+        <h3>📈 Control total</h3>
+        <p>Gestiona todos tus clientes y cotizaciones desde un mismo panel profesional.</p>
       </div>
     </div>
   </section>
 
-  <!-- LOGIN / REGISTRO -->
-  <section id="registro" class="py-24 bg-gray-100">
-    <div class="max-w-5xl mx-auto flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden">
-      
-      <!-- Lado Izquierdo -->
-      <div class="md:w-1/2 bg-domka text-white flex flex-col justify-center items-center p-10 text-center">
-        <h2 class="text-3xl font-bold mb-4">Forma parte de DOMKA</h2>
-        <p class="text-white/90 mb-6">Si aún no tienes cuenta, escríbenos por WhatsApp y te ayudamos a crearla en minutos.</p>
-        <a href="https://wa.link/54lg8f" target="_blank" class="bg-white text-domka font-semibold py-3 px-8 rounded-full hover:bg-gray-100 transition">
-          💬 Contáctanos por WhatsApp
-        </a>
+  <!-- LOGIN -->
+  <section id="login" class="login-section">
+    <div class="login-container">
+      <div class="login-info">
+        <h2>Únete a DOMKA</h2>
+        <p>¿No tienes cuenta? Escríbenos y te ayudaremos a crearla.</p>
+        <a href="https://wa.link/54lg8f" target="_blank">💬 Contactar por WhatsApp</a>
       </div>
 
-      <!-- Lado Derecho (Formulario) -->
-      <div class="md:w-1/2 p-10 flex flex-col justify-center">
-        <h3 class="text-2xl font-bold text-domka mb-6 text-center">Accede a tu cuenta</h3>
-
-        <input id="email" type="email" placeholder="Correo electrónico"
-          class="border border-gray-300 w-full p-3 mb-4 rounded-lg focus:ring-2 focus:ring-domka outline-none transition">
-        <input id="password" type="password" placeholder="Contraseña"
-          class="border border-gray-300 w-full p-3 mb-4 rounded-lg focus:ring-2 focus:ring-domka outline-none transition">
-
-        <button onclick="login()"
-          class="bg-domka text-white w-full py-3 rounded-lg font-semibold hover:bg-orange-700 transition">
-          Ingresar
-        </button>
-
-        <p id="error" class="text-red-500 text-sm mt-3 text-center"></p>
-
-        <div class="mt-6 text-center text-gray-500 text-sm">
-          <p>¿Olvidaste tu contraseña? <a href="https://wa.link/54lg8f" target="_blank" class="text-domka hover:underline">Recupérala por WhatsApp</a></p>
+      <div class="login-form">
+        <h3>Iniciar Sesión</h3>
+        <input id="email" type="email" placeholder="Correo electrónico">
+        <input id="password" type="password" placeholder="Contraseña">
+        <button onclick="login()">Ingresar</button>
+        <p id="error"></p>
+        <div class="small">
+          ¿Olvidaste tu contraseña? <a href="https://wa.link/54lg8f" target="_blank" style="color:#f97316;">Recupérala por WhatsApp</a>
         </div>
       </div>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer class="bg-gray-900 text-gray-400 py-6 text-center text-sm">
-    <p>© 2025 DOMKA. Todos los derechos reservados.</p>
-    <p>Hecho con ❤️ en Colombia</p>
+  <footer>
+    © 2025 DOMKA. Todos los derechos reservados. | Hecho con ❤️ en Colombia
   </footer>
 
   <!-- Scripts originales -->
@@ -125,6 +320,5 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="js/firebase.js"></script>
   <script src="js/auth.js"></script>
-
 </body>
 </html>
