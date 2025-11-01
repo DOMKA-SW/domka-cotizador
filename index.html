@@ -3,322 +3,290 @@
 <head>
   <meta charset="UTF-8">
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>DOMKA - Cotizador Inteligente</title>
-
+  <title>DOMKA - Cotizador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ====== ESTILOS GENERALES ====== */
+    :root {
+      --primary: #ff6b00;
+      --bg: #f5f6fa;
+      --text-dark: #2f3640;
+      --glass: rgba(255, 255, 255, 0.85);
+      --border: rgba(255, 255, 255, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+    }
+
     body {
-      margin: 0;
-      font-family: "Inter", Arial, sans-serif;
-      background-color: #f9fafb;
-      color: #333;
+      background: linear-gradient(135deg, #f0f0f0, #ffffff);
+      color: var(--text-dark);
+      overflow-x: hidden;
     }
 
-    h1, h2, h3 {
-      margin: 0;
-      font-weight: 700;
-    }
-
-    a {
-      text-decoration: none;
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-    }
-
-    /* ====== HERO ====== */
+    /* Hero Section */
     .hero {
-      background: linear-gradient(135deg, #f97316, #fb923c);
-      color: #fff;
-      padding: 100px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
+      padding: 80px 20px 60px;
+      background: linear-gradient(120deg, #ffffff 40%, #f8f9ff);
+      position: relative;
     }
 
-    .hero-content {
-      max-width: 1100px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: -100px;
+      right: -150px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255, 107, 0, 0.15), transparent);
+      filter: blur(60px);
+      z-index: 0;
     }
 
-    .hero-logo {
-      background-color: white;
-      padding: 12px 20px;
+    .hero .logo-box {
+      background: white;
+      padding: 15px 25px;
       border-radius: 12px;
-      display: inline-block;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 2;
     }
 
-    .hero-logo img {
+    .hero img {
       width: 180px;
       height: auto;
       display: block;
     }
 
     .hero h1 {
-      font-size: 2.8rem;
-      line-height: 1.2;
-      max-width: 700px;
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      z-index: 2;
     }
 
     .hero p {
-      font-size: 1.1rem;
-      max-width: 650px;
-      margin-bottom: 30px;
+      font-size: 1rem;
+      color: #555;
+      max-width: 600px;
+      margin: 0 auto 25px;
+      z-index: 2;
     }
 
     .hero .cta {
-      background: white;
-      color: #f97316;
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
       font-weight: 600;
-      padding: 15px 35px;
-      border-radius: 50px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       transition: all 0.3s ease;
     }
 
     .hero .cta:hover {
-      background: #f1f1f1;
+      background: #e55b00;
     }
 
-    /* ====== SECCIÓN BENEFICIOS ====== */
-    .benefits {
-      background: #fff;
-      padding: 80px 20px;
-      text-align: center;
-    }
-
-    .benefits h2 {
-      font-size: 2rem;
-      color: #f97316;
-      margin-bottom: 40px;
-    }
-
-    .benefit-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 30px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .benefit {
-      background: #f9fafb;
-      border-radius: 15px;
-      padding: 30px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease;
-    }
-
-    .benefit:hover {
-      transform: translateY(-5px);
-    }
-
-    .benefit h3 {
-      color: #f97316;
-      margin-bottom: 10px;
-      font-size: 1.3rem;
-    }
-
-    /* ====== SECCIÓN LOGIN ====== */
-    .login-section {
-      background: #f3f4f6;
-      padding: 100px 20px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .login-container {
-      display: flex;
-      flex-direction: column;
-      background: white;
+    /* Dashboard Preview */
+    .dashboard-demo {
+      background: var(--glass);
       border-radius: 20px;
-      overflow: hidden;
-      max-width: 900px;
-      width: 100%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 30px;
+      margin: 60px auto;
+      max-width: 800px;
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
     }
 
-    .login-info {
-      background: #f97316;
-      color: white;
-      flex: 1;
-      padding: 50px;
+    .dashboard-header {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .login-info h2 {
-      font-size: 2rem;
-      margin-bottom: 15px;
-    }
-
-    .login-info p {
-      margin-bottom: 25px;
-      color: rgba(255,255,255,0.9);
-    }
-
-    .login-info a {
-      background: white;
-      color: #f97316;
-      padding: 12px 25px;
-      border-radius: 30px;
-      font-weight: 600;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    }
-
-    .login-form {
-      flex: 1;
-      padding: 50px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .login-form h3 {
-      text-align: center;
-      color: #f97316;
-      font-size: 1.8rem;
-      margin-bottom: 25px;
-    }
-
-    .login-form input {
-      padding: 14px;
+      justify-content: space-between;
       margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 1rem;
-      width: 100%;
-    }
-
-    .login-form button {
-      background: #f97316;
-      color: white;
       font-weight: 600;
-      padding: 14px;
-      border-radius: 10px;
+    }
+
+    .dashboard-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #eee;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
       font-size: 1rem;
-      transition: all 0.3s ease;
+      color: var(--primary);
     }
 
-    .login-form button:hover {
-      background: #ea580c;
-    }
-
-    .login-form p {
-      text-align: center;
-      margin-top: 10px;
+    .card p {
       font-size: 0.9rem;
-      color: red;
+      color: #666;
     }
 
-    .login-form .small {
+    /* Login Section */
+    .login-section {
+      background: linear-gradient(180deg, #fff 60%, #f7f7f7);
+      padding: 60px 20px;
       text-align: center;
+    }
+
+    .login-box {
+      background: var(--glass);
+      border-radius: 16px;
+      padding: 30px;
+      margin: 0 auto;
+      max-width: 400px;
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .login-box h2 {
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 0.95rem;
+    }
+
+    .login-box button {
+      width: 100%;
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .login-box button:hover {
+      background: #e55b00;
+    }
+
+    .login-box p {
+      font-size: 0.9rem;
       color: #555;
-      font-size: 0.9rem;
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
-    /* ====== FOOTER ====== */
+    .login-box a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-box a:hover {
+      text-decoration: underline;
+    }
+
     footer {
-      background: #111;
-      color: #aaa;
       text-align: center;
-      padding: 25px;
-      font-size: 0.9rem;
+      padding: 20px;
+      font-size: 0.85rem;
+      color: #888;
     }
 
-    /* ====== RESPONSIVE ====== */
-    @media (min-width: 768px) {
-      .hero-content {
-        flex-direction: row;
-        justify-content: space-between;
-        text-align: left;
+    @media (max-width: 768px) {
+      .dashboard-content {
+        grid-template-columns: 1fr;
       }
-
-      .login-container {
-        flex-direction: row;
+      .hero h1 {
+        font-size: 1.8rem;
       }
     }
   </style>
 </head>
-
 <body>
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-content">
-      <div>
-        <div class="hero-logo">
-          <img src="img/logo.png" alt="DOMKA Logo">
-        </div>
-        <h1>Cotiza fácil, rápido y sin complicaciones</h1>
-        <p>DOMKA es la herramienta que te permite crear cotizaciones profesionales, enviarlas por correo o WhatsApp y administrarlas desde un solo lugar.</p>
-        <a href="#login" class="cta">🚀 Empezar ahora</a>
+    <div class="logo-box">
+      <img src="img/logo.png" alt="Logo DOMKA">
+    </div>
+    <h1>DOMKA Cotizador Inteligente</h1>
+    <p>
+      Cotiza productos y servicios de forma rápida, envía tus resultados por correo o WhatsApp,
+      y gestiona tus cuentas de cobro desde un solo lugar.
+    </p>
+    <a href="https://wa.link/54lg8f" target="_blank" class="cta">
+      💬 Cotiza o contáctanos en WhatsApp
+    </a>
+  </section>
+
+  <!-- DASHBOARD DEMO -->
+  <section class="dashboard-demo">
+    <div class="dashboard-header">
+      <span>Panel de usuario</span>
+      <span>👤 demo@domka.com</span>
+    </div>
+    <div class="dashboard-content">
+      <div class="card">
+        <h3>📦 Cotizaciones</h3>
+        <p>Administra tus cotizaciones recientes.</p>
+      </div>
+      <div class="card">
+        <h3>💼 Cuentas de cobro</h3>
+        <p>Genera y envía cuentas fácilmente.</p>
+      </div>
+      <div class="card">
+        <h3>📊 Reportes</h3>
+        <p>Visualiza tus ventas y estadísticas.</p>
       </div>
     </div>
   </section>
 
-  <!-- BENEFICIOS -->
-  <section class="benefits">
-    <h2>¿Por qué usar DOMKA?</h2>
-    <div class="benefit-grid">
-      <div class="benefit">
-        <h3>⚡ Cotiza en minutos</h3>
-        <p>Crea cotizaciones personalizadas sin hojas de cálculo, de forma sencilla y rápida.</p>
-      </div>
-      <div class="benefit">
-        <h3>💬 Envíos instantáneos</h3>
-        <p>Comparte tus cotizaciones directamente por WhatsApp o correo electrónico.</p>
-      </div>
-      <div class="benefit">
-        <h3>📈 Control total</h3>
-        <p>Gestiona todos tus clientes y cotizaciones desde un mismo panel profesional.</p>
-      </div>
+  <!-- LOGIN SECTION -->
+  <section class="login-section">
+    <div class="login-box">
+      <h2>¿Ya eres parte de DOMKA?</h2>
+      <input id="email" type="email" placeholder="Correo electrónico">
+      <input id="password" type="password" placeholder="Contraseña">
+      <button onclick="login()">Ingresar</button>
+      <p id="error"></p>
+      <p>¿Nuevo por aquí? <a href="https://wa.link/54lg8f" target="_blank">Regístrate por WhatsApp</a></p>
     </div>
   </section>
 
-  <!-- LOGIN -->
-  <section id="login" class="login-section">
-    <div class="login-container">
-      <div class="login-info">
-        <h2>Únete a DOMKA</h2>
-        <p>¿No tienes cuenta? Escríbenos y te ayudaremos a crearla.</p>
-        <a href="https://wa.link/54lg8f" target="_blank">💬 Contactar por WhatsApp</a>
-      </div>
-
-      <div class="login-form">
-        <h3>Iniciar Sesión</h3>
-        <input id="email" type="email" placeholder="Correo electrónico">
-        <input id="password" type="password" placeholder="Contraseña">
-        <button onclick="login()">Ingresar</button>
-        <p id="error"></p>
-        <div class="small">
-          ¿Olvidaste tu contraseña? <a href="https://wa.link/54lg8f" target="_blank" style="color:#f97316;">Recupérala por WhatsApp</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
   <footer>
-    © 2025 DOMKA. Todos los derechos reservados. | Hecho con ❤️ en Colombia
+    © 2025 DOMKA - Plataforma de Cotización y Cuentas de Cobro.
   </footer>
 
-  <!-- Scripts originales -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="js/firebase.js"></script>
   <script src="js/auth.js"></script>
+
 </body>
 </html>
