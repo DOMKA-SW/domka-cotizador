@@ -2,16 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>DOMKA - Cotizador</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOMKA - Cotizador Inteligente</title>
+  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <style>
     :root {
-      --primary: #ff6b00;
-      --bg: #f5f6fa;
-      --text-dark: #2f3640;
-      --glass: rgba(255, 255, 255, 0.85);
-      --border: rgba(255, 255, 255, 0.3);
+      --domka: #f97316;
+      --gradient1: #ff8a05;
+      --gradient2: #ff6b00;
+      --text-dark: #2b2b2b;
+      --text-light: #555;
+      --bg: #fafafa;
     }
 
     * {
@@ -22,185 +23,233 @@
     }
 
     body {
-      background: linear-gradient(135deg, #f0f0f0, #ffffff);
+      background: var(--bg);
       color: var(--text-dark);
       overflow-x: hidden;
     }
 
-    /* Hero Section */
+    /* Hero principal */
     .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       text-align: center;
-      padding: 80px 20px 60px;
-      background: linear-gradient(120deg, #ffffff 40%, #f8f9ff);
+      padding: 100px 20px 60px;
+      background: linear-gradient(120deg, #fff 40%, #fef5ef);
       position: relative;
+      overflow: hidden;
     }
 
     .hero::before {
       content: "";
       position: absolute;
-      top: -100px;
+      width: 600px;
+      height: 600px;
+      top: -150px;
       right: -150px;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(255, 107, 0, 0.15), transparent);
-      filter: blur(60px);
+      background: radial-gradient(circle, rgba(255, 138, 5, 0.15), transparent);
+      filter: blur(50px);
       z-index: 0;
     }
 
-    .hero .logo-box {
+    .logo-box {
       background: white;
-      padding: 15px 25px;
-      border-radius: 12px;
+      padding: 10px 25px;
+      border-radius: 16px;
+      display: inline-block;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       position: relative;
       z-index: 2;
     }
 
-    .hero img {
+    .logo-box img {
       width: 180px;
       height: auto;
       display: block;
     }
 
     .hero h1 {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      position: relative;
       z-index: 2;
     }
 
     .hero p {
-      font-size: 1rem;
-      color: #555;
+      font-size: 1.05rem;
+      color: var(--text-light);
       max-width: 600px;
-      margin: 0 auto 25px;
+      margin: 0 auto 30px;
       z-index: 2;
     }
 
-    .hero .cta {
+    .cta {
       display: inline-block;
-      background: var(--primary);
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--gradient1), var(--gradient2));
       color: white;
-      padding: 12px 25px;
-      border-radius: 8px;
+      border-radius: 10px;
       text-decoration: none;
       font-weight: 600;
       transition: all 0.3s ease;
+      z-index: 2;
+      position: relative;
     }
 
-    .hero .cta:hover {
-      background: #e55b00;
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
     }
 
-    /* Dashboard Preview */
-    .dashboard-demo {
-      background: var(--glass);
-      border-radius: 20px;
-      padding: 30px;
-      margin: 60px auto;
+    /* Dashboard simulado */
+    .dashboard-preview {
+      position: relative;
+      margin: 80px auto;
       max-width: 800px;
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+      transform: rotate(1deg);
+      transition: transform 0.5s ease;
+    }
+
+    .dashboard-preview:hover {
+      transform: rotate(0deg) scale(1.02);
+    }
+
+    .dashboard-border {
+      background: linear-gradient(135deg, var(--gradient1), var(--gradient2));
+      border-radius: 30px;
+      padding: 10px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .dashboard-inner {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
     }
 
     .dashboard-header {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      font-weight: 600;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 25px;
     }
+
+    .dashboard-header div {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .red { background: #ff5f56; }
+    .yellow { background: #ffbd2e; }
+    .green { background: #27c93f; }
 
     .dashboard-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
+    .bar {
+      height: 12px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      width: 80%;
+    }
+
+    .bar.short { width: 50%; }
+    .bar.long { width: 95%; }
+
+    .dashboard-box {
+      margin-top: 25px;
+      background: linear-gradient(135deg, #fff8f3, #fffaf7);
+      border-radius: 16px;
+      border: 1px solid #ffe0c2;
+      padding: 25px;
       text-align: center;
-      border: 1px solid #eee;
-      transition: 0.3s;
+      font-weight: 600;
+      color: var(--domka);
+      box-shadow: 0 2px 12px rgba(249, 115, 22, 0.08);
     }
 
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    .decor1, .decor2 {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.3;
+      filter: blur(40px);
     }
 
-    .card h3 {
-      margin-bottom: 10px;
-      font-size: 1rem;
-      color: var(--primary);
+    .decor1 {
+      top: -30px;
+      right: -30px;
+      width: 100px;
+      height: 100px;
+      background: #ffedd5;
     }
 
-    .card p {
-      font-size: 0.9rem;
-      color: #666;
+    .decor2 {
+      bottom: -40px;
+      left: -40px;
+      width: 120px;
+      height: 120px;
+      background: #ffd9b3;
     }
 
-    /* Login Section */
+    /* Login */
     .login-section {
-      background: linear-gradient(180deg, #fff 60%, #f7f7f7);
-      padding: 60px 20px;
+      background: #fff;
       text-align: center;
+      padding: 80px 20px;
     }
 
     .login-box {
-      background: var(--glass);
-      border-radius: 16px;
-      padding: 30px;
-      margin: 0 auto;
       max-width: 400px;
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+      padding: 30px;
+      border: 1px solid #f0f0f0;
     }
 
     .login-box h2 {
-      color: var(--primary);
+      color: var(--domka);
       margin-bottom: 20px;
     }
 
     .login-box input {
       width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 15px;
+      padding: 12px;
       border-radius: 8px;
       border: 1px solid #ddd;
-      font-size: 0.95rem;
+      margin-bottom: 15px;
+      font-size: 1rem;
     }
 
     .login-box button {
       width: 100%;
-      background: var(--primary);
-      border: none;
-      color: white;
       padding: 12px;
       border-radius: 8px;
+      background: linear-gradient(135deg, var(--gradient1), var(--gradient2));
+      border: none;
+      color: white;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s ease;
     }
 
     .login-box button:hover {
-      background: #e55b00;
+      opacity: 0.9;
     }
 
     .login-box p {
-      font-size: 0.9rem;
-      color: #555;
       margin-top: 10px;
+      font-size: 0.9rem;
     }
 
     .login-box a {
-      color: var(--primary);
+      color: var(--domka);
       text-decoration: none;
       font-weight: 500;
     }
@@ -211,61 +260,53 @@
 
     footer {
       text-align: center;
-      padding: 20px;
+      padding: 30px 10px;
       font-size: 0.85rem;
-      color: #888;
+      color: #777;
+      background: #fafafa;
     }
 
     @media (max-width: 768px) {
-      .dashboard-content {
-        grid-template-columns: 1fr;
-      }
-      .hero h1 {
-        font-size: 1.8rem;
-      }
+      .hero h1 { font-size: 1.8rem; }
+      .dashboard-preview { transform: rotate(0deg); }
     }
   </style>
 </head>
 <body>
 
-  <!-- HERO -->
   <section class="hero">
     <div class="logo-box">
       <img src="img/logo.png" alt="Logo DOMKA">
     </div>
     <h1>DOMKA Cotizador Inteligente</h1>
     <p>
-      Cotiza productos y servicios de forma rápida, envía tus resultados por correo o WhatsApp,
-      y gestiona tus cuentas de cobro desde un solo lugar.
+      Crea cotizaciones profesionales, envíalas por correo o WhatsApp, y gestiona tus cuentas de cobro fácilmente desde un solo lugar.
     </p>
-    <a href="https://wa.link/54lg8f" target="_blank" class="cta">
-      💬 Cotiza o contáctanos en WhatsApp
-    </a>
-  </section>
+    <a href="https://wa.link/54lg8f" target="_blank" class="cta">💬 Cotiza o contáctanos en WhatsApp</a>
 
-  <!-- DASHBOARD DEMO -->
-  <section class="dashboard-demo">
-    <div class="dashboard-header">
-      <span>Panel de usuario</span>
-      <span>👤 demo@domka.com</span>
-    </div>
-    <div class="dashboard-content">
-      <div class="card">
-        <h3>📦 Cotizaciones</h3>
-        <p>Administra tus cotizaciones recientes.</p>
+    <!-- Dashboard demo -->
+    <div class="dashboard-preview">
+      <div class="dashboard-border">
+        <div class="dashboard-inner">
+          <div class="dashboard-header">
+            <div class="red"></div>
+            <div class="yellow"></div>
+            <div class="green"></div>
+          </div>
+          <div class="dashboard-content">
+            <div class="bar"></div>
+            <div class="bar short"></div>
+            <div class="bar long"></div>
+            <div class="dashboard-box">📊 Dashboard Interactivo</div>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <h3>💼 Cuentas de cobro</h3>
-        <p>Genera y envía cuentas fácilmente.</p>
-      </div>
-      <div class="card">
-        <h3>📊 Reportes</h3>
-        <p>Visualiza tus ventas y estadísticas.</p>
-      </div>
+      <div class="decor1"></div>
+      <div class="decor2"></div>
     </div>
   </section>
 
-  <!-- LOGIN SECTION -->
+  <!-- LOGIN -->
   <section class="login-section">
     <div class="login-box">
       <h2>¿Ya eres parte de DOMKA?</h2>
@@ -273,7 +314,7 @@
       <input id="password" type="password" placeholder="Contraseña">
       <button onclick="login()">Ingresar</button>
       <p id="error"></p>
-      <p>¿Nuevo por aquí? <a href="https://wa.link/54lg8f" target="_blank">Regístrate por WhatsApp</a></p>
+      <p>¿Aún no tienes cuenta? <a href="https://wa.link/54lg8f" target="_blank">Regístrate por WhatsApp</a></p>
     </div>
   </section>
 
