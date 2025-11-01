@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DOMKA - Cotizador Inteligente</title>
-  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMKA | Plataforma de Cotización y Cuentas de Cobro</title>
+  <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+
   <style>
     :root {
       --domka: #f97316;
@@ -13,13 +14,13 @@
       --text: #1f2937;
       --text-light: #6b7280;
       --white: #ffffff;
-      --accent: #ffedd5;
+      --radius: 16px;
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
       font-family: "Poppins", sans-serif;
     }
 
@@ -29,153 +30,103 @@
       overflow-x: hidden;
     }
 
-    /* HEADER / HERO */
+    /* HERO SECTION */
     .hero {
-      background: linear-gradient(135deg, #fff 40%, #fff8f3);
+      background: linear-gradient(135deg, #fff 50%, #fff6ef);
       text-align: center;
-      padding: 100px 20px 80px;
+      padding: 100px 20px 60px;
       position: relative;
-      overflow: hidden;
     }
 
     .hero::before {
       content: "";
       position: absolute;
-      top: -120px;
+      top: -100px;
       right: -150px;
       width: 600px;
       height: 600px;
       background: radial-gradient(circle, rgba(249, 115, 22, 0.15), transparent);
       filter: blur(80px);
+      z-index: 0;
     }
 
     .logo-box {
       background: white;
-      padding: 10px 25px;
-      border-radius: 16px;
       display: inline-block;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      padding: 10px 25px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
       margin-bottom: 25px;
-      z-index: 2;
+      z-index: 1;
       position: relative;
     }
 
     .logo-box img {
       width: 180px;
       height: auto;
-      display: block;
     }
 
     .hero h1 {
-      font-size: 2.5rem;
+      font-size: 2.7rem;
       font-weight: 700;
-      color: var(--text);
       margin-bottom: 15px;
-      z-index: 2;
-      position: relative;
     }
 
     .hero p {
       font-size: 1.1rem;
       color: var(--text-light);
-      max-width: 650px;
-      margin: 0 auto 35px;
+      max-width: 600px;
+      margin: 0 auto 30px;
     }
 
     .cta {
-      display: inline-block;
       background: linear-gradient(135deg, var(--domka), var(--domka-dark));
       color: white;
-      padding: 14px 30px;
+      padding: 14px 32px;
       border-radius: 10px;
-      text-decoration: none;
       font-weight: 600;
+      text-decoration: none;
       transition: all 0.3s ease;
+      display: inline-block;
     }
 
     .cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+      box-shadow: 0 8px 25px rgba(249, 115, 22, 0.35);
+      transform: translateY(-3px);
     }
 
-    /* FEATURES */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 30px;
-      padding: 80px 20px;
-      max-width: 1100px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .feature {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 40px 25px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .feature:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-
-    .feature span {
-      font-size: 2rem;
-      color: var(--domka);
-      display: block;
-      margin-bottom: 15px;
-    }
-
-    .feature h3 {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-
-    .feature p {
-      color: var(--text-light);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    /* DASHBOARD DEMO */
-    .dashboard-preview {
-      position: relative;
-      margin: 100px auto;
+    /* DASHBOARD MOCKUP */
+    .dashboard-demo {
+      margin: 60px auto 0;
       max-width: 850px;
       transform: rotate(1deg);
-      transition: transform 0.5s ease;
+      transition: all 0.5s ease;
     }
 
-    .dashboard-preview:hover {
+    .dashboard-demo:hover {
       transform: rotate(0deg) scale(1.02);
     }
 
-    .dashboard-border {
+    .dash-border {
       background: linear-gradient(135deg, var(--domka), var(--domka-dark));
       border-radius: 30px;
       padding: 10px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
     }
 
-    .dashboard-inner {
+    .dash-inner {
       background: white;
       border-radius: 20px;
       padding: 25px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
     }
 
-    .dashboard-header {
+    .dash-header {
       display: flex;
-      align-items: center;
       gap: 8px;
       margin-bottom: 25px;
     }
 
-    .dashboard-header div {
+    .dot {
       width: 12px;
       height: 12px;
       border-radius: 50%;
@@ -185,156 +136,157 @@
     .yellow { background: #ffbd2e; }
     .green { background: #27c93f; }
 
-    .dashboard-content {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
     .bar {
       height: 12px;
-      background: #f0f0f0;
+      background: #ececec;
       border-radius: 8px;
-      width: 80%;
-    }
-
-    .bar.short { width: 50%; }
-    .bar.long { width: 95%; }
-
-    .dashboard-box {
-      margin-top: 25px;
-      background: linear-gradient(135deg, #fff8f3, #fffaf7);
-      border-radius: 16px;
-      border: 1px solid #ffe0c2;
-      padding: 25px;
-      text-align: center;
-      font-weight: 600;
-      color: var(--domka);
-      box-shadow: 0 2px 12px rgba(249, 115, 22, 0.08);
-    }
-
-    /* BENEFITS */
-    .benefits {
-      background: #fff;
-      padding: 80px 20px;
-      text-align: center;
-    }
-
-    .benefits h2 {
-      font-size: 2rem;
-      margin-bottom: 40px;
-    }
-
-    .benefit-cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .benefit {
-      background: var(--accent);
-      padding: 25px 30px;
-      border-radius: 16px;
-      flex: 1 1 300px;
-      max-width: 340px;
-      text-align: left;
-      transition: transform 0.3s ease;
-    }
-
-    .benefit:hover {
-      transform: translateY(-5px);
-    }
-
-    .benefit h3 {
-      color: var(--domka);
-      font-size: 1.1rem;
       margin-bottom: 10px;
     }
 
-    .benefit p {
+    .bar.wide { width: 90%; }
+    .bar.medium { width: 65%; }
+    .bar.short { width: 40%; }
+
+    .dash-box {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #fff8f3, #fffaf7);
+      border: 1px solid #ffe0c2;
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      color: var(--domka);
+      font-weight: 600;
+    }
+
+    /* INFO SECTION */
+    .info {
+      max-width: 1000px;
+      margin: 100px auto;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .info h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .info p {
+      color: var(--text-light);
+      font-size: 1rem;
+      max-width: 700px;
+      margin: 0 auto 40px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .feature {
+      background: white;
+      border-radius: var(--radius);
+      padding: 35px 25px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .feature h3 {
+      color: var(--domka);
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+
+    .feature p {
       color: var(--text-light);
       font-size: 0.95rem;
       line-height: 1.5;
     }
 
-    /* LOGIN SECTION */
-    .login-section {
+    /* LOGIN + REGISTER SECTION */
+    .auth-section {
       background: linear-gradient(135deg, #fff8f3, #ffffff);
       text-align: center;
-      padding: 80px 20px;
+      padding: 100px 20px;
     }
 
-    .login-box {
-      max-width: 400px;
+    .auth-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      max-width: 1000px;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-      padding: 35px;
-      border: 1px solid #f0f0f0;
     }
 
-    .login-box h2 {
+    .auth-box {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+      padding: 40px;
+      width: 350px;
+    }
+
+    .auth-box h2 {
       color: var(--domka);
       margin-bottom: 20px;
     }
 
-    .login-box input {
+    .auth-box input {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #ddd;
       margin-bottom: 15px;
-      font-size: 1rem;
     }
 
-    .login-box button {
+    .auth-box button {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       background: linear-gradient(135deg, var(--domka), var(--domka-dark));
-      border: none;
       color: white;
       font-weight: 600;
+      border: none;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    .login-box button:hover {
+    .auth-box button:hover {
       opacity: 0.9;
     }
 
-    .login-box p {
+    .auth-box p {
       margin-top: 10px;
       font-size: 0.9rem;
     }
 
-    .login-box a {
+    .auth-box a {
       color: var(--domka);
       text-decoration: none;
       font-weight: 500;
     }
 
-    .login-box a:hover {
-      text-decoration: underline;
-    }
-
     footer {
-      text-align: center;
-      padding: 40px 20px;
-      font-size: 0.9rem;
-      color: #777;
       background: #fff;
       border-top: 1px solid #eee;
+      text-align: center;
+      padding: 40px 20px;
+      color: #777;
+      font-size: 0.9rem;
     }
 
     @media (max-width: 768px) {
       .hero h1 { font-size: 2rem; }
-      .dashboard-preview { transform: rotate(0deg); }
-      .feature, .benefit { padding: 25px 20px; }
+      .info h2 { font-size: 1.6rem; }
+      .auth-container { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
@@ -344,82 +296,73 @@
   <!-- HERO -->
   <section class="hero">
     <div class="logo-box">
-      <img src="img/logo.png" alt="Logo DOMKA">
+      <img src="img/logo.png" alt="DOMKA Logo" />
     </div>
-    <h1>DOMKA Cotizador Inteligente</h1>
-    <p>
-      Cotiza, gestiona y envía tus presupuestos con la tecnología de DOMKA.  
-      Optimiza tus tiempos, mejora la presentación de tus cotizaciones y conecta con tus clientes directamente.
-    </p>
-    <a href="https://wa.link/54lg8f" target="_blank" class="cta">💬 Cotiza o contáctanos por WhatsApp</a>
+    <h1>DOMKA · Cotizador Inteligente</h1>
+    <p>La plataforma que transforma tus cotizaciones y cuentas de cobro en experiencias digitales.</p>
+    <a href="https://wa.link/54lg8f" target="_blank" class="cta">💬 Hablar con un asesor</a>
 
-    <!-- Dashboard demo -->
-    <div class="dashboard-preview">
-      <div class="dashboard-border">
-        <div class="dashboard-inner">
-          <div class="dashboard-header">
-            <div class="red"></div>
-            <div class="yellow"></div>
-            <div class="green"></div>
+    <div class="dashboard-demo">
+      <div class="dash-border">
+        <div class="dash-inner">
+          <div class="dash-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
           </div>
-          <div class="dashboard-content">
-            <div class="bar"></div>
-            <div class="bar short"></div>
-            <div class="bar long"></div>
-            <div class="dashboard-box">📊 Dashboard Interactivo</div>
-          </div>
+          <div class="bar wide"></div>
+          <div class="bar medium"></div>
+          <div class="bar short"></div>
+          <div class="dash-box">📊 Dashboard de Cotización Activa</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FEATURES -->
-  <section class="features">
-    <div class="feature">
-      <span>⚡</span>
-      <h3>Cotiza en segundos</h3>
-      <p>Crea cotizaciones profesionales de forma rápida y automática con plantillas modernas.</p>
-    </div>
-    <div class="feature">
-      <span>💬</span>
-      <h3>Envío instantáneo</h3>
-      <p>Comparte tus cotizaciones directamente por WhatsApp o correo electrónico en un clic.</p>
-    </div>
-    <div class="feature">
-      <span>📈</span>
-      <h3>Analiza tu rendimiento</h3>
-      <p>Visualiza métricas de ventas, redenciones y rendimiento en un solo panel.</p>
-    </div>
-  </section>
+  <!-- INFO -->
+  <section class="info">
+    <h2>Todo lo que necesitas en un solo lugar</h2>
+    <p>Con DOMKA puedes crear cotizaciones profesionales, generar cuentas de cobro y enviar todo por correo o WhatsApp en segundos.</p>
 
-  <!-- BENEFITS -->
-  <section class="benefits">
-    <h2>Beneficios de DOMKA</h2>
-    <div class="benefit-cards">
-      <div class="benefit">
-        <h3>🚀 Rápido y eficiente</h3>
-        <p>Procesa cotizaciones y cuentas de cobro en tiempo récord con una interfaz ágil.</p>
+    <div class="features">
+      <div class="feature">
+        <h3>⚡ Cotizador Rápido</h3>
+        <p>Diseña, calcula y guarda cotizaciones en cuestión de segundos, sin complicaciones.</p>
       </div>
-      <div class="benefit">
-        <h3>🎨 Personalizable</h3>
-        <p>Adapta la presentación de tus cotizaciones a tu marca o empresa.</p>
+      <div class="feature">
+        <h3>💬 Envíos Automáticos</h3>
+        <p>Comparte tus cotizaciones con tus clientes directamente por WhatsApp o correo electrónico.</p>
       </div>
-      <div class="benefit">
-        <h3>🔒 Seguro y confiable</h3>
-        <p>Tus datos están protegidos con la infraestructura más robusta en la nube.</p>
+      <div class="feature">
+        <h3>📈 Seguimiento Inteligente</h3>
+        <p>Analiza métricas, ventas y clientes con nuestro panel visual e interactivo.</p>
       </div>
     </div>
   </section>
 
-  <!-- LOGIN -->
-  <section class="login-section">
-    <div class="login-box">
-      <h2>¿Ya eres parte de DOMKA?</h2>
-      <input id="email" type="email" placeholder="Correo electrónico">
-      <input id="password" type="password" placeholder="Contraseña">
-      <button onclick="login()">Ingresar</button>
-      <p id="error"></p>
-      <p>¿Nuevo usuario? <a href="https://wa.link/54lg8f" target="_blank">Regístrate por WhatsApp</a></p>
+  <!-- LOGIN / REGISTER -->
+  <section class="auth-section">
+    <h2>Accede a tu cuenta o regístrate</h2>
+    <div class="auth-container">
+      <!-- LOGIN -->
+      <div class="auth-box">
+        <h2>Ingresar</h2>
+        <input id="email" type="email" placeholder="Correo electrónico" />
+        <input id="password" type="password" placeholder="Contraseña" />
+        <button onclick="login()">Ingresar</button>
+        <p>¿Aún no tienes cuenta? <a href="#registro">Regístrate</a></p>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="auth-box" id="registro">
+        <h2>Registro rápido</h2>
+        <input type="text" placeholder="Nombre completo" />
+        <input type="email" placeholder="Correo electrónico" />
+        <input type="password" placeholder="Contraseña" />
+        <a href="https://wa.link/54lg8f" target="_blank">
+          <button>Registrarme por WhatsApp</button>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -427,7 +370,7 @@
     © 2025 DOMKA · Plataforma Inteligente de Cotización · Colombia
   </footer>
 
-  <!-- Firebase -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
