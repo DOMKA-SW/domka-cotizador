@@ -9,63 +9,88 @@
     tailwind.config = {
       theme: {
         extend: {
-          colors: { domka: "#f97316" }
+          colors: { domka: "#f97316" },
+          fontFamily: { sans: ["Inter", "sans-serif"] }
         }
       }
     }
   </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 text-gray-800">
 
-  <!-- Sección Hero -->
-  <section class="bg-gradient-to-r from-domka to-orange-400 text-white py-20">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <img src="img/logo.png" alt="DOMKA Logo" class="mx-auto w-48 mb-6 drop-shadow-lg">
-      <h1 class="text-4xl md:text-5xl font-extrabold mb-4">Cotiza fácil, rápido y desde cualquier lugar</h1>
-      <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto">
-        DOMKA es una plataforma inteligente que te permite generar cotizaciones profesionales y enviarlas por correo o WhatsApp con solo unos clics.
-      </p>
-      <a href="#registro" class="bg-white text-domka font-semibold px-6 py-3 rounded-full shadow hover:bg-gray-100 transition">
-        ¡Empieza ahora!
-      </a>
-    </div>
-  </section>
+<body class="bg-gray-50 font-sans text-gray-800">
 
-  <!-- Sección Beneficios -->
-  <section class="py-16 bg-white" id="beneficios">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <h2 class="text-3xl font-bold text-domka mb-10">¿Por qué usar DOMKA?</h2>
-      <div class="grid md:grid-cols-3 gap-10 text-left">
-        <div class="p-6 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
-          <h3 class="text-xl font-semibold mb-3">💡 Cotiza en minutos</h3>
-          <p>Genera cotizaciones profesionales de forma rápida y sencilla, sin hojas de cálculo ni complicaciones.</p>
-        </div>
-        <div class="p-6 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
-          <h3 class="text-xl font-semibold mb-3">📤 Envía por WhatsApp o email</h3>
-          <p>Comparte tus cotizaciones directamente con tus clientes a través de los canales más usados.</p>
-        </div>
-        <div class="p-6 bg-gray-50 rounded-xl shadow hover:shadow-lg transition">
-          <h3 class="text-xl font-semibold mb-3">📈 Administra tus proyectos</h3>
-          <p>Guarda, organiza y haz seguimiento de tus cotizaciones desde tu panel personalizado.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- HERO PRINCIPAL -->
+  <section class="relative bg-gradient-to-br from-domka to-orange-500 text-white py-24 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
 
-  <!-- Sección Registro / Login -->
-  <section id="registro" class="bg-gray-100 py-20">
-    <div class="max-w-5xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden md:flex">
-      
-      <!-- Información lateral -->
-      <div class="md:w-1/2 bg-domka text-white flex flex-col justify-center p-10 text-center">
-        <h2 class="text-3xl font-bold mb-4">Únete a DOMKA</h2>
-        <p class="text-white/90 mb-6">Crea tu cuenta o inicia sesión para acceder a todas las funcionalidades del cotizador.</p>
-        <a href="https://wa.link/54lg8f" target="_blank" class="bg-white text-domka font-semibold py-3 px-6 rounded-full hover:bg-gray-100 transition inline-block">
-          📞 Contáctanos por WhatsApp
+      <!-- Lado Izquierdo -->
+      <div class="md:w-1/2 text-center md:text-left">
+        <img src="img/logo.png" alt="DOMKA Logo" class="mx-auto md:mx-0 w-48 mb-8 brightness-0 invert">
+        <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
+          Cotiza fácil, rápido y <span class="text-yellow-200">sin complicaciones</span>
+        </h1>
+        <p class="text-lg md:text-xl text-white/90 mb-8">
+          Con DOMKA podrás crear cotizaciones profesionales, enviarlas por correo o WhatsApp, y gestionar todo desde un solo lugar.
+        </p>
+        <a href="#registro" class="bg-white text-domka font-semibold px-8 py-4 rounded-full shadow-lg hover:bg-gray-100 transition">
+          🚀 Empieza ahora
         </a>
       </div>
 
-      <!-- Formulario -->
+      <!-- Lado Derecho: Mockup de Dashboard -->
+      <div class="md:w-1/2 relative">
+        <div class="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-white/20">
+          <img src="https://cdn.dribbble.com/userupload/8476612/file/original-27e3ce44f28f2eb22ac15a968b86c998.png?resize=1200x900" 
+               alt="Ejemplo Dashboard DOMKA"
+               class="rounded-xl border border-white/30 shadow-lg">
+        </div>
+        <div class="absolute -bottom-8 -right-6 bg-white/10 p-4 rounded-lg border border-white/30 text-sm text-white/90 hidden md:block">
+          💡 Plataforma en la nube - Accede desde cualquier dispositivo.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- BENEFICIOS -->
+  <section class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-domka mb-10">¿Por qué elegir DOMKA?</h2>
+      <div class="grid md:grid-cols-3 gap-10">
+        <div class="p-8 rounded-2xl shadow hover:shadow-xl transition bg-gray-50">
+          <div class="text-domka text-4xl mb-4">⚡</div>
+          <h3 class="text-xl font-semibold mb-2">Cotiza en minutos</h3>
+          <p>Genera propuestas profesionales con plantillas personalizables y envío automático.</p>
+        </div>
+        <div class="p-8 rounded-2xl shadow hover:shadow-xl transition bg-gray-50">
+          <div class="text-domka text-4xl mb-4">💬</div>
+          <h3 class="text-xl font-semibold mb-2">Comparte al instante</h3>
+          <p>Envía tus cotizaciones por <strong>WhatsApp</strong> o <strong>email</strong> directamente desde la plataforma.</p>
+        </div>
+        <div class="p-8 rounded-2xl shadow hover:shadow-xl transition bg-gray-50">
+          <div class="text-domka text-4xl mb-4">📊</div>
+          <h3 class="text-xl font-semibold mb-2">Control total</h3>
+          <p>Administra clientes, historial de cotizaciones y seguimiento desde tu panel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGIN / REGISTRO -->
+  <section id="registro" class="py-24 bg-gray-100">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden">
+      
+      <!-- Lado Izquierdo -->
+      <div class="md:w-1/2 bg-domka text-white flex flex-col justify-center items-center p-10 text-center">
+        <h2 class="text-3xl font-bold mb-4">Forma parte de DOMKA</h2>
+        <p class="text-white/90 mb-6">Si aún no tienes cuenta, escríbenos por WhatsApp y te ayudamos a crearla en minutos.</p>
+        <a href="https://wa.link/54lg8f" target="_blank" class="bg-white text-domka font-semibold py-3 px-8 rounded-full hover:bg-gray-100 transition">
+          💬 Contáctanos por WhatsApp
+        </a>
+      </div>
+
+      <!-- Lado Derecho (Formulario) -->
       <div class="md:w-1/2 p-10 flex flex-col justify-center">
         <h3 class="text-2xl font-bold text-domka mb-6 text-center">Accede a tu cuenta</h3>
 
@@ -82,13 +107,13 @@
         <p id="error" class="text-red-500 text-sm mt-3 text-center"></p>
 
         <div class="mt-6 text-center text-gray-500 text-sm">
-          <p>¿Aún no tienes cuenta? <a href="https://wa.link/54lg8f" target="_blank" class="text-domka hover:underline">Regístrate por WhatsApp</a></p>
+          <p>¿Olvidaste tu contraseña? <a href="https://wa.link/54lg8f" target="_blank" class="text-domka hover:underline">Recupérala por WhatsApp</a></p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Sección Footer -->
+  <!-- FOOTER -->
   <footer class="bg-gray-900 text-gray-400 py-6 text-center text-sm">
     <p>© 2025 DOMKA. Todos los derechos reservados.</p>
     <p>Hecho con ❤️ en Colombia</p>
