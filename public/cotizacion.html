@@ -352,6 +352,30 @@
 
         <!-- Notas -->
         ${c.notas?`<div class="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm mt-4"><p class="text-sm text-gray-800">${c.notas}</p></div>`:""}
+
+        <!-- ANEXOS AGREGADOS AQUÍ -->
+        ${(c.anexos && c.anexos.length) ? `
+        <div class="mt-4 border rounded-lg shadow-sm">
+          <button onclick="this.nextElementSibling.classList.toggle('hidden')"
+            class="w-full px-4 py-2 bg-gray-100 font-semibold flex justify-between">
+            📎 Anexos (${c.anexos.length})
+            <span>▼</span>
+          </button>
+
+          <div class="hidden p-4">
+            <ul class="space-y-2">
+              ${c.anexos.map(a => `
+                <li>
+                  <a href="${a.base64}" download="${a.nombre}"
+                    class="text-orange-600 hover:underline">
+                    📄 ${a.nombre}
+                  </a>
+                </li>
+              `).join("")}
+            </ul>
+          </div>
+        </div>
+        ` : ""}
       `;
 
       if(c.tipoCalculo==="valor-total"){setTimeout(ocultarColumnasValorTotal,100);}
