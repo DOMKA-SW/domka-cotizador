@@ -7,46 +7,46 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Solo estilos de diseño UX mejorados */
+    /* Solo estilos de diseño UX mejorados y corregidos */
     body {
-      background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+      background: #f9fafb;
       min-height: 100vh;
     }
     
-    /* Mejoras visuales suaves */
+    /* Contenedores mejorados */
     .container-box {
       background: white;
       border-radius: 12px;
-      box-shadow: 0 8px 25px rgba(249, 115, 22, 0.08);
-      border: 1px solid #fed7aa;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
     }
     
-    .header-gradient {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* Header con diseño limpio */
+    .page-header {
+      color: #1f2937;
+      font-weight: 700;
     }
     
+    /* Botones principales */
     .btn-primary {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      background: #f97316;
       color: white;
       font-weight: 600;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       border: none;
     }
     
     .btn-primary:hover {
-      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+      background: #ea580c;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+      box-shadow: 0 4px 8px rgba(249, 115, 22, 0.2);
     }
     
     .btn-secondary {
       background: #4b5563;
       color: white;
       font-weight: 600;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
     
     .btn-secondary:hover {
@@ -55,15 +55,16 @@
     }
     
     /* Input fields mejorados */
-    input, select, textarea {
-      border: 2px solid #e5e7eb;
+    .form-input {
+      border: 1.5px solid #d1d5db;
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 10px 12px;
       transition: all 0.2s ease;
       width: 100%;
+      font-size: 0.95rem;
     }
     
-    input:focus, select:focus, textarea:focus {
+    .form-input:focus {
       outline: none;
       border-color: #f97316;
       box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
@@ -71,253 +72,293 @@
     
     /* Tablas mejoradas */
     .table-header {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      background: #f97316;
       color: white;
+      font-weight: 600;
     }
     
-    .table-striped tbody tr:nth-child(odd) {
-      background-color: #fff7ed;
+    .table-row-striped:nth-child(odd) {
+      background-color: #fffbeb;
     }
     
-    .table-striped tbody tr:hover {
+    .table-row-striped:hover {
       background-color: #fed7aa;
     }
     
-    /* Radio buttons y checkboxes personalizados */
-    input[type="radio"].form-radio + span,
-    input[type="checkbox"].form-checkbox + span {
+    /* Radio y checkbox mejorados */
+    .radio-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .radio-option {
+      display: flex;
+      align-items: center;
       padding: 8px 16px;
       border: 2px solid #e5e7eb;
       border-radius: 8px;
       background: white;
+      cursor: pointer;
       transition: all 0.2s ease;
     }
     
-    input[type="radio"].form-radio:checked + span,
-    input[type="checkbox"].form-checkbox:checked + span {
-      background: #f97316;
-      color: white;
+    .radio-option:hover {
       border-color: #f97316;
+      background: #fff7ed;
     }
     
-    /* Total destacado */
-    .total-highlight {
-      background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+    .radio-option input[type="radio"] {
+      margin-right: 8px;
+    }
+    
+    .radio-option input[type="radio"]:checked {
+      accent-color: #f97316;
+    }
+    
+    /* Sección de anexos */
+    .anexos-container {
+      border: 1.5px solid #e5e7eb;
       border-radius: 8px;
+      padding: 16px;
+      background: #f9fafb;
+    }
+    
+    .anexos-header {
+      background: #ffedd5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .anexos-header:hover {
+      background: #fed7aa;
+    }
+    
+    /* Totales destacados */
+    .totales-container {
+      background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+      border-radius: 10px;
       padding: 20px;
       border: 2px solid #fdba74;
     }
     
-    /* Badge para archivos */
-    .file-badge {
-      background: #fef3c7;
-      color: #92400e;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-    }
-    
-    /* Animaciones suaves */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .fade-in {
-      animation: fadeIn 0.3s ease;
-    }
-    
     /* Scrollbar personalizado */
-    ::-webkit-scrollbar {
-      width: 8px;
+    .scrollable-table {
+      overflow-x: auto;
     }
     
-    ::-webkit-scrollbar-track {
+    .scrollable-table::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    .scrollable-table::-webkit-scrollbar-track {
       background: #f1f1f1;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     
-    ::-webkit-scrollbar-thumb {
+    .scrollable-table::-webkit-scrollbar-thumb {
       background: #f97316;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     
-    ::-webkit-scrollbar-thumb:hover {
-      background: #ea580c;
+    /* Espaciado consistente */
+    .section-spacing {
+      margin-bottom: 24px;
+    }
+    
+    /* Alineaciones corregidas */
+    .text-right-align {
+      text-align: right;
+    }
+    
+    .text-center-align {
+      text-align: center;
+    }
+    
+    /* Etiquetas mejoradas */
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
+    /* Iconos alineados */
+    .icon-with-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    /* Responsive fixes */
+    @media (max-width: 768px) {
+      .radio-group {
+        flex-direction: column;
+      }
+      
+      .radio-option {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body class="min-h-screen">
-  <div class="p-6 max-w-7xl mx-auto">
+  <div class="p-4 md:p-6 max-w-7xl mx-auto">
     
-    <!-- Encabezado mejorado -->
+    <!-- Encabezado limpio -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-      <div>
-        <h1 class="text-3xl font-bold header-gradient mb-2">
-          <i class="fas fa-file-invoice-dollar mr-2"></i>
-          Cotizaciones
-        </h1>
-        <p class="text-gray-600">Crea y gestiona tus cotizaciones profesionales</p>
+      <div class="mb-4 md:mb-0">
+        <h1 class="text-2xl md:text-3xl font-bold page-header mb-2">Cotizaciones</h1>
+        <p class="text-gray-600 text-sm md:text-base">Crea y gestiona tus cotizaciones</p>
       </div>
-      <a href="dashboard.html" class="btn-secondary px-5 py-2.5 rounded-lg inline-flex items-center gap-2">
-        <i class="fas fa-arrow-left"></i>
-        Volver al Dashboard
-      </a>
+      <div>
+        <a href="dashboard.html" class="btn-secondary px-4 py-2.5 rounded-lg inline-flex items-center gap-2 text-sm md:text-base">
+          <i class="fas fa-arrow-left"></i>
+          Volver al Dashboard
+        </a>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Formulario Cotización -->
       <div class="lg:col-span-2">
-        <div class="container-box p-6 mb-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-orange-200">
-            <i class="fas fa-plus-circle text-orange-600 mr-2"></i>
+        <div class="container-box p-4 md:p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200">
             Nueva Cotización
           </h2>
           
           <form id="form-cotizacion" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-user text-orange-500 mr-1"></i>
-                  Cliente
-                </label>
-                <select id="cliente" class="input-field" required>
+            <!-- Información básica -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="section-spacing">
+                <label class="form-label">Cliente</label>
+                <select id="cliente" class="form-input" required>
                   <option value="">-- Selecciona un cliente --</option>
                 </select>
               </div>
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-map-marker-alt text-orange-500 mr-1"></i>
-                  Ubicación
-                </label>
-                <input type="text" id="ubicacion" class="input-field" placeholder="Ej: Bogotá, Calle 123 #45-67">
+              
+              <div class="section-spacing">
+                <label class="form-label">Ubicación</label>
+                <input type="text" id="ubicacion" class="form-input" placeholder="Ej: Bogotá, Calle 123 #45-67">
               </div>
             </div>
 
-            <!-- Anexos mejorados -->
-            <div>
-              <button type="button" id="toggle-anexos"
-                class="w-full flex justify-between items-center bg-orange-50 hover:bg-orange-100 px-4 py-3 rounded-lg font-semibold text-orange-700 transition-colors">
-                <span class="flex items-center gap-2">
-                  <i class="fas fa-paperclip"></i>
-                  📎 Anexos
-                </span>
-                <span id="icon-anexos" class="text-lg">+</span>
-              </button>
+            <!-- Notas -->
+            <div class="section-spacing">
+              <label class="form-label">Notas</label>
+              <input type="text" id="notas" class="form-input" placeholder="Notas adicionales...">
+            </div>
 
-              <div id="seccion-anexos" class="hidden mt-3 border border-orange-200 rounded-lg p-4 bg-orange-50 fade-in">
+            <!-- Anexos -->
+            <div class="section-spacing">
+              <div class="anexos-header flex justify-between items-center mb-3" id="toggle-anexos">
+                <span class="font-semibold text-gray-700">Anexos</span>
+                <span id="icon-anexos" class="text-gray-600">+</span>
+              </div>
+
+              <div id="seccion-anexos" class="anexos-container hidden">
                 <input type="file" id="anexos-input" multiple
                   accept=".pdf,.doc,.docx,.ppt,.pptx,image/*"
-                  class="w-full border-2 border-dashed border-orange-300 rounded-lg p-3 bg-white">
-                <p class="text-xs text-orange-600 mt-2">
-                  <i class="fas fa-info-circle mr-1"></i>
+                  class="w-full border border-gray-300 rounded p-2 mb-3">
+                <p class="text-xs text-gray-500">
                   Máx. 500 KB por archivo · PDF, Word, PPT o imágenes
                 </p>
                 <ul id="lista-anexos" class="mt-3 space-y-2"></ul>
               </div>
             </div>
 
-            <!-- Tipo de cotización mejorado -->
-            <div>
-              <label class="block font-semibold text-gray-700 mb-3">
-                <i class="fas fa-tag text-orange-500 mr-1"></i>
-                Tipo de Cotización
-              </label>
-              <div class="flex flex-wrap gap-3">
-                <label class="cursor-pointer">
-                  <input type="radio" name="tipo" value="mano-obra" checked class="form-radio text-orange-600">
-                  <span>👷 Mano de obra</span>
+            <!-- Tipo de cotización -->
+            <div class="section-spacing">
+              <label class="form-label mb-3">Tipo de Cotización</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="tipo" value="mano-obra" checked>
+                  Mano de obra
                 </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="tipo" value="materiales" class="form-radio text-orange-600">
-                  <span>🛠️ Materiales</span>
+                <label class="radio-option">
+                  <input type="radio" name="tipo" value="materiales">
+                  Materiales
                 </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="tipo" value="ambos" class="form-radio text-orange-600">
-                  <span>⚡ Ambos</span>
+                <label class="radio-option">
+                  <input type="radio" name="tipo" value="ambos">
+                  Ambos
                 </label>
               </div>
             </div>
 
-            <!-- Forma de pago mejorada -->
-            <div>
-              <label class="block font-semibold text-gray-700 mb-2">
-                <i class="fas fa-credit-card text-orange-500 mr-1"></i>
-                Forma de Pago
-              </label>
-              <select id="forma-pago" class="input-field">
-                <option value="contado">💵 Pago al contado</option>
-                <option value="60-40">💰 60% al inicio - 40% al finalizar</option>
-                <option value="50-50">💳 50% al inicio - 50% al finalizar</option>
-                <option value="tres-pagos">📊 Tres pagos (40%-30%-30%)</option>
-                <option value="personalizado">🎯 Personalizado...</option>
+            <!-- Forma de pago -->
+            <div class="section-spacing">
+              <label class="form-label">Forma de Pago</label>
+              <select id="forma-pago" class="form-input mb-3">
+                <option value="contado">Pago al contado</option>
+                <option value="60-40">60% al inicio - 40% al finalizar</option>
+                <option value="50-50">50% al inicio - 50% al finalizar</option>
+                <option value="tres-pagos">Tres pagos (40%-30%-30%)</option>
+                <option value="personalizado">Personalizado...</option>
               </select>
               
               <div id="pagos-personalizados" class="hidden mt-4 p-4 bg-orange-50 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
                   <div>
-                    <label class="block text-sm text-gray-600 mb-1">Pago 1 (%)</label>
-                    <input type="number" id="pago1" class="input-field" value="50" min="0" max="100">
+                    <label class="form-label text-sm">Pago 1 (%)</label>
+                    <input type="number" id="pago1" class="form-input" value="50" min="0" max="100">
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600 mb-1">Pago 2 (%)</label>
-                    <input type="number" id="pago2" class="input-field" value="50" min="0" max="100">
+                    <label class="form-label text-sm">Pago 2 (%)</label>
+                    <input type="number" id="pago2" class="form-input" value="50" min="0" max="100">
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600 mb-1">Pago 3 (%)</label>
-                    <input type="number" id="pago3" class="input-field" value="0" min="0" max="100">
+                    <label class="form-label text-sm">Pago 3 (%)</label>
+                    <input type="number" id="pago3" class="form-input" value="0" min="0" max="100">
                   </div>
                 </div>
-                <p class="text-xs text-orange-600 mt-2">La suma debe ser 100%</p>
+                <p class="text-xs text-orange-600">La suma debe ser 100%</p>
               </div>
             </div>
 
-            <!-- Tipo de cálculo mejorado -->
-            <div>
-              <label class="block font-semibold text-gray-700 mb-3">
-                <i class="fas fa-calculator text-orange-500 mr-1"></i>
-                Tipo de cálculo:
-              </label>
-              <div class="flex flex-col gap-3">
-                <label class="cursor-pointer">
-                  <input type="radio" name="tipo-calculo" value="por-items" checked class="form-radio text-orange-600">
-                  <span>📝 Calcular por ítems</span>
+            <!-- Tipo de cálculo -->
+            <div class="section-spacing">
+              <label class="form-label mb-3">Tipo de cálculo</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="tipo-calculo" value="por-items" checked>
+                  Calcular por ítems
                 </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="tipo-calculo" value="valor-total" class="form-radio text-orange-600">
-                  <span>💲 Ingresar valor total directamente</span>
+                <label class="radio-option">
+                  <input type="radio" name="tipo-calculo" value="valor-total">
+                  Ingresar valor total directamente
                 </label>
               </div>
             </div>
 
             <!-- Campo para valor total -->
-            <div id="campo-valor-total" class="hidden">
-              <label class="block font-semibold text-gray-700 mb-2">Valor total</label>
-              <input type="number" id="valor-total" class="input-field" value="0" min="0">
+            <div id="campo-valor-total" class="hidden section-spacing">
+              <label class="form-label">Valor total</label>
+              <input type="number" id="valor-total" class="form-input" value="0" min="0">
             </div>
 
             <!-- Mostrar valor en letras -->
-            <div class="p-4 bg-orange-50 rounded-lg">
-              <label class="cursor-pointer">
-                <input type="checkbox" id="mostrar-valor-letras" checked class="form-checkbox text-orange-600">
-                <span>📄 Mostrar valor total en letras en el PDF</span>
+            <div class="section-spacing p-3 bg-gray-50 rounded-lg">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" id="mostrar-valor-letras" checked class="w-4 h-4 text-orange-600">
+                Mostrar valor total en letras en el PDF
               </label>
             </div>
 
-            <!-- Tabla de Ítems mejorada -->
-            <div>
+            <!-- Tabla de Ítems -->
+            <div class="section-spacing">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="font-semibold text-gray-700">
-                  <i class="fas fa-list text-orange-500 mr-2"></i>
-                  Ítems
-                </h3>
-                <button type="button" id="agregar-item" class="btn-primary px-4 py-2 rounded-lg text-sm">
-                  <i class="fas fa-plus mr-1"></i> Agregar Ítem
+                <h3 class="font-semibold text-gray-700">Ítems</h3>
+                <button type="button" id="agregar-item" class="btn-primary px-3 py-2 rounded-lg text-sm">
+                  + Agregar Ítem
                 </button>
               </div>
               
-              <div class="overflow-x-auto rounded-lg border border-orange-200">
-                <table class="w-full" id="tabla-items">
+              <div class="scrollable-table">
+                <table class="w-full border-collapse" id="tabla-items">
                   <thead class="table-header">
                     <tr>
                       <th class="p-3 text-left text-white">Descripción</th>
@@ -327,53 +368,58 @@
                       <th class="p-3 text-center text-white">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody class="table-striped"></tbody>
+                  <tbody></tbody>
                 </table>
               </div>
             </div>
 
-            <!-- Totales mejorados -->
-            <div class="total-highlight">
-              <div class="text-right space-y-2">
-                <p class="text-lg" id="subtotal">Subtotal: $0</p>
-                <p class="font-bold text-orange-600 text-2xl" id="total">Total: $0</p>
-                <p id="valor-letras" class="text-sm text-gray-600 italic mt-2">Cero pesos</p>
+            <!-- Totales -->
+            <div class="totales-container">
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-700 font-medium">Subtotal:</span>
+                  <span class="text-lg font-semibold" id="subtotal">$0</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-orange-300">
+                  <span class="text-gray-800 font-bold text-lg">Total:</span>
+                  <span class="text-2xl font-bold text-orange-600" id="total">$0</span>
+                </div>
+                <div class="pt-2">
+                  <p id="valor-letras" class="text-sm text-gray-600 italic">Cero pesos</p>
+                </div>
               </div>
             </div>
 
-            <!-- Botón Guardar mejorado -->
-            <button type="submit" class="btn-primary px-6 py-3 rounded-lg text-lg w-full flex items-center justify-center gap-2">
-              <i class="fas fa-save"></i>
+            <!-- Botón Guardar -->
+            <button type="submit" class="btn-primary px-6 py-3 rounded-lg text-lg w-full mt-6">
               Guardar Cotización
             </button>
           </form>
         </div>
       </div>
 
-      <!-- Lista Cotizaciones mejorada -->
+      <!-- Lista Cotizaciones -->
       <div>
-        <div class="container-box p-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-orange-200">
-            <i class="fas fa-history text-orange-600 mr-2"></i>
+        <div class="container-box p-4 md:p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200">
             Cotizaciones Guardadas
           </h2>
           
-          <div class="overflow-x-auto rounded-lg">
-            <table class="w-full" id="tabla-cotizaciones">
-              <thead class="bg-gray-50">
+          <div class="scrollable-table">
+            <table class="w-full border-collapse" id="tabla-cotizaciones">
+              <thead class="bg-gray-100">
                 <tr>
-                  <th class="p-3 text-left text-gray-700">Cliente</th>
-                  <th class="p-3 text-left text-gray-700">Total</th>
-                  <th class="p-3 text-left text-gray-700">Tipo</th>
-                  <th class="p-3 text-left text-gray-700">Acciones</th>
+                  <th class="p-3 text-left text-gray-700 font-semibold">Cliente</th>
+                  <th class="p-3 text-left text-gray-700 font-semibold">Total</th>
+                  <th class="p-3 text-left text-gray-700 font-semibold">Tipo</th>
+                  <th class="p-3 text-left text-gray-700 font-semibold">Acciones</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200"></tbody>
+              <tbody></tbody>
             </table>
           </div>
           
           <div class="text-center py-8 text-gray-500">
-            <i class="fas fa-file-alt text-3xl mb-3"></i>
             <p>No hay cotizaciones guardadas</p>
           </div>
         </div>
@@ -381,7 +427,7 @@
     </div>
   </div>
 
-  <!-- Scripts originales (sin cambios) -->
+  <!-- Scripts originales -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
