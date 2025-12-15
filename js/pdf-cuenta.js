@@ -56,7 +56,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
   const firmaNombre = "Alex Otalora";
   const firmaTelefono = "+57 305 811 4595";
   const firmaRut = "RUT: 79597683-1";
-  const firmaEmail = "piter030509@gmail.com";
+  const firmaEmail = "Email: piter030509@gmail.com";
 
   // Cargar imágenes con rutas absolutas para GitHub Pages
   const images = await preloadImages({
