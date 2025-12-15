@@ -1,7 +1,7 @@
 // js/cotizaciones.js
 const form = document.getElementById("form-cotizacion");
 const tablaItems = document.querySelector("#tabla-items tbody");
-const tablaCotizaciones = querySelector("#tabla-cotizaciones tbody");
+const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
 const clienteSelect = document.getElementById("cliente");
 const formaPagoSelect = document.getElementById("forma-pago");
 const pagosPersonalizadosDiv = document.getElementById("pagos-personalizados");
@@ -156,7 +156,7 @@ function validarPagos() {
   const pago2 = Number(document.getElementById("pago2").value) || 0;
   const pago3 = Number(document.getElementById("pago3").value) || 0;
   const total = pago1 + pago2 + pago3;
-  
+
   if (total !== 100) {
     pagosPersonalizadosDiv.style.border = "2px solid red";
     pagosPersonalizadosDiv.style.padding = "5px";
