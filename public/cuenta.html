@@ -303,6 +303,89 @@
             </div>
           ` : ""}
 
+          ${(c.anexos && c.anexos.length) ? `
+  <div class="mt-6 border rounded-lg overflow-hidden">
+    <button
+      onclick="
+        const cont = this.nextElementSibling;
+        cont.classList.toggle('hidden');
+        this.querySelector('span').textContent = cont.classList.contains('hidden') ? '▼' : '▲';
+      "
+      class="w-full px-4 py-3 bg-gray-100 font-semibold flex justify-between items-center"
+    >
+      📎 Anexos (${c.anexos.length})
+      <span>▼</span>
+    </button>
+
+    <div class="p-4 space-y-6 hidden">
+
+      ${c.anexos.map(a => {
+
+        // 📄 PDF
+        if (a.tipo === "application/pdf") {
+          return `
+            <div class="border rounded p-3">
+              <div class="flex justify-between items-center mb-2">
+                <p class="font-semibold">📄 ${a.nombre}</p>
+                <a
+                  href="${a.base64}"
+                  download="${a.nombre}"
+                  class="text-sm bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+                >
+                  Descargar
+                </a>
+              </div>
+              <iframe
+                src="${a.base64}"
+                class="w-full h-[400px] max-h-[70vh] border rounded"
+              ></iframe>
+            </div>
+          `;
+        }
+
+        // 🖼️ IMÁGENES
+        if (a.tipo && a.tipo.startsWith("image/")) {
+          return `
+            <div class="border rounded p-3">
+              <div class="flex justify-between items-center mb-2">
+                <p class="font-semibold">🖼️ ${a.nombre}</p>
+                <a
+                  href="${a.base64}"
+                  download="${a.nombre}"
+                  class="text-sm bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+                >
+                  Descargar
+                </a>
+              </div>
+              <img
+                src="${a.base64}"
+                alt="${a.nombre}"
+                class="max-w-full rounded border"
+              />
+            </div>
+          `;
+        }
+
+        // 📎 OTROS ARCHIVOS
+        return `
+          <div class="border rounded p-3 flex justify-between items-center">
+            <p class="font-semibold">📎 ${a.nombre}</p>
+            <a
+              href="${a.base64}"
+              download="${a.nombre}"
+              class="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+            >
+              Descargar
+            </a>
+          </div>
+        `;
+      }).join("")}
+
+    </div>
+  </div>
+` : ""}
+
+
           ${c.firmaConfirmacion ? `
             <div class="mt-6 p-4 border rounded bg-gray-50">
               <p class="font-semibold text-green-600">✅ Cuenta de cobro confirmada</p>
