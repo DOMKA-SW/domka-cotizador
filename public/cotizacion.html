@@ -354,28 +354,84 @@
         ${c.notas?`<div class="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm mt-4"><p class="text-sm text-gray-800">${c.notas}</p></div>`:""}
 
         <!-- ANEXOS AGREGADOS AQUÍ -->
-        ${(c.anexos && c.anexos.length) ? `
-        <div class="mt-4 border rounded-lg shadow-sm">
-          <button onclick="this.nextElementSibling.classList.toggle('hidden')"
-            class="w-full px-4 py-2 bg-gray-100 font-semibold flex justify-between">
-            📎 Anexos (${c.anexos.length})
-            <span>▼</span>
-          </button>
+${(c.anexos && c.anexos.length) ? `
+<div class="mt-6 border rounded-lg overflow-hidden">
+  <button
+    onclick="this.nextElementSibling.classList.toggle('hidden')"
+    class="w-full px-4 py-3 bg-gray-100 font-semibold flex justify-between items-center"
+  >
+    📎 Anexos (${c.anexos.length})
+    <span>▼</span>
+  </button>
 
-          <div class="hidden p-4">
-            <ul class="space-y-2">
-              ${c.anexos.map(a => `
-                <li>
-                  <a href="${a.base64}" download="${a.nombre}"
-                    class="text-orange-600 hover:underline">
-                    📄 ${a.nombre}
-                  </a>
-                </li>
-              `).join("")}
-            </ul>
+  <div class="p-4 space-y-6 hidden">
+
+    ${c.anexos.map(a => {
+
+      // 📄 PDF
+      if (a.tipo === "application/pdf") {
+        return `
+          <div class="border rounded p-3">
+            <div class="flex justify-between items-center mb-2">
+              <p class="font-semibold">📄 ${a.nombre}</p>
+              <a
+                href="${a.base64}"
+                download="${a.nombre}"
+                class="text-sm bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+              >
+                Descargar
+              </a>
+            </div>
+            <iframe
+              src="${a.base64}"
+              class="w-full h-[500px] border rounded"
+            ></iframe>
           </div>
+        `;
+      }
+
+      // 🖼️ IMÁGENES
+      if (a.tipo.startsWith("image/")) {
+        return `
+          <div class="border rounded p-3">
+            <div class="flex justify-between items-center mb-2">
+              <p class="font-semibold">🖼️ ${a.nombre}</p>
+              <a
+                href="${a.base64}"
+                download="${a.nombre}"
+                class="text-sm bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+              >
+                Descargar
+              </a>
+            </div>
+            <img
+              src="${a.base64}"
+              alt="${a.nombre}"
+              class="max-w-full rounded border"
+            />
+          </div>
+        `;
+      }
+
+      // 📎 OTROS ARCHIVOS
+      return `
+        <div class="border rounded p-3 flex justify-between items-center">
+          <p class="font-semibold">📎 ${a.nombre}</p>
+          <a
+            href="${a.base64}"
+            download="${a.nombre}"
+            class="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+          >
+            Descargar
+          </a>
         </div>
-        ` : ""}
+      `;
+    }).join("")}
+
+  </div>
+</div>
+` : ""}
+
       `;
 
       if(c.tipoCalculo==="valor-total"){setTimeout(ocultarColumnasValorTotal,100);}
