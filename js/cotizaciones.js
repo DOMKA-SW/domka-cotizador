@@ -74,7 +74,7 @@ async function procesarAnexos() {
       nombre: file.name,
       tipo: file.type,
       base64,
-      fecha: firebase.firestore.FieldValue.serverTimestamp()
+      fecha: new Date() // ✅ FIRESTORE SÍ LO ACEPTA
     });
   }
 
