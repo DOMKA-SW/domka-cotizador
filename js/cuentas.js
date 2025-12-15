@@ -5,9 +5,18 @@ const itemsContainer = document.getElementById("items-container");
 const tablaCuentas = document.querySelector("#tabla-cuentas tbody");
 const agregarItemBtn = document.getElementById("agregar-item");
 const valorTotalInput = document.getElementById("valor-total");
-
 let items = [];
 const BASE_PUBLICA = "https://domka-sw.github.io/domka-cotizador";
+
+// ============================
+// 🔹 Variables para anexos
+// ============================
+const toggleBtn = document.getElementById("toggle-anexos");
+const seccionAnexos = document.getElementById("seccion-anexos");
+const iconAnexos = document.getElementById("icon-anexos");
+const anexosInput = document.getElementById("anexos-input");
+const listaAnexos = document.getElementById("lista-anexos");
+let anexosSeleccionados = [];
 
 // Cargar clientes
 async function cargarClientes() {
@@ -59,6 +68,66 @@ function actualizarItems() {
   });
 }
 
+// ============================
+// 🔹 Inicialización de anexos
+// ============================
+if (toggleBtn && seccionAnexos) {
+  toggleBtn.onclick = () => {
+    seccionAnexos.classList.toggle("hidden");
+    if (iconAnexos) {
+      iconAnexos.textContent = seccionAnexos.classList.contains("hidden") ? "+" : "−";
+    }
+  };
+}
+
+if (anexosInput) {
+  anexosInput.onchange = () => {
+    anexosSeleccionados = Array.from(anexosInput.files);
+    if (listaAnexos) {
+      listaAnexos.innerHTML = anexosSeleccionados
+        .map(f => `<li>📄 ${f.name} (${Math.round(f.size / 1024)} KB)</li>`)
+        .join("");
+    }
+  };
+}
+
+// ============================
+// 🔹 Convertir archivo a Base64
+// ============================
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================
+// 🔹 Procesar anexos antes de guardar
+// ============================
+async function procesarAnexos() {
+  const anexos = [];
+
+  for (const file of anexosSeleccionados) {
+    if (file.size > 500 * 1024) {
+      alert(`❌ ${file.name} supera 500 KB`);
+      continue;
+    }
+
+    const base64 = await fileToBase64(file);
+
+    anexos.push({
+      nombre: file.name,
+      tipo: file.type,
+      base64,
+      fecha: new Date()
+    });
+  }
+
+  return anexos;
+}
+
 // Guardar cuenta de cobro
 formCuenta.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -92,6 +161,9 @@ formCuenta.addEventListener("submit", async (e) => {
   }
   
   try {
+    // 🔹 Procesar anexos
+    const anexos = await procesarAnexos();
+    
     // Obtener datos del cliente
     const clienteDoc = await db.collection("clientes").doc(clienteId).get();
     const clienteData = clienteDoc.data() || {};
@@ -114,7 +186,8 @@ formCuenta.addEventListener("submit", async (e) => {
       firmaNombre: "DOMKA",
       firmaTelefono: "+57 321 456 7890",
       firmaEmail: "contacto@domka.com",
-      firmaRut: "123456789-0"
+      firmaRut: "123456789-0",
+      anexos // 👈 NUEVO
     });
     
     // Guardar link público
@@ -129,6 +202,11 @@ formCuenta.addEventListener("submit", async (e) => {
     items = [];
     valorTotalInput.value = "0";
     
+    // Limpiar anexos
+    if (anexosInput) anexosInput.value = "";
+    if (listaAnexos) listaAnexos.innerHTML = "";
+    anexosSeleccionados = [];
+    
     // Recargar lista
     cargarCuentas();
   } catch (e) {
@@ -136,10 +214,6 @@ formCuenta.addEventListener("submit", async (e) => {
     alert("Error guardando la cuenta de cobro.");
   }
 });
-
-
-// js/cuentas.js
-// ... (código anterior)
 
 // ============================
 // 🔹 Listar cuentas de cobro
@@ -153,11 +227,15 @@ async function cargarCuentas() {
     snap.forEach(docu => {
       const c = docu.data();
       const id = docu.id;
+      const tieneAnexos = c.anexos && c.anexos.length > 0;
 
       const tr = document.createElement("tr");
       tr.className = "border-t hover:bg-gray-50";
       tr.innerHTML = `
-        <td class="p-2">${c.nombreCliente || "Sin nombre"}</td>
+        <td class="p-2">
+          ${c.nombreCliente || "Sin nombre"}
+          ${tieneAnexos ? '<span class="ml-2 text-blue-600">📎</span>' : ''}
+        </td>
         <td class="p-2 text-right">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
         <td class="p-2 text-center">
           <span class="px-2 py-1 rounded text-xs ${c.estado === "pagada" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">
@@ -213,8 +291,6 @@ async function cargarCuentas() {
     console.error("Error cargando cuentas:", e);
   }
 }
-
-// ... (resto del código)
 
 // Inicializar
 agregarItemBtn.addEventListener("click", () => agregarItem());
