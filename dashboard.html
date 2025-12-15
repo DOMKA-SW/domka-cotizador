@@ -3,125 +3,229 @@
 <head>
   <meta charset="utf-8" />
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>DOMKA - Dashboard</title>
+  <title>DOMKA - Dashboard Navideño 2025</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Estilos personalizados para complementar Tailwind */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    /* Estilos personalizados para tema navideño */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Mountains+of+Christmas:wght@700&display=swap');
     
     body {
       font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a2e1d 0%, #0c3c24 50%, #0a2e1d 100%);
+      position: relative;
+      overflow-x: hidden;
     }
     
-    /* Botones naranja mejorados */
-    .btn-orange {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(220, 53, 69, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 30%, rgba(40, 167, 69, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 50% 80%, rgba(255, 193, 7, 0.05) 0%, transparent 20%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* Copos de nieve animados */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 1em;
+      animation: fall linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+      }
+    }
+    
+    /* Botones navideños */
+    .btn-christmas {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
       color: white;
       font-weight: 600;
       transition: all 0.3s ease;
-      box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2);
-    }
-    
-    .btn-orange:hover {
-      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(249, 115, 22, 0.3);
-    }
-    
-    /* Tarjetas con efecto hover */
-    .card-hover {
-      transition: all 0.3s ease;
-      border-left: 4px solid transparent;
-    }
-    
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-      border-left: 4px solid #f97316;
-    }
-    
-    /* Accesos con iconos */
-    .access-card {
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
       position: relative;
       overflow: hidden;
     }
     
-    .access-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 20px rgba(249, 115, 22, 0.15);
+    .btn-christmas::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.7s;
     }
     
-    .access-card::before {
+    .btn-christmas:hover {
+      background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-christmas:hover::before {
+      left: 100%;
+    }
+    
+    /* Tarjetas navideñas */
+    .card-christmas {
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.95);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+    }
+    
+    .card-christmas::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
+      right: 0;
       height: 4px;
-      background: linear-gradient(90deg, #f97316, #fb923c);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
+      background: linear-gradient(90deg, #dc3545, #28a745, #ffc107);
     }
     
-    .access-card:hover::before {
-      transform: scaleX(1);
+    .card-christmas:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      border-color: #dc3545;
     }
     
-    /* Animación de carga para estadísticas */
-    @keyframes pulse {
+    /* Accesos navideños */
+    .access-card-christmas {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid transparent;
+    }
+    
+    .access-card-christmas:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      border-color: #28a745;
+    }
+    
+    .access-card-christmas::after {
+      content: '🎄';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .access-card-christmas:hover::after {
+      opacity: 1;
+    }
+    
+    /* Animación de luces navideñas */
+    @keyframes lights {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
     }
     
-    .loading {
-      animation: pulse 1.5s infinite;
+    .christmas-lights {
+      animation: lights 2s infinite;
     }
     
-    /* Estilos para el encabezado */
-    .header-gradient {
-      background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* Estilos para el encabezado navideño */
+    .header-christmas {
+      font-family: 'Mountains of Christmas', cursive;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
     }
     
-    /* Badge para estadísticas */
-    .stat-badge {
+    /* Badge navideño */
+    .stat-badge-christmas {
       position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #f97316;
+      top: -10px;
+      right: -10px;
+      background: linear-gradient(135deg, #dc3545, #c82333);
       color: white;
-      border-radius: 9999px;
-      width: 24px;
-      height: 24px;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.75rem;
       font-weight: 700;
+      box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+      border: 2px solid white;
+    }
+    
+    /* Contador de año nuevo */
+    .new-year-countdown {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      border-radius: 15px;
+      padding: 10px 20px;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
+      border: 2px solid #ffc107;
+    }
+    
+    /* Efecto de brillo */
+    .glow {
+      text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-orange-50 to-gray-100 min-h-screen">
+<body class="min-h-screen">
+  <!-- Copos de nieve -->
+  <div id="snowflakes"></div>
+  
   <div class="p-4 md:p-6 max-w-6xl mx-auto">
-    <!-- Encabezado mejorado -->
-    <header class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-10 p-4 bg-white rounded-xl shadow-md">
-      <div class="mb-4 md:mb-0">
-        <h1 class="text-3xl font-bold header-gradient">DOMKA</h1>
-        <p class="text-gray-600 mt-1">Panel de control y gestión</p>
+    <!-- Encabezado navideño -->
+    <header class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-10 p-6 bg-gradient-to-r from-red-600 to-green-600 rounded-2xl shadow-lg relative overflow-hidden">
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-2 left-4 text-3xl">🎄</div>
+        <div class="absolute top-8 right-8 text-2xl">❄️</div>
+        <div class="absolute bottom-4 left-12 text-2xl">⭐</div>
+        <div class="absolute bottom-8 right-4 text-3xl">🎁</div>
       </div>
       
-      <div class="flex items-center gap-4">
-        <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-lg">
-          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span class="text-sm font-medium text-gray-700" id="user-email">Cargando...</span>
+      <div class="relative z-10 mb-4 md:mb-0">
+        <h1 class="text-4xl font-bold text-white header-christmas">DOMKA</h1>
+        <p class="text-white/90 mt-1 flex items-center gap-2">
+          <span class="christmas-lights">🎅</span> 
+          Panel de control navideño 2025
+          <span class="christmas-lights">🦌</span>
+        </p>
+      </div>
+      
+      <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+        <div class="new-year-countdown">
+          <span>🎆</span>
+          <span>2025</span>
+          <span>🎆</span>
         </div>
         
-        <button onclick="logout()" class="btn-orange px-5 py-2.5 rounded-lg flex items-center gap-2">
+        <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+          <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span class="text-sm font-medium text-white" id="user-email">Cargando...</span>
+        </div>
+        
+        <button onclick="logout()" class="btn-christmas px-6 py-3 rounded-xl flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
           </svg>
@@ -130,46 +234,64 @@
       </div>
     </header>
 
-    <!-- Bienvenida -->
-    <div class="mb-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-6 text-white shadow-lg">
-      <h2 class="text-2xl font-bold mb-2">¡Bienvenido de nuevo!</h2>
-      <p class="opacity-90">Gestiona tus cotizaciones, cuentas de cobro y clientes desde este panel centralizado.</p>
+    <!-- Mensaje de bienvenida navideño -->
+    <div class="mb-8 bg-gradient-to-r from-red-500 via-green-500 to-red-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+      <div class="absolute inset-0 opacity-20">
+        <div class="absolute top-1/4 left-1/4 text-4xl">❄️</div>
+        <div class="absolute bottom-1/4 right-1/4 text-4xl">✨</div>
+      </div>
+      
+      <div class="relative z-10">
+        <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">
+          <span>🎄</span> 
+          ¡Feliz Navidad y Próspero Año Nuevo 2025!
+          <span>🎄</span>
+        </h2>
+        <p class="opacity-95">Que esta temporada llene tu negocio de alegría, prosperidad y éxitos. 🎅✨</p>
+      </div>
     </div>
 
-    <!-- Resumen rápido mejorado -->
+    <!-- Resumen rápido navideño -->
     <section class="mb-10">
-      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-        </svg>
-        Resumen rápido
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="text-2xl">📊</span>
+        <span class="glow">Resumen Fin de Año 2025</span>
+        <span class="text-2xl">📊</span>
       </h2>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div id="card-cot" class="card-hover bg-white p-5 rounded-xl shadow relative">
+        <!-- Cotizaciones -->
+        <div id="card-cot" class="card-christmas p-5 rounded-xl shadow-lg relative">
           <div class="flex items-start justify-between">
             <div>
-              <h3 class="font-semibold text-gray-600 mb-2">Cotizaciones</h3>
-              <p class="text-3xl font-bold text-orange-600 loading" id="count-cot">—</p>
-              <p class="text-sm text-gray-500 mt-2">Total de cotizaciones creadas</p>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">📄</span>
+                <h3 class="font-semibold text-gray-700">Cotizaciones</h3>
+              </div>
+              <p class="text-3xl font-bold text-red-600" id="count-cot">—</p>
+              <p class="text-sm text-gray-500 mt-2">Total de cotizaciones creadas en 2025</p>
             </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+            <div class="p-3 bg-red-50 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
               </svg>
             </div>
           </div>
         </div>
         
-        <div id="card-cuentas" class="card-hover bg-white p-5 rounded-xl shadow relative">
+        <!-- Cuentas de Cobro -->
+        <div id="card-cuentas" class="card-christmas p-5 rounded-xl shadow-lg relative">
           <div class="flex items-start justify-between">
             <div>
-              <h3 class="font-semibold text-gray-600 mb-2">Cuentas de Cobro</h3>
-              <p class="text-3xl font-bold text-orange-600 loading" id="count-cuentas">—</p>
-              <p class="text-sm text-gray-500 mt-2">Cuentas generadas</p>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">💰</span>
+                <h3 class="font-semibold text-gray-700">Cuentas de Cobro</h3>
+              </div>
+              <p class="text-3xl font-bold text-green-600" id="count-cuentas">—</p>
+              <p class="text-sm text-gray-500 mt-2">Cuentas generadas en diciembre 2025</p>
             </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+            <div class="p-3 bg-green-50 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
               </svg>
@@ -177,15 +299,19 @@
           </div>
         </div>
         
-        <div id="card-ingresos" class="card-hover bg-white p-5 rounded-xl shadow relative">
+        <!-- Ingresos -->
+        <div id="card-ingresos" class="card-christmas p-5 rounded-xl shadow-lg relative">
           <div class="flex items-start justify-between">
             <div>
-              <h3 class="font-semibold text-gray-600 mb-2">Ingresos (pagadas)</h3>
-              <p class="text-3xl font-bold text-orange-600 loading" id="sum-pagadas">—</p>
-              <p class="text-sm text-gray-500 mt-2">Total de cuentas pagadas</p>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">🎁</span>
+                <h3 class="font-semibold text-gray-700">Ingresos Navideños</h3>
+              </div>
+              <p class="text-3xl font-bold text-amber-600 glow" id="sum-pagadas">—</p>
+              <p class="text-sm text-gray-500 mt-2">Total de cuentas pagadas en 2025</p>
             </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+            <div class="p-3 bg-amber-50 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 112-2 2 2 0 01-2 2zm8-2a2 2 0 112-2 2 2 0 01-2 2z" clip-rule="evenodd" />
                 <path d="M14 7h3a2 2 0 012 2v6a2 2 0 01-2 2h-3v-10z" />
               </svg>
@@ -195,66 +321,98 @@
       </div>
     </section>
 
-    <!-- Accesos rápidos mejorados -->
+    <!-- Accesos rápidos navideños -->
     <section>
-      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-        </svg>
-        Accesos rápidos
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="text-2xl">🚀</span>
+        <span class="glow">Accesos Rápidos para Fin de Año</span>
+        <span class="text-2xl">🚀</span>
       </h2>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <a href="cotizaciones.html" class="access-card bg-white p-6 rounded-xl shadow flex flex-col items-center text-center hover:border-orange-500 border-2 border-transparent">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+        <!-- Cotizaciones -->
+        <a href="cotizaciones.html" class="access-card-christmas p-6 rounded-xl shadow-lg flex flex-col items-center text-center">
+          <div class="p-3 bg-red-100 rounded-full mb-4 relative">
+            <div class="absolute -top-1 -right-1 text-lg">✨</div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-600" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
             </svg>
           </div>
           <h2 class="font-bold text-lg text-gray-800 mb-2">Cotizaciones</h2>
           <p class="text-sm text-gray-600 mb-4">Crear y gestionar cotizaciones</p>
-          <span class="text-orange-600 font-medium text-sm">Acceder →</span>
+          <span class="text-red-600 font-medium text-sm flex items-center gap-1">
+            Acceder <span class="text-lg">→</span>
+          </span>
         </a>
         
-        <a href="cuentas.html" class="access-card bg-white p-6 rounded-xl shadow flex flex-col items-center text-center hover:border-orange-500 border-2 border-transparent">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+        <!-- Cuentas de Cobro -->
+        <a href="cuentas.html" class="access-card-christmas p-6 rounded-xl shadow-lg flex flex-col items-center text-center">
+          <div class="p-3 bg-green-100 rounded-full mb-4 relative">
+            <div class="absolute -top-1 -right-1 text-lg">❄️</div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" viewBox="0 0 20 20" fill="currentColor">
               <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
             </svg>
           </div>
           <h2 class="font-bold text-lg text-gray-800 mb-2">Cuentas de Cobro</h2>
           <p class="text-sm text-gray-600 mb-4">Crear y gestionar cuentas</p>
-          <span class="text-orange-600 font-medium text-sm">Acceder →</span>
+          <span class="text-green-600 font-medium text-sm flex items-center gap-1">
+            Acceder <span class="text-lg">→</span>
+          </span>
         </a>
         
-        <a href="clientes.html" class="access-card bg-white p-6 rounded-xl shadow flex flex-col items-center text-center hover:border-orange-500 border-2 border-transparent">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+        <!-- Clientes -->
+        <a href="clientes.html" class="access-card-christmas p-6 rounded-xl shadow-lg flex flex-col items-center text-center">
+          <div class="p-3 bg-blue-100 rounded-full mb-4 relative">
+            <div class="absolute -top-1 -right-1 text-lg">🎄</div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
             </svg>
           </div>
           <h2 class="font-bold text-lg text-gray-800 mb-2">Clientes</h2>
           <p class="text-sm text-gray-600 mb-4">Administrar clientes</p>
-          <span class="text-orange-600 font-medium text-sm">Acceder →</span>
+          <span class="text-blue-600 font-medium text-sm flex items-center gap-1">
+            Acceder <span class="text-lg">→</span>
+          </span>
         </a>
         
-        <a href="contabilidad.html" class="access-card bg-white p-6 rounded-xl shadow flex flex-col items-center text-center hover:border-orange-500 border-2 border-transparent">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+        <!-- Contabilidad -->
+        <a href="contabilidad.html" class="access-card-christmas p-6 rounded-xl shadow-lg flex flex-col items-center text-center">
+          <div class="p-3 bg-purple-100 rounded-full mb-4 relative">
+            <div class="absolute -top-1 -right-1 text-lg">🎅</div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
             </svg>
           </div>
           <h2 class="font-bold text-lg text-gray-800 mb-2">Contabilidad</h2>
-          <p class="text-sm text-gray-600 mb-4">Reportes y exportes</p>
-          <span class="text-orange-600 font-medium text-sm">Acceder →</span>
+          <p class="text-sm text-gray-600 mb-4">Reportes y exportes de fin de año</p>
+          <span class="text-purple-600 font-medium text-sm flex items-center gap-1">
+            Acceder <span class="text-lg">→</span>
+          </span>
         </a>
       </div>
     </section>
     
-    <!-- Pie de página -->
-    <footer class="mt-12 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
-      <p>DOMKA Dashboard v1.0 • © 2023 Todos los derechos reservados</p>
+    <!-- Mensaje de fin de año -->
+    <div class="mt-10 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl text-white text-center">
+      <h3 class="text-xl font-bold mb-3 flex items-center justify-center gap-3">
+        <span>🎆</span> 
+        ¡Preparándonos para el 2025!
+        <span>🎆</span>
+      </h3>
+      <p class="opacity-90">Que el próximo año esté lleno de éxito, crecimiento y nuevas oportunidades para tu negocio.</p>
+    </div>
+    
+    <!-- Pie de página navideño -->
+    <footer class="mt-12 pt-6 border-t border-white/20 text-center text-white/70 text-sm">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <p>🎄 DOMKA Dashboard Navideño 2025 • ¡Felices Fiestas! 🎅</p>
+        <p class="flex items-center gap-2">
+          <span>Made with</span>
+          <span class="text-red-400">❤️</span>
+          <span>• © 2025 Todos los derechos reservados</span>
+        </p>
+      </div>
     </footer>
   </div>
 
@@ -267,6 +425,39 @@
   <script src="js/auth.js"></script>
 
   <script>
+    // Crear copos de nieve
+    function createSnowflakes() {
+      const snowflakesContainer = document.getElementById('snowflakes');
+      const snowflakeCount = 50;
+      
+      for (let i = 0; i < snowflakeCount; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.classList.add('snowflake');
+        snowflake.innerHTML = '❄';
+        
+        // Tamaño aleatorio
+        const size = Math.random() * 20 + 10;
+        snowflake.style.fontSize = `${size}px`;
+        
+        // Posición inicial aleatoria
+        const startX = Math.random() * 100;
+        snowflake.style.left = `${startX}vw`;
+        
+        // Duración de animación aleatoria
+        const duration = Math.random() * 10 + 10;
+        snowflake.style.animationDuration = `${duration}s`;
+        
+        // Retraso inicial aleatorio
+        const delay = Math.random() * 5;
+        snowflake.style.animationDelay = `${delay}s`;
+        
+        // Opacidad aleatoria
+        snowflake.style.opacity = Math.random() * 0.5 + 0.3;
+        
+        snowflakesContainer.appendChild(snowflake);
+      }
+    }
+    
     // Mostrar email del usuario actual
     auth.onAuthStateChanged((user) => {
       if (user) {
@@ -289,12 +480,8 @@
     // dashboard quick stats con mejor manejo de errores
     (async function () {
       try {
-        // Quitar animación de loading después de cargar
-        setTimeout(() => {
-          document.querySelectorAll('.loading').forEach(el => {
-            el.classList.remove('loading');
-          });
-        }, 500);
+        // Crear copos de nieve
+        createSnowflakes();
         
         const cotSnap = await db.collection("cotizaciones").get();
         const cuentasSnap = await db.collection("cuentas").get();
@@ -310,7 +497,7 @@
 
         document.getElementById("sum-pagadas").textContent = `$${sumaPagadas.toLocaleString("es-CO")}`;
         
-        // Añadir badge si hay muchas cuentas pendientes
+        // Añadir badge navideño si hay muchas cuentas pendientes
         let cuentasPendientes = 0;
         cuentasSnap.forEach(d => {
           const data = d.data();
@@ -319,9 +506,19 @@
         
         if (cuentasPendientes > 0) {
           const badge = document.createElement('div');
-          badge.className = 'stat-badge';
+          badge.className = 'stat-badge-christmas';
           badge.textContent = cuentasPendientes > 9 ? '9+' : cuentasPendientes;
+          badge.title = `${cuentasPendientes} cuentas pendientes`;
           document.getElementById('card-cuentas').appendChild(badge);
+        }
+        
+        // Añadir efecto de confeti si hay ingresos altos
+        if (sumaPagadas > 1000000) {
+          document.getElementById('card-ingresos').classList.add('christmas-lights');
+          const confetti = document.createElement('div');
+          confetti.innerHTML = '🎉';
+          confetti.className = 'absolute top-4 right-4 text-2xl';
+          document.getElementById('card-ingresos').appendChild(confetti);
         }
         
       } catch (e) {
@@ -330,12 +527,20 @@
         document.getElementById("count-cot").textContent = "Error";
         document.getElementById("count-cuentas").textContent = "Error";
         document.getElementById("sum-pagadas").textContent = "$0";
-        
-        document.querySelectorAll('.loading').forEach(el => {
-          el.classList.remove('loading');
-        });
       }
     })();
+    
+    // Efecto de sonido navideño opcional (descomentar si se quiere)
+    /*
+    function playChristmasSound() {
+      const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-christmas-bells-299.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(e => console.log("Audio no permitido:", e));
+    }
+    
+    // Reproducir sonido al hacer clic en el logo
+    document.querySelector('h1').addEventListener('click', playChristmasSound);
+    */
   </script>
 </body>
 </html>
