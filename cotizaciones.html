@@ -5,194 +5,751 @@
   <title>DOMKA - Cotizaciones</title>
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    .hidden {
-      display: none;
+    /* Estilos personalizados */
+    body {
+      background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #ffedd5 100%);
+    }
+    
+    .form-input, .form-select {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.625rem 0.75rem;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+    
+    .btn-orange {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2);
+    }
+    
+    .btn-orange:hover {
+      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(249, 115, 22, 0.3);
+    }
+    
+    .btn-gray {
+      background: #4b5563;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-gray:hover {
+      background: #374151;
+      transform: translateY(-2px);
+    }
+    
+    .card {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-header {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white;
+    }
+    
+    .table-striped tbody tr:nth-child(odd) {
+      background-color: #fffbeb;
+    }
+    
+    .table-striped tbody tr:hover {
+      background-color: #fed7aa;
+    }
+    
+    .input-number {
+      text-align: right;
+      padding-right: 0.75rem;
+    }
+    
+    /* Estilos para los radio buttons y checkboxes personalizados */
+    input[type="radio"].form-radio {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      width: 0;
+      height: 0;
+      margin: 0;
+      position: absolute;
+      opacity: 0;
+    }
+    
+    input[type="radio"].form-radio + span {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      background: white;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    
+    input[type="radio"].form-radio:checked + span {
+      color: white;
+      background: #f97316;
+      border-color: #f97316;
+      font-weight: 600;
+    }
+    
+    input[type="checkbox"].form-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      width: 0;
+      height: 0;
+      margin: 0;
+      position: absolute;
+      opacity: 0;
+    }
+    
+    input[type="checkbox"].form-checkbox + span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      background: white;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    
+    input[type="checkbox"].form-checkbox:checked + span {
+      color: white;
+      background: #f97316;
+      border-color: #f97316;
+      font-weight: 600;
+    }
+    
+    /* Animaciones */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+    
+    /* Badge para estados */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .badge-pending {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .badge-approved {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .badge-rejected {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    
+    /* Estilos para archivos adjuntos */
+    .file-preview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem;
+      background-color: #f9fafb;
+      border-radius: 0.375rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .file-name {
+      font-size: 0.875rem;
+      color: #4b5563;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .file-size {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .responsive-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-  <div class="p-6 max-w-5xl mx-auto">
-
-    <!-- Encabezado -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-orange-600">📄 Cotizaciones</h1>
-      <a href="dashboard.html" class="bg-gray-600 text-white px-4 py-2 rounded">← Volver</a>
+<body class="min-h-screen">
+  <div class="p-4 md:p-6 max-w-7xl mx-auto">
+    
+    <!-- Encabezado mejorado -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="p-2 bg-orange-100 rounded-lg">
+            <i class="fas fa-file-invoice text-orange-600 text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Cotizaciones</h1>
+            <p class="text-gray-600 text-sm md:text-base">Crea y gestiona tus cotizaciones profesionales</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <a href="dashboard.html" class="btn-gray px-5 py-2.5 rounded-lg flex items-center gap-2">
+          <i class="fas fa-arrow-left"></i>
+          Volver al Dashboard
+        </a>
+        <button id="btn-nueva-cotizacion" class="btn-orange px-5 py-2.5 rounded-lg flex items-center gap-2">
+          <i class="fas fa-plus"></i>
+          Nueva Cotización
+        </button>
+      </div>
     </div>
     
-    <!-- Formulario Cotización -->
-    <form id="form-cotizacion" class="bg-white p-6 rounded shadow mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Estadísticas rápidas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="card p-4 flex items-center justify-between">
         <div>
-          <label class="block font-semibold mb-2">Cliente</label>
-          <select id="cliente" class="w-full border rounded px-3 py-2" required>
-            <option value="">-- Selecciona un cliente --</option>
-          </select>
+          <p class="text-gray-600 text-sm">Total Cotizaciones</p>
+          <p class="text-2xl font-bold text-gray-800" id="total-cotizaciones">0</p>
         </div>
-        <div>
-          <label class="block font-semibold mb-2">Notas</label>
-          <input type="text" id="notas" class="w-full border rounded px-3 py-2">
-        </div>
-        <!-- Anexos -->
-<div class="mt-4">
-  <button type="button" id="toggle-anexos"
-    class="w-full flex justify-between items-center bg-gray-100 px-4 py-2 rounded font-semibold">
-    📎 Anexos
-    <span id="icon-anexos">+</span>
-  </button>
-
-  <div id="seccion-anexos" class="hidden mt-3 border rounded p-3 bg-gray-50">
-    <input type="file" id="anexos-input" multiple
-      accept=".pdf,.doc,.docx,.ppt,.pptx,image/*"
-      class="w-full border rounded p-2 bg-white">
-
-    <p class="text-xs text-gray-500 mt-2">
-      Máx. 500 KB por archivo · PDF, Word, PPT o imágenes
-    </p>
-
-    <ul id="lista-anexos" class="mt-3 text-sm"></ul>
-  </div>
-</div>
-        <div>
-         <label class="block font-semibold mb-2">Ubicación</label>
-         <input type="text" id="ubicacion" class="w-full border rounded px-3 py-2" placeholder="Ej: Bogotá, Calle 123 #45-67">
+        <div class="p-3 bg-orange-100 rounded-lg">
+          <i class="fas fa-file-alt text-orange-600 text-xl"></i>
         </div>
       </div>
-      
-      <!-- Tipo de cotización -->
-      <div class="mb-4">
-        <label class="block font-semibold mb-2">Tipo de Cotización</label>
-        <div class="flex gap-4">
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo" value="mano-obra" checked class="form-radio text-orange-600">
-            <span class="ml-2">Mano de obra</span>
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo" value="materiales" class="form-radio text-orange-600">
-            <span class="ml-2">Materiales</span>
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo" value="ambos" class="form-radio text-orange-600">
-            <span class="ml-2">Ambos</span>
-          </label>
+      <div class="card p-4 flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm">Total Valor</p>
+          <p class="text-2xl font-bold text-gray-800" id="total-valor">$0</p>
+        </div>
+        <div class="p-3 bg-orange-100 rounded-lg">
+          <i class="fas fa-dollar-sign text-orange-600 text-xl"></i>
+        </div>
+      </div>
+      <div class="card p-4 flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm">Clientes Activos</p>
+          <p class="text-2xl font-bold text-gray-800" id="total-clientes">0</p>
+        </div>
+        <div class="p-3 bg-orange-100 rounded-lg">
+          <i class="fas fa-users text-orange-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Formulario Cotización -->
+      <div class="lg:col-span-2">
+        <div class="card p-6 mb-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800">
+              <i class="fas fa-edit text-orange-600 mr-2"></i>
+              Nueva Cotización
+            </h2>
+            <button id="btn-limpiar-formulario" class="text-sm text-gray-500 hover:text-gray-700">
+              <i class="fas fa-redo mr-1"></i> Limpiar
+            </button>
+          </div>
+          
+          <form id="form-cotizacion">
+            <!-- Información del Cliente -->
+            <div class="mb-6 p-4 bg-orange-50 rounded-lg">
+              <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-user text-orange-600 mr-2"></i>
+                Información del Cliente
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-medium text-gray-700 mb-2">Cliente <span class="text-red-500">*</span></label>
+                  <select id="cliente" class="form-select" required>
+                    <option value="">-- Selecciona un cliente --</option>
+                  </select>
+                  <div class="mt-2">
+                    <a href="clientes.html" class="text-sm text-orange-600 hover:text-orange-800 flex items-center gap-1">
+                      <i class="fas fa-plus-circle"></i>
+                      Agregar nuevo cliente
+                    </a>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block font-medium text-gray-700 mb-2">Ubicación del Proyecto</label>
+                  <input type="text" id="ubicacion" class="form-input" placeholder="Ej: Bogotá, Calle 123 #45-67">
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block font-medium text-gray-700 mb-2">Notas / Observaciones</label>
+                  <textarea id="notas" class="form-input" rows="2" placeholder="Detalles adicionales sobre esta cotización..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuración de la Cotización -->
+            <div class="mb-6 p-4 bg-orange-50 rounded-lg">
+              <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-cogs text-orange-600 mr-2"></i>
+                Configuración
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tipo de Cotización -->
+                <div>
+                  <label class="block font-medium text-gray-700 mb-3">Tipo de Cotización</label>
+                  <div class="flex flex-col gap-2">
+                    <label class="cursor-pointer">
+                      <input type="radio" name="tipo" value="mano-obra" checked class="form-radio text-orange-600">
+                      <span>Mano de obra</span>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="tipo" value="materiales" class="form-radio text-orange-600">
+                      <span>Materiales</span>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="tipo" value="ambos" class="form-radio text-orange-600">
+                      <span>Ambos</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- Forma de Pago -->
+                <div>
+                  <label class="block font-medium text-gray-700 mb-3">Forma de Pago</label>
+                  <select id="forma-pago" class="form-select mb-3">
+                    <option value="contado">Pago al contado</option>
+                    <option value="60-40">60% al inicio - 40% al finalizar</option>
+                    <option value="50-50">50% al inicio - 50% al finalizar</option>
+                    <option value="tres-pagos">Tres pagos (40%-30%-30%)</option>
+                    <option value="personalizado">Personalizado...</option>
+                  </select>
+                  
+                  <div id="pagos-personalizados" class="hidden mt-3 space-y-2">
+                    <div class="grid grid-cols-3 gap-2">
+                      <div>
+                        <label class="block text-sm text-gray-600">Pago 1 (%)</label>
+                        <input type="number" id="pago1" class="form-input input-number" value="50" min="0" max="100">
+                      </div>
+                      <div>
+                        <label class="block text-sm text-gray-600">Pago 2 (%)</label>
+                        <input type="number" id="pago2" class="form-input input-number" value="50" min="0" max="100">
+                      </div>
+                      <div>
+                        <label class="block text-sm text-gray-600">Pago 3 (%)</label>
+                        <input type="number" id="pago3" class="form-input input-number" value="0" min="0" max="100">
+                      </div>
+                    </div>
+                    <p class="text-xs text-gray-500">La suma debe ser 100%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Anexos -->
+            <div class="mb-6">
+              <button type="button" id="toggle-anexos" class="w-full flex justify-between items-center bg-gray-100 hover:bg-gray-200 px-4 py-3 rounded-lg font-semibold transition-colors">
+                <span class="flex items-center gap-2">
+                  <i class="fas fa-paperclip"></i>
+                  Anexos (Archivos adjuntos)
+                </span>
+                <span id="icon-anexos">+</span>
+              </button>
+
+              <div id="seccion-anexos" class="hidden mt-4 border rounded-lg p-4 bg-gray-50 fade-in">
+                <div class="mb-4">
+                  <label class="block font-medium text-gray-700 mb-2">Subir archivos</label>
+                  <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-500 transition-colors">
+                    <input type="file" id="anexos-input" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" class="hidden">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600 mb-2">Arrastra archivos aquí o haz clic para seleccionar</p>
+                    <button type="button" id="btn-seleccionar-archivos" class="btn-orange px-4 py-2 rounded-lg text-sm">
+                      <i class="fas fa-folder-open mr-2"></i>Seleccionar Archivos
+                    </button>
+                    <p class="text-xs text-gray-500 mt-3">
+                      Máx. 5MB por archivo · PDF, Word, Excel, PowerPoint o imágenes
+                    </p>
+                  </div>
+                </div>
+
+                <div id="lista-anexos" class="space-y-2">
+                  <!-- Los archivos se mostrarán aquí -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Cálculo del Total -->
+            <div class="mb-6 p-4 bg-orange-50 rounded-lg">
+              <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-calculator text-orange-600 mr-2"></i>
+                Cálculo del Total
+              </h3>
+              
+              <div class="mb-4">
+                <label class="block font-medium text-gray-700 mb-3">Tipo de cálculo:</label>
+                <div class="flex flex-col gap-2">
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipo-calculo" value="por-items" checked class="form-radio text-orange-600">
+                    <span>Calcular por ítems</span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipo-calculo" value="valor-total" class="form-radio text-orange-600">
+                    <span>Ingresar valor total directamente</span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="campo-valor-total" class="hidden">
+                <label class="block font-medium text-gray-700 mb-2">Valor total</label>
+                <input type="number" id="valor-total" class="form-input input-number" value="0" min="0" step="0.01">
+              </div>
+
+              <div class="mt-4">
+                <label class="cursor-pointer">
+                  <input type="checkbox" id="mostrar-valor-letras" checked class="form-checkbox text-orange-600">
+                  <span>Mostrar valor total en letras en el PDF</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Tabla de Ítems -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-gray-700 flex items-center">
+                  <i class="fas fa-list-ul text-orange-600 mr-2"></i>
+                  Ítems de la Cotización
+                </h3>
+                <button type="button" id="agregar-item" class="btn-orange px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                  <i class="fas fa-plus"></i>
+                  Agregar Ítem
+                </button>
+              </div>
+              
+              <div class="responsive-table">
+                <table class="w-full border rounded-lg overflow-hidden" id="tabla-items">
+                  <thead class="table-header">
+                    <tr>
+                      <th class="p-3 text-left">Descripción</th>
+                      <th class="p-3 text-right col-cantidad">Cantidad</th>
+                      <th class="p-3 text-right col-precio">Precio Unitario</th>
+                      <th class="p-3 text-right col-subtotal">Subtotal</th>
+                      <th class="p-3 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="table-striped">
+                    <!-- Los ítems se agregarán aquí -->
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="text-right mt-6 p-4 bg-gray-50 rounded-lg">
+                <div class="space-y-2">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span class="font-medium" id="subtotal">$0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">IVA (19%):</span>
+                    <span class="font-medium" id="iva">$0</span>
+                  </div>
+                  <div class="flex justify-between border-t pt-2 mt-2">
+                    <span class="text-lg font-semibold text-gray-800">Total:</span>
+                    <span class="text-xl font-bold text-orange-600" id="total">$0</span>
+                  </div>
+                  <div class="mt-3">
+                    <p id="valor-letras" class="text-sm text-gray-600 italic">Cero pesos</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón de Guardar -->
+            <button type="submit" class="btn-orange w-full py-3 rounded-lg text-lg font-semibold flex items-center justify-center gap-2">
+              <i class="fas fa-save"></i>
+              Guardar Cotización
+            </button>
+          </form>
         </div>
       </div>
 
-      <!-- Forma de pago -->
-      <div class="mb-4">
-        <label class="block font-semibold mb-2">Forma de Pago</label>
-        <select id="forma-pago" class="w-full border rounded px-3 py-2">
-          <option value="contado">Pago al contado</option>
-          <option value="60-40">60% al inicio - 40% al finalizar</option>
-          <option value="50-50">50% al inicio - 50% al finalizar</option>
-          <option value="tres-pagos">Tres pagos (40%-30%-30%)</option>
-          <option value="personalizado">Personalizado...</option>
-        </select>
+      <!-- Lista de Cotizaciones -->
+      <div>
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800">
+              <i class="fas fa-history text-orange-600 mr-2"></i>
+              Cotizaciones Guardadas
+            </h2>
+            <div class="relative">
+              <select id="filtro-estado" class="form-select text-sm py-1">
+                <option value="todas">Todas</option>
+                <option value="pendiente">Pendientes</option>
+                <option value="aprobada">Aprobadas</option>
+                <option value="rechazada">Rechazadas</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="responsive-table">
+            <table class="w-full" id="tabla-cotizaciones">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
+                  <th class="p-3 text-left text-sm font-semibold text-gray-700">Total</th>
+                  <th class="p-3 text-left text-sm font-semibold text-gray-700">Estado</th>
+                  <th class="p-3 text-left text-sm font-semibold text-gray-700">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <!-- Las cotizaciones se cargarán aquí -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div id="sin-cotizaciones" class="text-center py-8">
+            <i class="fas fa-file-alt text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">No hay cotizaciones guardadas</p>
+          </div>
+          
+          <div class="mt-6 text-center">
+            <button id="btn-ver-todas" class="text-orange-600 hover:text-orange-800 font-medium text-sm">
+              <i class="fas fa-arrow-down mr-1"></i> Ver todas las cotizaciones
+            </button>
+          </div>
+        </div>
         
-        <!-- Campos para pagos personalizados -->
-        <div id="pagos-personalizados" class="hidden mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div>
-            <label class="block text-sm">Pago 1 (%)</label>
-            <input type="number" id="pago1" class="w-full border rounded px-2 py-1" value="50" min="0" max="100">
-          </div>
-          <div>
-            <label class="block text-sm">Pago 2 (%)</label>
-            <input type="number" id="pago2" class="w-full border rounded px-2 py-1" value="50" min="0" max="100">
-          </div>
-          <div>
-            <label class="block text-sm">Pago 3 (%)</label>
-            <input type="number" id="pago3" class="w-full border rounded px-2 py-1" value="0" min="0" max="100">
-          </div>
+        <!-- Ayuda rápida -->
+        <div class="card p-6 mt-6">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center">
+            <i class="fas fa-lightbulb text-orange-600 mr-2"></i>
+            Consejos Rápidos
+          </h3>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-start gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Agrega descripciones detalladas para cada ítem</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Usa anexos para planos, imágenes o documentos adicionales</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Revisa bien los totales antes de guardar</span>
+            </li>
+          </ul>
         </div>
       </div>
-
-      <!-- Tipo de cálculo -->
-      <div class="mb-4">
-        <label class="block font-semibold mb-2">Tipo de cálculo:</label>
-        <div class="flex flex-col gap-2">
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo-calculo" value="por-items" checked class="form-radio text-orange-600">
-            <span class="ml-2">Calcular por ítems</span>
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="tipo-calculo" value="valor-total" class="form-radio text-orange-600">
-            <span class="ml-2">Ingresar valor total directamente</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Campo para valor total (inicialmente oculto) -->
-      <div id="campo-valor-total" class="hidden mb-4">
-        <label class="block font-semibold mb-2">Valor total</label>
-        <input type="number" id="valor-total" class="w-full border rounded px-3 py-2" value="0" min="0">
-      </div>
-
-      <!-- Mostrar valor en letras -->
-      <div class="mb-4">
-        <label class="inline-flex items-center">
-          <input type="checkbox" id="mostrar-valor-letras" checked class="form-checkbox text-orange-600">
-          <span class="ml-2">Mostrar valor total en letras en el PDF</span>
-        </label>
-      </div>
-
-      <!-- Tabla de Ítems -->
-      <h2 class="font-semibold mb-2">Ítems</h2>
-      <table class="w-full border mb-4" id="tabla-items">
-        <thead class="bg-orange-600 text-white">
-          <tr>
-            <th class="p-2">Descripción</th>
-            <th class="p-2 col-cantidad">Cantidad</th>
-            <th class="p-2 col-precio">Precio</th>
-            <th class="p-2 col-subtotal">Subtotal</th>
-            <th class="p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button type="button" id="agregar-item" class="bg-gray-800 text-white px-4 py-2 rounded">+ Agregar Ítem</button>
-
-      <!-- Totales -->
-      <div class="mt-4 text-right">
-        <p id="subtotal">Subtotal: $0</p>
-        <p class="font-bold text-orange-600 text-lg" id="total">Total: $0</p>
-        <p id="valor-letras" class="text-sm text-gray-600 italic mt-1">Cero pesos</p>
-      </div>
-
-      <!-- Guardar -->
-      <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded mt-4 w-full">
-        Guardar Cotización
-      </button>
-    </form>
-
-    <!-- Lista Cotizaciones -->
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="font-bold text-lg mb-4">Cotizaciones Guardadas</h2>
-      <table class="w-full border" id="tabla-cotizaciones">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2">Cliente</th>
-            <th class="p-2">Total</th>
-            <th class="p-2">Tipo</th>
-            <th class="p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
     </div>
   </div>
 
-  <!-- Firebase -->
+  <!-- Modal de confirmación (para futuras implementaciones) -->
+  <div id="modal-confirmacion" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Confirmar</h3>
+      <p id="modal-mensaje" class="text-gray-600 mb-6"></p>
+      <div class="flex justify-end gap-3">
+        <button id="modal-cancelar" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+        <button id="modal-aceptar" class="btn-orange px-4 py-2 rounded-lg">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase y librerías -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
+  <!-- Scripts propios -->
   <script src="js/firebase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/numero-letras.js"></script>
   <script src="js/pdf-cotizacion.js"></script>
   <script src="js/cotizaciones.js"></script>
+  
+  <script>
+    // Inicialización cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+      // Inicializar estadísticas
+      actualizarEstadisticas();
+      
+      // Configurar eventos para mejoras de UI
+      configurarEventosUI();
+    });
+    
+    function actualizarEstadisticas() {
+      // Esta función se implementará en cotizaciones.js
+      console.log("Actualizando estadísticas...");
+    }
+    
+    function configurarEventosUI() {
+      // Botón para seleccionar archivos
+      const btnSeleccionarArchivos = document.getElementById('btn-seleccionar-archivos');
+      const anexosInput = document.getElementById('anexos-input');
+      
+      if (btnSeleccionarArchivos && anexosInput) {
+        btnSeleccionarArchivos.addEventListener('click', () => {
+          anexosInput.click();
+        });
+        
+        // Mostrar nombre de archivos seleccionados
+        anexosInput.addEventListener('change', function(e) {
+          const files = Array.from(e.target.files);
+          const listaAnexos = document.getElementById('lista-anexos');
+          
+          if (listaAnexos) {
+            listaAnexos.innerHTML = '';
+            
+            files.forEach(file => {
+              const div = document.createElement('div');
+              div.className = 'file-preview';
+              div.innerHTML = `
+                <div>
+                  <div class="file-name">${file.name}</div>
+                  <div class="file-size">${formatFileSize(file.size)}</div>
+                </div>
+                <button type="button" class="text-red-500 hover:text-red-700" onclick="this.parentElement.remove()">
+                  <i class="fas fa-times"></i>
+                </button>
+              `;
+              listaAnexos.appendChild(div);
+            });
+          }
+        });
+      }
+      
+      // Toggle anexos
+      const toggleAnexos = document.getElementById('toggle-anexos');
+      const seccionAnexos = document.getElementById('seccion-anexos');
+      const iconAnexos = document.getElementById('icon-anexos');
+      
+      if (toggleAnexos && seccionAnexos && iconAnexos) {
+        toggleAnexos.addEventListener('click', () => {
+          const isHidden = seccionAnexos.classList.contains('hidden');
+          seccionAnexos.classList.toggle('hidden');
+          iconAnexos.textContent = isHidden ? '−' : '+';
+          
+          if (!isHidden) {
+            seccionAnexos.classList.add('fade-in');
+          }
+        });
+      }
+      
+      // Limpiar formulario
+      const btnLimpiar = document.getElementById('btn-limpiar-formulario');
+      if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', () => {
+          if (confirm('¿Estás seguro de que quieres limpiar el formulario? Se perderán todos los datos no guardados.')) {
+            document.getElementById('form-cotizacion').reset();
+            // Limpiar tabla de ítems
+            const tbody = document.querySelector('#tabla-items tbody');
+            if (tbody) tbody.innerHTML = '';
+            
+            // Actualizar totales
+            if (typeof actualizarTotales === 'function') {
+              actualizarTotales();
+            }
+            
+            // Mostrar notificación
+            mostrarNotificacion('Formulario limpiado correctamente', 'success');
+          }
+        });
+      }
+      
+      // Botón nueva cotización
+      const btnNuevaCotizacion = document.getElementById('btn-nueva-cotizacion');
+      if (btnNuevaCotizacion) {
+        btnNuevaCotizacion.addEventListener('click', () => {
+          document.getElementById('form-cotizacion').reset();
+          const tbody = document.querySelector('#tabla-items tbody');
+          if (tbody) tbody.innerHTML = '';
+          
+          if (typeof actualizarTotales === 'function') {
+            actualizarTotales();
+          }
+          
+          // Scroll al formulario
+          document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+          
+          mostrarNotificacion('Formulario listo para una nueva cotización', 'info');
+        });
+      }
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function mostrarNotificacion(mensaje, tipo = 'info') {
+      // Crear elemento de notificación
+      const notificacion = document.createElement('div');
+      notificacion.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
+        tipo === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+        tipo === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+        'bg-blue-100 text-blue-800 border border-blue-200'
+      }`;
+      
+      notificacion.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas ${
+            tipo === 'success' ? 'fa-check-circle' :
+            tipo === 'error' ? 'fa-exclamation-circle' :
+            'fa-info-circle'
+          }"></i>
+          <span>${mensaje}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notificacion);
+      
+      // Auto-eliminar después de 5 segundos
+      setTimeout(() => {
+        if (notificacion.parentElement) {
+          notificacion.remove();
+        }
+      }, 5000);
+    }
+  </script>
 </body>
 </html>
