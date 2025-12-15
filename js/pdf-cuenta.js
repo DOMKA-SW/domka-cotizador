@@ -301,6 +301,7 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
   const firmaNombre = "Alex Otalora";
   const firmaTelefono = "+57 305 811 4595";
   const firmaRut = "RUT: 79597683-1";
+  const email = "Email: piter030509@gmail.com";
 
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
 
