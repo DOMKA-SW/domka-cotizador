@@ -1,15 +1,85 @@
 // js/cotizaciones.js
 const form = document.getElementById("form-cotizacion");
 const tablaItems = document.querySelector("#tabla-items tbody");
-const tablaCotizaciones = document.querySelector("#tabla-cotizaciones tbody");
+const tablaCotizaciones = querySelector("#tabla-cotizaciones tbody");
 const clienteSelect = document.getElementById("cliente");
 const formaPagoSelect = document.getElementById("forma-pago");
 const pagosPersonalizadosDiv = document.getElementById("pagos-personalizados");
 const campoValorTotal = document.getElementById("campo-valor-total");
 const inputValorTotal = document.getElementById("valor-total");
 
+// ============================
+// 🔹 Variables para anexos
+// ============================
+const toggleBtn = document.getElementById("toggle-anexos");
+const seccionAnexos = document.getElementById("seccion-anexos");
+const iconAnexos = document.getElementById("icon-anexos");
+const anexosInput = document.getElementById("anexos-input");
+const listaAnexos = document.getElementById("lista-anexos");
+
 let items = [];
 let tipoCalculo = "por-items";
+let anexosSeleccionados = [];
+
+// ============================
+// 🔹 Inicialización de anexos
+// ============================
+if (toggleBtn && seccionAnexos) {
+  toggleBtn.onclick = () => {
+    seccionAnexos.classList.toggle("hidden");
+    if (iconAnexos) {
+      iconAnexos.textContent = seccionAnexos.classList.contains("hidden") ? "+" : "−";
+    }
+  };
+}
+
+if (anexosInput) {
+  anexosInput.onchange = () => {
+    anexosSeleccionados = Array.from(anexosInput.files);
+    if (listaAnexos) {
+      listaAnexos.innerHTML = anexosSeleccionados
+        .map(f => `<li>📄 ${f.name} (${Math.round(f.size / 1024)} KB)</li>`)
+        .join("");
+    }
+  };
+}
+
+// ============================
+// 🔹 Convertir archivo a Base64
+// ============================
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================
+// 🔹 Procesar anexos antes de guardar
+// ============================
+async function procesarAnexos() {
+  const anexos = [];
+
+  for (const file of anexosSeleccionados) {
+    if (file.size > 500 * 1024) {
+      alert(`❌ ${file.name} supera 500 KB`);
+      continue;
+    }
+
+    const base64 = await fileToBase64(file);
+
+    anexos.push({
+      nombre: file.name,
+      tipo: file.type,
+      base64,
+      fecha: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  return anexos;
+}
 
 // ============================
 // 🔹 Toggle columnas de items
@@ -200,13 +270,13 @@ function recalcular() {
 }
 
 // ============================
-// 🔹 Guardar cotización
+// 🔹 Guardar cotización (MODIFICADO para incluir anexos)
 // ============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const clienteId = clienteSelect.value;
   const notas = document.getElementById("notas").value;
-  const ubicacion = document.getElementById("ubicacion").value || ""; // 👈 NUEVO CAMPO
+  const ubicacion = document.getElementById("ubicacion").value || "";
   const tipoCotizacion = document.querySelector('input[name="tipo"]:checked').value;
   const formaPago = formaPagoSelect.value;
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
@@ -272,12 +342,15 @@ form.addEventListener("submit", async (e) => {
     }
   }
 
+  // 🔹 MODIFICACIÓN: Procesar anexos antes de guardar
+  const anexos = await procesarAnexos();
+
   const cotizacion = {
     clienteId,
     nombreCliente: clienteData.nombre || clienteData.nombreEmpresa || "Sin nombre",
     telefono: clienteData.telefono || "",
     notas,
-    ubicacion, // 👈 NUEVO CAMPO
+    ubicacion,
     tipo: tipoCotizacion,
     formaPago,
     planPagos,
@@ -287,7 +360,8 @@ form.addEventListener("submit", async (e) => {
     fecha: new Date(),
     estado: "pendiente",
     mostrarValorLetras,
-    tipoCalculo
+    tipoCalculo,
+    anexos // 🔹 NUEVO: Agregar anexos al objeto
   };
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
@@ -301,6 +375,15 @@ form.addEventListener("submit", async (e) => {
   tablaItems.innerHTML = "";
   pagosPersonalizadosDiv.classList.add("hidden");
   document.getElementById("valor-letras").textContent = "Cero pesos";
+  
+  // Limpiar anexos
+  if (anexosInput) {
+    anexosInput.value = "";
+  }
+  if (listaAnexos) {
+    listaAnexos.innerHTML = "";
+  }
+  anexosSeleccionados = [];
   
   document.querySelector('input[name="tipo-calculo"][value="por-items"]').checked = true;
   tipoCalculo = "por-items";
@@ -328,9 +411,17 @@ async function cargarCotizaciones() {
       default: tipoTexto = c.tipo || "No especificado";
     }
 
+    // 🔹 Mostrar indicador de anexos si existen
+    const tieneAnexos = c.anexos && c.anexos.length > 0;
+    const anexosBadge = tieneAnexos ? 
+      '<span class="bg-blue-500 text-white text-xs px-2 py-1 rounded ml-2">📎</span>' : '';
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td class="p-2">${nombreCliente}</td>
+      <td class="p-2">
+        ${nombreCliente}
+        ${tieneAnexos ? '<span class="bg-blue-500 text-white text-xs px-2 py-1 rounded ml-2">📎</span>' : ''}
+      </td>
       <td class="p-2">$${Number(c.total || 0).toLocaleString("es-CO")}</td>
       <td class="p-2">${tipoTexto}</td>
       <td class="p-2 flex gap-2">
