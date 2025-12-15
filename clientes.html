@@ -5,43 +5,230 @@
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <title>DOMKA - Clientes</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #f9fafb;
+      min-height: 100vh;
+    }
+    
+    .form-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+    }
+    
+    .btn-primary {
+      background: #f97316;
+      color: white;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: none;
+    }
+    
+    .btn-primary:hover {
+      background: #ea580c;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(249, 115, 22, 0.2);
+    }
+    
+    .btn-secondary {
+      background: #4b5563;
+      color: white;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: #374151;
+      transform: translateY(-1px);
+    }
+    
+    .form-input {
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: all 0.2s ease;
+      width: 100%;
+      font-size: 0.95rem;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+    
+    .table-header {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .table-row-striped:nth-child(odd) {
+      background-color: #fffbeb;
+    }
+    
+    .table-row-striped:hover {
+      background-color: #fed7aa;
+    }
+    
+    .scrollable-table {
+      overflow-x: auto;
+    }
+    
+    .scrollable-table::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    .scrollable-table::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    .scrollable-table::-webkit-scrollbar-thumb {
+      background: #f97316;
+      border-radius: 3px;
+    }
+    
+    .section-spacing {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    
+    .action-btn-edit {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .action-btn-edit:hover {
+      background: #2563eb;
+    }
+    
+    .action-btn-delete {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .action-btn-delete:hover {
+      background: #dc2626;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
-
-  <!-- Encabezado -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-orange-600">👥 Clientes</h1>
-    <a href="dashboard.html" class="bg-gray-600 text-white px-4 py-2 rounded">← Volver</a>
-  </div>
-
-  <!-- Formulario -->
-  <form id="form-clientes" class="bg-white shadow p-4 rounded mb-6">
-    <h2 class="text-lg font-bold mb-4">Agregar / Editar Cliente</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <input type="text" name="nombre" placeholder="Nombre" required class="border p-2 rounded">
-      <input type="email" name="email" placeholder="Email" required class="border p-2 rounded">
-      <input type="text" name="telefono" placeholder="Teléfono" class="border p-2 rounded">
-      <input type="text" name="empresa" placeholder="Empresa" class="border p-2 rounded">
-      <input type="text" name="nit" placeholder="NIT" class="border p-2 rounded">
+<body class="min-h-screen p-4 md:p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Encabezado mejorado -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div class="mb-4 md:mb-0">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Clientes</h1>
+        <p class="text-gray-600 text-sm md:text-base">Administra la información de tus clientes</p>
+      </div>
+      <div>
+        <a href="dashboard.html" class="btn-secondary px-4 py-2.5 rounded-lg inline-flex items-center gap-2 text-sm md:text-base">
+          <i class="fas fa-arrow-left"></i>
+          Volver al Dashboard
+        </a>
+      </div>
     </div>
-    <button class="bg-orange-600 text-white px-4 py-2 mt-4 rounded">Guardar</button>
-  </form>
 
-  <!-- Tabla -->
-  <div class="bg-white shadow rounded">
-    <table class="w-full">
-      <thead class="bg-orange-600 text-white">
-        <tr>
-          <th class="p-2">Nombre</th>
-          <th class="p-2">Email</th>
-          <th class="p-2">Teléfono</th>
-          <th class="p-2">Empresa</th>
-          <th class="p-2">NIT</th>
-          <th class="p-2">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="clientes-list"></tbody>
-    </table>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Formulario -->
+      <div>
+        <div class="form-container p-4 md:p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200">
+            Agregar / Editar Cliente
+          </h2>
+          
+          <form id="form-clientes" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="section-spacing">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" placeholder="Nombre completo" required class="form-input">
+              </div>
+              
+              <div class="section-spacing">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" placeholder="correo@ejemplo.com" required class="form-input">
+              </div>
+              
+              <div class="section-spacing">
+                <label class="form-label">Teléfono</label>
+                <input type="text" name="telefono" placeholder="+57 300 123 4567" class="form-input">
+              </div>
+              
+              <div class="section-spacing">
+                <label class="form-label">Empresa</label>
+                <input type="text" name="empresa" placeholder="Nombre de la empresa" class="form-input">
+              </div>
+              
+              <div class="md:col-span-2 section-spacing">
+                <label class="form-label">NIT</label>
+                <input type="text" name="nit" placeholder="Número de Identificación Tributaria" class="form-input">
+              </div>
+            </div>
+            
+            <button type="submit" class="btn-primary px-6 py-3 rounded-lg text-lg w-full">
+              Guardar Cliente
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Lista de Clientes -->
+      <div>
+        <div class="form-container p-4 md:p-6">
+          <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">Lista de Clientes</h2>
+            <span class="text-sm text-gray-500" id="clientes-count">0 clientes</span>
+          </div>
+
+          <div class="scrollable-table">
+            <table class="w-full border-collapse">
+              <thead class="table-header">
+                <tr>
+                  <th class="p-3 text-left text-white">Nombre</th>
+                  <th class="p-3 text-left text-white">Email</th>
+                  <th class="p-3 text-left text-white">Teléfono</th>
+                  <th class="p-3 text-left text-white">Empresa</th>
+                  <th class="p-3 text-left text-white">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="clientes-list" class="divide-y divide-gray-200">
+                <!-- Los clientes se cargarán aquí -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div id="empty-state" class="empty-state">
+            <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
+            <p>No hay clientes registrados</p>
+            <p class="text-sm text-gray-500 mt-1">Comienza agregando tu primer cliente</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Firebase + Scripts -->
