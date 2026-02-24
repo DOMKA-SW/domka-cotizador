@@ -6,66 +6,302 @@
   <title>DOMKA - Contabilidad</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .tab-btn { transition: all 0.2s; }
+    .tab-btn.active { background: #f97316; color: white; }
+    .tab-btn:not(.active) { background: #f3f4f6; color: #374151; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .card-stat { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; }
+    .form-input { border:1.5px solid #d1d5db; border-radius:8px; padding:8px 12px; width:100%; font-size:0.9rem; transition:border-color .2s; }
+    .form-input:focus { outline:none; border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.1); }
+    .btn-primary { background:#f97316; color:white; font-weight:600; border-radius:8px; padding:9px 18px; transition:all .2s; cursor:pointer; }
+    .btn-primary:hover { background:#ea580c; }
+    canvas { max-height: 280px; }
+  </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-  <div class="p-6 max-w-6xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-orange-600">Contabilidad</h1>
-      <a href="dashboard.html" class="px-3 py-2 rounded bg-gray-600 text-white hover:bg-gray-700">← Volver</a>
-    </div>
+<div class="max-w-7xl mx-auto p-4 md:p-6">
 
-    <div class="bg-white p-6 rounded shadow mb-6">
-      <div class="flex flex-col md:flex-row gap-4 md:items-end">
-        <div>
-          <label class="block text-sm font-medium">Desde</label>
-          <input id="desde" type="date" class="border p-2 rounded" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Hasta</label>
-          <input id="hasta" type="date" class="border p-2 rounded" />
-        </div>
-        <div>
-          <button id="btn-filtrar" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Filtrar</button>
-        </div>
-        <div class="ml-auto flex gap-2">
-          <button id="btn-export" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Exportar CSV</button>
-        </div>
-      </div>
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Contabilidad</h1>
+      <p class="text-gray-500 text-sm mt-1">Resumen financiero de DOMKA</p>
     </div>
+    <a href="dashboard.html" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 text-sm">← Volver</a>
+  </div>
 
-    <div class="bg-white p-6 rounded shadow mb-6">
-      <h2 class="font-bold text-lg mb-4">Resumen</h2>
-      <div id="resumen" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 bg-gray-50 rounded"><strong>Total Ingresos (cuentas pagadas):</strong><div id="total-ingresos" class="text-xl font-bold text-orange-600 mt-2">—</div></div>
-        <div class="p-4 bg-gray-50 rounded"><strong>Total Cotizaciones Aprobadas:</strong><div id="total-cot-aprob" class="text-xl font-bold text-orange-600 mt-2">—</div></div>
-        <div class="p-4 bg-gray-50 rounded"><strong>Items registrados:</strong><div id="count-items" class="text-xl font-bold text-orange-600 mt-2">—</div></div>
-      </div>
+  <!-- Filtro fechas -->
+  <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap gap-3 items-end">
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Desde</label>
+      <input id="desde" type="date" class="form-input w-auto">
     </div>
-
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="font-bold text-lg mb-4">Transacciones</h2>
-      <table class="w-full" id="tabla-trans">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2 text-left">Tipo</th>
-            <th class="p-2 text-left">Cliente</th>
-            <th class="p-2 text-right">Total</th>
-            <th class="p-2 text-left">Fecha</th>
-            <th class="p-2 text-left">Referencia</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Hasta</label>
+      <input id="hasta" type="date" class="form-input w-auto">
+    </div>
+    <button id="btn-filtrar" class="btn-primary">Filtrar</button>
+    <button id="btn-limpiar-filtro" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm cursor-pointer">Limpiar</button>
+    <div class="ml-auto">
+      <button id="btn-export" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm cursor-pointer">📥 Exportar CSV</button>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-6 flex-wrap">
+    <button class="tab-btn active px-4 py-2 rounded-lg font-medium text-sm" data-tab="resumen">📊 Resumen</button>
+    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="movimientos">💸 Gastos / Ingresos</button>
+    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="cuentas-bancarias">🏦 Cuentas</button>
+    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="graficos">📈 Gráficos</button>
+    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="logs">📋 Logs</button>
+  </div>
 
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/contabilidad.js"></script>
+  <!-- ===== TAB RESUMEN ===== -->
+  <div id="tab-resumen" class="tab-panel active">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="card-stat">
+        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cotiz. Pendientes</p>
+        <p id="kpi-cot-pendientes" class="text-2xl font-bold text-yellow-600 mt-2">—</p>
+      </div>
+      <div class="card-stat">
+        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cotiz. Aprobadas</p>
+        <p id="kpi-cot-aprobadas" class="text-2xl font-bold text-green-600 mt-2">—</p>
+      </div>
+      <div class="card-stat">
+        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cuentas Pendientes</p>
+        <p id="kpi-cue-pendientes" class="text-2xl font-bold text-orange-500 mt-2">—</p>
+      </div>
+      <div class="card-stat">
+        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cuentas Pagadas</p>
+        <p id="kpi-cue-pagadas" class="text-2xl font-bold text-green-600 mt-2">—</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="card-stat border-l-4 border-green-500">
+        <p class="text-xs text-gray-500 font-semibold uppercase">Ingresos Confirmados</p>
+        <p class="text-xs text-gray-400">(cuentas pagadas + ingresos manuales)</p>
+        <p id="kpi-ingresos" class="text-2xl font-bold text-green-600 mt-2">—</p>
+      </div>
+      <div class="card-stat border-l-4 border-red-400">
+        <p class="text-xs text-gray-500 font-semibold uppercase">Gastos Registrados</p>
+        <p class="text-xs text-gray-400">(gastos manuales)</p>
+        <p id="kpi-gastos" class="text-2xl font-bold text-red-500 mt-2">—</p>
+      </div>
+      <div class="card-stat border-l-4 border-blue-500">
+        <p class="text-xs text-gray-500 font-semibold uppercase">Balance Neto</p>
+        <p class="text-xs text-gray-400">(ingresos − gastos)</p>
+        <p id="kpi-balance" class="text-2xl font-bold text-blue-600 mt-2">—</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-5">
+      <h2 class="font-bold text-gray-800 mb-4">Transacciones (Cotizaciones y Cuentas de Cobro)</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" id="tabla-trans">
+          <thead class="bg-gray-50 text-gray-600">
+            <tr>
+              <th class="p-2 text-left">Tipo</th>
+              <th class="p-2 text-left">Cliente</th>
+              <th class="p-2 text-right">Total</th>
+              <th class="p-2 text-center">Estado</th>
+              <th class="p-2 text-left">Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-trans" class="divide-y divide-gray-100"></tbody>
+        </table>
+        <div id="empty-trans" class="text-center py-8 text-gray-400 hidden">Sin datos en este rango</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB MOVIMIENTOS ===== -->
+  <div id="tab-movimientos" class="tab-panel">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Formulario -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-bold text-gray-800 mb-4">Registrar Movimiento</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Tipo</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="tipo-mov" value="ingreso" checked>
+                <span class="font-medium text-green-700">💰 Ingreso</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="tipo-mov" value="gasto">
+                <span class="font-medium text-red-600">💸 Gasto</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Descripción</label>
+            <input type="text" id="mov-descripcion" class="form-input" placeholder="Ej: Pago servicios, Compra materiales..." spellcheck="true" lang="es">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Monto ($)</label>
+            <input type="number" id="mov-monto" class="form-input" placeholder="0" min="0">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Categoría</label>
+            <select id="mov-categoria" class="form-input">
+              <option value="general">General</option>
+              <option value="materiales">Materiales</option>
+              <option value="mano-obra">Mano de obra</option>
+              <option value="servicios">Servicios / Utilities</option>
+              <option value="herramientas">Herramientas / Equipos</option>
+              <option value="transporte">Transporte</option>
+              <option value="marketing">Marketing</option>
+              <option value="impuestos">Impuestos</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Cuenta Bancaria</label>
+            <select id="mov-cuenta-bancaria" class="form-input">
+              <option value="">Sin asignar</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Fecha</label>
+            <input type="date" id="mov-fecha" class="form-input">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Notas (opcional)</label>
+            <input type="text" id="mov-notas" class="form-input" placeholder="Observaciones...">
+          </div>
+          <button id="btn-guardar-mov" class="btn-primary w-full">Guardar Movimiento</button>
+        </div>
+      </div>
+
+      <!-- Lista movimientos -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-bold text-gray-800 mb-4">Historial</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-600">
+              <tr>
+                <th class="p-2 text-left">Descripción</th>
+                <th class="p-2 text-left">Cat.</th>
+                <th class="p-2 text-right">Monto</th>
+                <th class="p-2 text-left">Fecha</th>
+                <th class="p-2"></th>
+              </tr>
+            </thead>
+            <tbody id="tbody-movimientos" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+        <div id="empty-movimientos" class="text-center py-8 text-gray-400">Sin movimientos registrados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB CUENTAS BANCARIAS ===== -->
+  <div id="tab-cuentas-bancarias" class="tab-panel">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Formulario -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-bold text-gray-800 mb-4" id="titulo-form-banco">Agregar Cuenta Bancaria</h2>
+        <div class="space-y-4">
+          <input type="hidden" id="banco-id-editando">
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Nombre de la cuenta</label>
+            <input type="text" id="banco-nombre" class="form-input" placeholder="Ej: Bancolombia, Nequi, Efectivo...">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Banco / Entidad</label>
+            <input type="text" id="banco-entidad" class="form-input" placeholder="Ej: Bancolombia S.A.">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Saldo actual ($)</label>
+            <input type="number" id="banco-saldo" class="form-input" placeholder="0" min="0" value="0">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Número de cuenta (opcional)</label>
+            <input type="text" id="banco-numero" class="form-input" placeholder="**** **** 1234">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">Color</label>
+            <input type="color" id="banco-color" value="#f97316" class="h-10 w-20 rounded cursor-pointer border p-1">
+          </div>
+          <div class="flex gap-3">
+            <button id="btn-guardar-banco" class="btn-primary flex-1">Guardar Cuenta</button>
+            <button id="btn-cancelar-banco" class="hidden px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm cursor-pointer">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista cuentas -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-bold text-gray-800 mb-4">Mis Cuentas</h2>
+        <div id="lista-cuentas-bancarias" class="space-y-3"></div>
+        <div id="empty-cuentas" class="text-center py-8 text-gray-400">Sin cuentas registradas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB GRÁFICOS ===== -->
+  <div id="tab-graficos" class="tab-panel">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-700 mb-4">Ingresos vs Gastos (mensual)</h3>
+        <canvas id="chart-ingresos-gastos"></canvas>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-700 mb-4">Gastos por Categoría</h3>
+        <canvas id="chart-categorias"></canvas>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-700 mb-4">Cotizaciones por Estado</h3>
+        <canvas id="chart-cotizaciones"></canvas>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-700 mb-4">Saldo por Cuenta Bancaria</h3>
+        <canvas id="chart-cuentas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB LOGS ===== -->
+  <div id="tab-logs" class="tab-panel">
+    <div class="bg-white rounded-xl shadow-sm p-5">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-gray-800">Registro de Actividad</h2>
+        <span class="text-sm text-gray-500" id="logs-count">0 registros</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 text-gray-600">
+            <tr>
+              <th class="p-2 text-left">Acción</th>
+              <th class="p-2 text-left">Tipo Doc</th>
+              <th class="p-2 text-left">Cliente</th>
+              <th class="p-2 text-right">Total</th>
+              <th class="p-2 text-left">Ciudad</th>
+              <th class="p-2 text-left">Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-logs" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+      <div id="empty-logs" class="text-center py-8 text-gray-400 hidden">Sin logs registrados</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/contabilidad.js"></script>
 </body>
 </html>
