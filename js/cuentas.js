@@ -30,6 +30,8 @@ async function cargarClientes() {
       opt.value = docu.id;
       opt.textContent = c.nombreEmpresa || c.nombre || `(sin nombre)`;
       opt.dataset.telefono = c.telefono || "";
+      opt.dataset.nit = c.nit || "";                           // 🔹 NUEVO
+      opt.dataset.numeroDocumento = c.numeroDocumento || "";   // 🔹 NUEVO
       selectCliente.appendChild(opt);
     });
   } catch (e) {
@@ -40,12 +42,12 @@ async function cargarClientes() {
 
 // Agregar ítem
 function agregarItem(descripcion = "") {
-  const itemId = Date.now();
   const itemDiv = document.createElement("div");
   itemDiv.className = "flex items-center mb-2";
   itemDiv.innerHTML = `
     <input type="text" class="item-desc border rounded px-3 py-2 flex-grow mr-2" 
-           placeholder="Descripción del servicio" value="${descripcion}">
+           placeholder="Descripción del servicio" value="${descripcion.replace(/"/g, '&quot;')}"
+           spellcheck="true" lang="es">
     <button type="button" class="eliminar-item text-red-600 hover:text-red-800 px-2 py-1">
       ✕
     </button>
@@ -128,20 +130,62 @@ async function procesarAnexos() {
   return anexos;
 }
 
+// ============================
+// 🔹 Notas por viñetas
+// ============================
+function leerNotasComoArray() {
+  const modoLibre = document.getElementById("notas-modo-libre");
+  if (modoLibre && !modoLibre.classList.contains("hidden")) {
+    const texto = document.getElementById("notas").value.trim();
+    return texto ? texto.split("\n").filter(l => l.trim() !== "") : [];
+  } else {
+    const inputs = document.querySelectorAll(".nota-vineta-input");
+    const arr = [];
+    inputs.forEach(inp => {
+      if (inp.value.trim()) arr.push(inp.value.trim());
+    });
+    return arr;
+  }
+}
+
+function agregarViñeta(texto = "") {
+  const container = document.getElementById("notas-vinetas-container");
+  if (!container) return;
+  const div = document.createElement("div");
+  div.className = "flex items-center gap-2 mb-2";
+  div.innerHTML = `
+    <span class="text-gray-400">•</span>
+    <input type="text" class="nota-vineta-input border rounded px-3 py-1.5 flex-grow text-sm"
+      placeholder="Escribe una nota..." value="${texto.replace(/"/g, '&quot;')}"
+      spellcheck="true" lang="es">
+    <button type="button" class="text-red-500 hover:text-red-700 text-lg leading-none">✕</button>
+  `;
+  div.querySelector("button").addEventListener("click", () => div.remove());
+  container.appendChild(div);
+}
+
 // Guardar cuenta de cobro
 formCuenta.addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const clienteId = selectCliente.value;
-  const notas = document.getElementById("notas").value.trim();
+
+  // 🔹 Leer notas (soporte viñetas)
+  const notasArray = leerNotasComoArray();
+  const notas = notasArray.join("\n");
+
   const valorTotal = Number(valorTotalInput.value) || 0;
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
 
-  // 🔹 Nuevos campos
   const concepto = document.getElementById("concepto").value.trim();
   const fechaEmision = document.getElementById("fecha-emision").value 
     ? new Date(document.getElementById("fecha-emision").value)
     : new Date();
+
+  // 🔹 Checkbox mostrar documento
+  const mostrarDocumento = document.getElementById("mostrar-documento")
+    ? document.getElementById("mostrar-documento").checked
+    : true;
   
   actualizarItems();
   
@@ -161,53 +205,59 @@ formCuenta.addEventListener("submit", async (e) => {
   }
   
   try {
-    // 🔹 Procesar anexos
     const anexos = await procesarAnexos();
     
-    // Obtener datos del cliente
     const clienteDoc = await db.collection("clientes").doc(clienteId).get();
     const clienteData = clienteDoc.data() || {};
     const nombreCliente = clienteData.nombreEmpresa || clienteData.nombre || "(sin nombre)";
     const telefonoCliente = clienteData.telefono || "";
+
+    // 🔹 Tomar datos del cliente seleccionado
+    const selectedOpt = selectCliente.options[selectCliente.selectedIndex];
+    const clienteNit = selectedOpt?.dataset.nit || clienteData.nit || "";
+    const clienteNumeroDocumento = selectedOpt?.dataset.numeroDocumento || clienteData.numeroDocumento || "";
     
-    // Guardar cuenta de cobro
     const docRef = await db.collection("cuentas").add({
       clienteId,
       nombreCliente,
       telefonoCliente,
-      concepto,        // 👈 se guarda el concepto
+      clienteNit,              // 🔹 NUEVO
+      clienteNumeroDocumento,  // 🔹 NUEVO
+      mostrarDocumento,        // 🔹 NUEVO
+      concepto,
       notas,
+      notasArray,              // 🔹 NUEVO: guardamos array
       items,
       total: valorTotal,
       subtotal: valorTotal,
-      fecha: fechaEmision,  // 👈 ahora la fecha viene del formulario
+      fecha: fechaEmision,
       estado: "pendiente",
       mostrarValorLetras,
       firmaNombre: "DOMKA",
       firmaTelefono: "+57 321 456 7890",
       firmaEmail: "contacto@domka.com",
       firmaRut: "123456789-0",
-      anexos // 👈 NUEVO
+      anexos
     });
     
-    // Guardar link público
     const linkPublico = `${BASE_PUBLICA}/public/cuenta.html?id=${docRef.id}`;
     await db.collection("cuentas").doc(docRef.id).update({ linkPublico });
     
     alert("✅ Cuenta de cobro guardada correctamente");
     
-    // Limpiar formulario
     formCuenta.reset();
     itemsContainer.innerHTML = "";
     items = [];
     valorTotalInput.value = "0";
     
-    // Limpiar anexos
     if (anexosInput) anexosInput.value = "";
     if (listaAnexos) listaAnexos.innerHTML = "";
     anexosSeleccionados = [];
+
+    // Limpiar viñetas
+    const vContainer = document.getElementById("notas-vinetas-container");
+    if (vContainer) vContainer.innerHTML = "";
     
-    // Recargar lista
     cargarCuentas();
   } catch (e) {
     console.error("Error guardando cuenta:", e);
@@ -256,7 +306,7 @@ async function cargarCuentas() {
       tablaCuentas.appendChild(tr);
     });
 
-    // PDF handlers - CORRECCIÓN AQUÍ
+    // PDF handlers
     tablaCuentas.querySelectorAll(".btn-pdf").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-id");
@@ -264,7 +314,7 @@ async function cargarCuentas() {
           const docu = await db.collection("cuentas").doc(id).get();
           if (docu.exists) {
             const cuenta = docu.data();
-            cuenta.id = id; // Asegurar que el ID esté incluido
+            cuenta.id = id;
             generarPDFCuenta(cuenta, cuenta.nombreCliente);
           } else {
             alert("Cuenta de cobro no encontrada.");
@@ -292,9 +342,43 @@ async function cargarCuentas() {
   }
 }
 
-// Inicializar
+// ============================
+// 🔹 Inicializar
+// ============================
 agregarItemBtn.addEventListener("click", () => agregarItem());
+
 (async function init() {
   await cargarClientes();
   await cargarCuentas();
+
+  // Sistema de viñetas en notas
+  const btnModoLibre = document.getElementById("btn-notas-libre");
+  const btnModoVinetas = document.getElementById("btn-notas-vinetas");
+  const modoLibreDiv = document.getElementById("notas-modo-libre");
+  const modoVinetasDiv = document.getElementById("notas-modo-vinetas");
+  const btnAgregarVineta = document.getElementById("agregar-vineta");
+
+  if (btnModoLibre && btnModoVinetas) {
+    btnModoLibre.addEventListener("click", () => {
+      modoLibreDiv.classList.remove("hidden");
+      modoVinetasDiv.classList.add("hidden");
+      btnModoLibre.classList.add("bg-orange-600", "text-white");
+      btnModoLibre.classList.remove("bg-gray-100", "text-gray-700");
+      btnModoVinetas.classList.remove("bg-orange-600", "text-white");
+      btnModoVinetas.classList.add("bg-gray-100", "text-gray-700");
+    });
+
+    btnModoVinetas.addEventListener("click", () => {
+      modoVinetasDiv.classList.remove("hidden");
+      modoLibreDiv.classList.add("hidden");
+      btnModoVinetas.classList.add("bg-orange-600", "text-white");
+      btnModoVinetas.classList.remove("bg-gray-100", "text-gray-700");
+      btnModoLibre.classList.remove("bg-orange-600", "text-white");
+      btnModoLibre.classList.add("bg-gray-100", "text-gray-700");
+    });
+  }
+
+  if (btnAgregarVineta) {
+    btnAgregarVineta.addEventListener("click", () => agregarViñeta());
+  }
 })();
