@@ -6,158 +6,161 @@
   <title>DOMKA - Dashboard Navideño 2025</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Estilos personalizados navideños + naranja */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #ffedd5 100%);
-      position: relative;
-      overflow-x: hidden;
-    }
-    
-    /* Copos de nieve sutiles */
-    .snowflake {
-      position: fixed;
-      top: -10px;
-      color: rgba(249, 115, 22, 0.3);
-      font-size: 1em;
-      animation: fall linear infinite;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    @keyframes fall {
-      to {
-        transform: translateY(100vh);
-      }
-    }
-    
-    /* Botones naranja navideños */
-    .btn-orange-christmas {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-      color: white;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-      position: relative;
-      overflow: hidden;
-      border: 2px solid #c2410c;
-    }
-    
-    .btn-orange-christmas:hover {
-      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
-    }
-    
-    /* Tarjetas con toque navideño */
-    .card-hover-christmas {
-      transition: all 0.3s ease;
-      border-left: 4px solid transparent;
-      background: white;
-      position: relative;
-    }
-    
-    .card-hover-christmas:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-      border-left: 4px solid #f97316;
-    }
-    
-    .card-hover-christmas::after {
-      content: '🎄';
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      opacity: 0.3;
-      font-size: 1.2rem;
-    }
-    
-    /* Accesos con toque navideño */
-    .access-card-christmas {
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      background: white;
-    }
-    
-    .access-card-christmas:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 20px rgba(249, 115, 22, 0.15);
-    }
-    
-    .access-card-christmas::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #f97316, #dc2626, #16a34a);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-    }
-    
-    .access-card-christmas:hover::before {
-      transform: scaleX(1);
-    }
-    
-    /* Animaciones navideñas sutiles */
-    @keyframes christmasPulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.8; }
-    }
-    
-    .christmas-pulse {
-      animation: christmasPulse 2s infinite;
-    }
-    
-    /* Estilos para el encabezado */
-    .header-gradient-christmas {
-      background: linear-gradient(90deg, #f97316 0%, #dc2626 50%, #16a34a 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Badge navideño */
-    .stat-badge-christmas {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      background: linear-gradient(135deg, #dc2626, #f97316);
-      color: white;
-      border-radius: 50%;
-      width: 26px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
-      border: 2px solid white;
-    }
-    
-    /* Efecto de brillo navideño */
-    .christmas-glow {
-      text-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
-    }
-    
-    /* Año nuevo 2025 */
-    .year-2025 {
-      background: linear-gradient(135deg, #f97316, #ea580c);
-      color: white;
-      border-radius: 8px;
-      padding: 4px 12px;
-      font-weight: bold;
-      box-shadow: 0 4px 6px rgba(249, 115, 22, 0.2);
-    }
-  </style>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+    color: #111827;
+    overflow-x: hidden;
+  }
+
+  /* Fondo decorativo sutil */
+  .snowflake {
+    display: none;
+  }
+
+  /* =========================
+     BOTONES PRINCIPALES
+  ========================== */
+  .btn-orange-christmas {
+    background: linear-gradient(135deg, #1a7a4a 0%, #14613b 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1px solid #0f3d27;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 20px rgba(26, 122, 74, 0.25);
+  }
+
+  .btn-orange-christmas:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(26, 122, 74, 0.35);
+    background: linear-gradient(135deg, #14613b 0%, #0f3d27 100%);
+  }
+
+  /* =========================
+     TARJETAS
+  ========================== */
+  .card-hover-christmas {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .card-hover-christmas:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #1a7a4a;
+  }
+
+  .card-hover-christmas::after {
+    content: '';
+  }
+
+  /* =========================
+     ACCESOS / DASHBOARD
+  ========================== */
+  .access-card-christmas {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .access-card-christmas:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .access-card-christmas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #1a7a4a, #22c55e);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .access-card-christmas:hover::before {
+    transform: scaleX(1);
+  }
+
+  /* =========================
+     ANIMACIONES SUAVES
+  ========================== */
+  @keyframes softPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+
+  .christmas-pulse {
+    animation: softPulse 2.5s ease-in-out infinite;
+  }
+
+  /* =========================
+     ENCABEZADOS
+  ========================== */
+  .header-gradient-christmas {
+    background: linear-gradient(90deg, #0f172a 0%, #1a7a4a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+
+  /* =========================
+     BADGES / INDICADORES
+  ========================== */
+  .stat-badge-christmas {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #1a7a4a;
+    color: #ffffff;
+    border-radius: 999px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(26, 122, 74, 0.35);
+    border: 2px solid #ffffff;
+  }
+
+  /* =========================
+     TEXTO CON BRILLO SUAVE
+  ========================== */
+  .christmas-glow {
+    text-shadow: 0 0 10px rgba(26, 122, 74, 0.35);
+  }
+
+  /* =========================
+     ETIQUETA DE AÑO / ESTADO
+  ========================== */
+  .year-2025 {
+    background: #1a7a4a;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 10px rgba(26, 122, 74, 0.25);
+  }
+</style>
 </head>
 <body class="min-h-screen">
   <!-- Copos de nieve sutiles -->
