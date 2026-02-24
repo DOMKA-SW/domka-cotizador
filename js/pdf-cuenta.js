@@ -1,13 +1,10 @@
 // js/pdf-cuenta.js
 async function imageToDataURL(path) {
   try {
-    // Si ya es un data URL, retornarlo directamente
     if (path.startsWith('data:')) return path;
     
-    // Para imágenes locales en GitHub Pages, usar rutas absolutas
     let absolutePath = path;
     if (!path.startsWith('http') && !path.startsWith('data:')) {
-      // Usar la ruta absoluta correcta para GitHub Pages
       absolutePath = `https://domka-sw.github.io/domka-cotizador${path.startsWith('/') ? path : '/' + path}`;
     }
     
@@ -33,7 +30,6 @@ async function preloadImages(imagePaths) {
     try {
       images[key] = await imageToDataURL(path);
     } catch (e) {
-      console.warn(`No se pudo cargar la imagen ${key}:`, path);
       images[key] = null;
     }
   }
@@ -44,50 +40,40 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
   const { 
     items = [], 
     total = 0, 
-    notas = "", 
+    notas = "",
+    notasArray = [],
     fecha = new Date(),
     mostrarValorLetras = true,
     id = "",
     firmaConfirmacion = null,
-    fechaConfirmacion = null
+    fechaConfirmacion = null,
+    clienteNit = "",
+    clienteNumeroDocumento = "",
+    mostrarDocumento = true,
+    anexos = []
   } = cuenta;
 
-  // DATOS FIJOS - ESTOS SON LOS VALORES CORRECTOS
   const firmaNombre = "Alex Otalora";
   const firmaTelefono = "+57 305 811 4595";
   const firmaRut = "RUT: 79597683-1";
   const firmaEmail = "Email: piter030509@gmail.com";
 
-  // Cargar imágenes con rutas absolutas para GitHub Pages
   const images = await preloadImages({
     logo: "/img/logo.png",
     firma: "/img/firma.png",
     muneco: "/img/muneco.png"
   });
 
-  // Formatear fecha
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  // Formatear fecha de confirmación si existe
   const fechaConfirmacionFormateada = fechaConfirmacion ? 
     new Date(fechaConfirmacion.seconds ? fechaConfirmacion.seconds * 1000 : fechaConfirmacion).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      year: 'numeric', month: 'long', day: 'numeric'
     }) : null;
 
-  /* Términos y condiciones fijos
-  const terminosFijos = [
-    "Esta cuenta de cobro tiene una validez de 30 días a partir de la fecha de emisión.",
-    "El pago debe realizarse dentro de los 15 días posteriores a la recepción.",
-    "En caso de mora, se aplicará un interés del 1.5% mensual sobre el saldo pendiente."
-  ]; */
-
-  // Contenido de firma del cliente si existe
+  // Firma del cliente si existe
   const contenidoFirmaCliente = firmaConfirmacion ? [
     { text: " ", margin: [0, 20] },
     { text: "CONFORMIDAD DEL CLIENTE", style: "aprobacionHeader" },
@@ -97,11 +83,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
         {
           stack: [
             { text: `Fecha de confirmación: ${fechaConfirmacionFormateada}`, style: "aprobacionText" },
-            {
-              image: firmaConfirmacion,
-              width: 150,
-              margin: [0, 10, 0, 5]
-            },
+            { image: firmaConfirmacion, width: 150, margin: [0, 10, 0, 5] },
             { text: "Firma del cliente", alignment: "center", style: "aprobacionText" }
           ],
           width: 200
@@ -110,9 +92,29 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // Preparar el contenido del PDF
+  // 🔹 Notas: viñetas si hay array, sino texto plano
+  const viñetas = notasArray && notasArray.length > 0
+    ? notasArray
+    : (notas ? notas.split("\n").filter(l => l.trim()) : []);
+
+  let notasContenido;
+  if (viñetas.length > 1) {
+    notasContenido = { ul: viñetas, margin: [0, 0, 0, 20] };
+  } else {
+    notasContenido = { text: notas || "—", margin: [0, 0, 0, 20] };
+  }
+
+  // 🔹 Filas de info del cliente con NIT y N° Documento opcionales
+  const infoClienteRows = [
+    [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
+    [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
+    [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }],
+    ...(mostrarDocumento && clienteNit ? [[{ text: "NIT:", style: "label" }, { text: clienteNit, style: "value" }]] : []),
+    ...(mostrarDocumento && clienteNumeroDocumento ? [[{ text: "N° Documento:", style: "label" }, { text: clienteNumeroDocumento, style: "value" }]] : []),
+  ];
+
   const contenido = [
-    // Encabezado con logo
+    // Encabezado
     {
       columns: [
         images.logo ? { image: images.logo, width: 80, height: 80 } : { text: "DOMKA", style: "logo" },
@@ -127,46 +129,37 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
       margin: [0, 0, 0, 20]
     },
     
-// Información general (cliente, fecha, ID)
-{
-  table: {
-    widths: ["*", "*"],
-    body: [
-      [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
-      [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
-      [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }]
-    ]
-  },
-  layout: "noBorders",
-  margin: [0, 0, 0, 15]
-},
+    // Info general
+    {
+      table: { widths: ["*", "*"], body: infoClienteRows },
+      layout: "noBorders",
+      margin: [0, 0, 0, 15]
+    },
 
-// 🔹 "Debe a" centrado
-{
-  text: "Debe a: Alexander Otalora Camayo",
-  alignment: "center",
-  style: "subheader",
-  margin: [0, 10, 0, 20]
-},
+    // Debe a / concepto
+    {
+      text: "Debe a: Alexander Otalora Camayo",
+      alignment: "center",
+      style: "subheader",
+      margin: [0, 10, 0, 20]
+    },
+    {
+      text: `Por concepto de: ${cuenta.concepto || "-"}`,
+      style: "subheader",
+      margin: [0, 0, 0, 10]
+    },
 
-// 🔹 "Por concepto de" como subtítulo antes de los items
-{
-  text: `Por concepto de: ${cuenta.concepto || "-"}`,
-  style: "subheader",
-  margin: [0, 0, 0, 10]
-},
-
-// Detalle de items
-{ text: "Descripción del Servicio", style: "subheader" },
-{
-  table: {
-    widths: ["*"],
-    body: [
-      [{ text: "Descripción", style: "tableHeader" }],
-      ...items.map(it => [it.descripcion || "-"])
-    ]
-  }
-},
+    // Detalle de items
+    { text: "Descripción del Servicio", style: "subheader" },
+    {
+      table: {
+        widths: ["*"],
+        body: [
+          [{ text: "Descripción", style: "tableHeader" }],
+          ...items.map(it => [it.descripcion || "-"])
+        ]
+      }
+    },
     
     // Valor total
     { text: " ", margin: [0, 10] },
@@ -187,73 +180,66 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     ] : []),
     
     // Notas
-    ...(notas ? [
+    ...(notas || (notasArray && notasArray.length > 0) ? [
       { text: " ", margin: [0, 10] },
       { text: "Notas", style: "subheader" },
-      { text: notas, margin: [0, 0, 0, 20] }
+      notasContenido
     ] : []),
     
-    /* Términos y condiciones
-    { text: "Términos y Condiciones", style: "subheader" },
-    {
-      ul: terminosFijos,
-      margin: [0, 0, 0, 30]
-    }, */
-    
-    // Firma del cliente (si existe)
+    // Firma del cliente
     ...contenidoFirmaCliente,
     
     // Firma de la empresa
     { text: " ", margin: [0, 20] },
     { text: "Atentamente,", style: "firmaText" },
-    images.firma ? {
-      image: images.firma,
-      width: 150,
-      margin: [0, 10, 0, 5]
-    } : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
+    images.firma ? { image: images.firma, width: 150, margin: [0, 10, 0, 5] } 
+                 : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
     { text: firmaNombre, style: "firmaNombre" },
     { text: firmaTelefono, style: "firmaDatos" },
-    { text: firmaRut, style: "firmaDatos", margin: [0, 0, 0, 30] },
-    { text: firmaEmail, style: "firmaDatos", margin: [0, 0, 0, 30] }, // <-- AGREGAR ESTA LÍNEA
+    { text: firmaRut, style: "firmaDatos" },
+    { text: firmaEmail, style: "firmaDatos", margin: [0, 0, 0, 30] },
     
-    // Pie de página
+    // Pie
     { text: "Gracias por su preferencia", style: "pie", alignment: "center", margin: [0, 30, 0, 0] }
   ];
 
-  // Configuración del documento con marcas de agua
+  // 🔹 ANEXOS: agregar imágenes como páginas adicionales
+  const paginasAnexos = [];
+  for (const anexo of anexos) {
+    if (!anexo.base64) continue;
+
+    if (anexo.tipo && anexo.tipo.startsWith("image/")) {
+      paginasAnexos.push({ text: "", pageBreak: "before" });
+      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
+      paginasAnexos.push({ image: anexo.base64, width: 500, alignment: "center" });
+    } else if (anexo.tipo === "application/pdf") {
+      paginasAnexos.push({ text: "", pageBreak: "before" });
+      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
+      paginasAnexos.push({ text: "(Archivo PDF adjunto — descargable desde el link público)", style: "valorLetras" });
+    } else {
+      paginasAnexos.push({ text: "", pageBreak: "before" });
+      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
+      paginasAnexos.push({ text: "(Archivo adjunto — descargable desde el link público)", style: "valorLetras" });
+    }
+  }
+
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
     background: function(currentPage, pageSize) {
-      // Solo agregar marcas de agua en la primera página
       if (currentPage === 1) {
-        const backgroundElements = [];
-        
-        // Logo como marca de agua (centrado) - COMO EN COTIZACIONES
+        const bg = [];
         if (images.logo) {
-          backgroundElements.push({
-            image: images.logo,
-            width: 300,
-            opacity: 0.05,
-            absolutePosition: { x: (pageSize.width - 300) / 2, y: (pageSize.height - 300) / 2 }
-          });
+          bg.push({ image: images.logo, width: 300, opacity: 0.05, absolutePosition: { x: (pageSize.width - 300) / 2, y: (pageSize.height - 300) / 2 } });
         }
-        
-        // Muñeco en la esquina superior izquierda (como en cotizaciones)
         if (images.muneco) {
-          backgroundElements.push({
-            image: images.muneco,
-            width: 100,
-            opacity: 0.1,
-            absolutePosition: { x: 455, y: 30 } // Esquina superior izquierda
-          });
+          bg.push({ image: images.muneco, width: 100, opacity: 0.1, absolutePosition: { x: 455, y: 30 } });
         }
-        
-        return backgroundElements;
+        return bg;
       }
       return [];
     },
-    content: contenido,
+    content: [...contenido, ...paginasAnexos],
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316" },
       logo: { fontSize: 22, bold: true, color: "#F97316" },
@@ -276,34 +262,20 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
   };
 
   try {
-    // Crear y descargar PDF
-    const pdfDoc = pdfMake.createPdf(docDefinition);
-    pdfDoc.download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
+    pdfMake.createPdf(docDefinition).download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
   } catch (error) {
     console.error("Error al generar el PDF:", error);
-    
-    // Fallback: usar versión simple si falla
     generarPDFCuentaSimple(cuenta, nombreCliente);
   }
 }
 
-// Función simple de respaldo
+// Función simple de respaldo (sin cambios, mantener igual)
 function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
-  const { 
-    items = [], 
-    total = 0, 
-    notas = "", 
-    fecha = new Date(),
-    mostrarValorLetras = true,
-    id = "",
-    firmaConfirmacion = null
-  } = cuenta;
+  const { items = [], total = 0, notas = "", fecha = new Date(), mostrarValorLetras = true, id = "", firmaConfirmacion = null } = cuenta;
 
-  // DATOS FIJOS - ESTOS SON LOS VALORES CORRECTOS
   const firmaNombre = "Alex Otalora";
   const firmaTelefono = "+57 305 811 4595";
   const firmaRut = "RUT: 79597683-1";
-  const email = "Email: piter030509@gmail.com";
 
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
 
@@ -315,30 +287,13 @@ function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
       { text: `N°: ${id || "Sin ID"}`, style: "subheader" },
       { text: `Cliente: ${nombreCliente}`, margin: [0, 10, 0, 5] },
       { text: `Fecha: ${fechaFormateada}`, margin: [0, 0, 0, 15] },
-      
       { text: "Descripción del Servicio:", style: "subheader" },
-      {
-        ul: items.map(item => item.descripcion || "-"),
-        margin: [0, 0, 0, 15]
-      },
-      
+      { ul: items.map(item => item.descripcion || "-"), margin: [0, 0, 0, 15] },
       { text: "Total:", style: "subheader" },
       { text: `$${Number(total || 0).toLocaleString("es-CO")}`, style: "totalValue" },
-      
-      ...(mostrarValorLetras ? [
-        { text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 5, 0, 15] }
-      ] : []),
-      
-      ...(notas ? [
-        { text: "Notas:", style: "subheader" },
-        { text: notas, margin: [0, 0, 0, 15] }
-      ] : []),
-      
-      ...(firmaConfirmacion ? [
-        { text: "Firma de confirmación:", style: "subheader" },
-        { image: firmaConfirmacion, width: 150, margin: [0, 10] }
-      ] : []),
-      
+      ...(mostrarValorLetras ? [{ text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 5, 0, 15] }] : []),
+      ...(notas ? [{ text: "Notas:", style: "subheader" }, { text: notas, margin: [0, 0, 0, 15] }] : []),
+      ...(firmaConfirmacion ? [{ text: "Firma de confirmación:", style: "subheader" }, { image: firmaConfirmacion, width: 150, margin: [0, 10] }] : []),
       { text: "Atentamente,", style: "firmaText" },
       { text: firmaNombre, style: "firmaNombre" },
       { text: firmaTelefono, style: "firmaDatos" },
