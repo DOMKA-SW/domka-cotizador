@@ -246,10 +246,27 @@
               </div>
             </div>
 
-            <!-- Notas -->
+            <!-- Notas con viñetas -->
             <div class="section-spacing">
               <label class="form-label">Notas</label>
-              <input type="text" id="notas" class="form-input" placeholder="Notas adicionales...">
+              <div class="flex gap-2 mb-3">
+                <button type="button" id="btn-notas-libre" class="px-3 py-1.5 rounded text-sm bg-orange-600 text-white">📝 Texto libre</button>
+                <button type="button" id="btn-notas-vinetas" class="px-3 py-1.5 rounded text-sm bg-gray-100 text-gray-700">• Viñetas</button>
+              </div>
+              <div id="notas-modo-libre">
+                <textarea id="notas" rows="3" spellcheck="true" lang="es" class="form-input" placeholder="Notas adicionales... (cada línea será una viñeta en el PDF)"></textarea>
+              </div>
+              <div id="notas-modo-vinetas" class="hidden">
+                <div id="notas-vinetas-container"></div>
+                <button type="button" id="agregar-vineta" class="mt-2 text-sm text-orange-600 hover:underline">+ Agregar viñeta</button>
+              </div>
+            </div>
+            <!-- Checkbox mostrar número de documento -->
+            <div class="section-spacing p-3 bg-gray-50 rounded-lg">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" id="mostrar-documento" checked class="w-4 h-4 text-orange-600">
+                Mostrar número de documento en el PDF
+              </label>
             </div>
 
             <!-- Anexos -->
