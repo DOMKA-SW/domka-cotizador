@@ -74,7 +74,7 @@ async function procesarAnexos() {
       nombre: file.name,
       tipo: file.type,
       base64,
-      fecha: new Date() // ✅ FIRESTORE SÍ LO ACEPTA
+      fecha: new Date()
     });
   }
 
@@ -89,12 +89,10 @@ function toggleColumnasItems() {
   const cells = document.querySelectorAll("#tabla-items td");
   
   if (tipoCalculo === "valor-total") {
-    // Ocultar columnas de Cantidad, Precio y Subtotal
     headers[1].classList.add("hidden");
     headers[2].classList.add("hidden");
     headers[3].classList.add("hidden");
     
-    // Ocultar las celdas correspondientes
     for (let i = 0; i < cells.length; i++) {
       const position = i % 5;
       if (position === 1 || position === 2 || position === 3) {
@@ -102,20 +100,16 @@ function toggleColumnasItems() {
       }
     }
     
-    // Cambiar el texto del botón de agregar
     document.getElementById("agregar-item").textContent = "+ Agregar Descripción";
   } else {
-    // Mostrar todas las columnas
     headers[1].classList.remove("hidden");
     headers[2].classList.remove("hidden");
     headers[3].classList.remove("hidden");
     
-    // Mostrar todas las celdas
     for (let i = 0; i < cells.length; i++) {
       cells[i].classList.remove("hidden");
     }
     
-    // Restaurar texto del botón
     document.getElementById("agregar-item").textContent = "+ Agregar Ítem";
   }
 }
@@ -131,6 +125,10 @@ async function cargarClientes() {
     const opt = document.createElement("option");
     opt.value = doc.id;
     opt.textContent = c.nombre || c.nombreEmpresa || "Sin nombre";
+    // 🔹 Guardamos datos extra en dataset para usarlos al guardar
+    opt.dataset.nit = c.nit || "";
+    opt.dataset.numeroDocumento = c.numeroDocumento || "";
+    opt.dataset.telefono = c.telefono || "";
     clienteSelect.appendChild(opt);
   });
 }
@@ -146,7 +144,6 @@ formaPagoSelect.addEventListener("change", function() {
   }
 });
 
-// Validar que los pagos personalizados sumen 100%
 document.getElementById("pago1").addEventListener("input", validarPagos);
 document.getElementById("pago2").addEventListener("input", validarPagos);
 document.getElementById("pago3").addEventListener("input", validarPagos);
@@ -181,13 +178,11 @@ document.querySelectorAll('input[name="tipo-calculo"]').forEach(radio => {
       campoValorTotal.classList.add("hidden");
     }
     
-    // Actualizar visibilidad de columnas
     toggleColumnasItems();
     recalcular();
   });
 });
 
-// Event listener para el campo de valor total
 inputValorTotal.addEventListener("input", recalcular);
 
 // ============================
@@ -197,7 +192,7 @@ document.getElementById("agregar-item").addEventListener("click", () => {
   const row = document.createElement("tr");
 
   row.innerHTML = `
-    <td><input type="text" class="desc border p-1 w-full" placeholder="Descripción"></td>
+    <td><input type="text" class="desc border p-1 w-full" placeholder="Descripción" spellcheck="true" lang="es"></td>
     <td><input type="number" class="cant border p-1 w-full" value="1" min="1"></td>
     <td><input type="number" class="precio border p-1 w-full" value="0" min="0" placeholder="Precio"></td>
     <td class="subtotal text-right p-2">0</td>
@@ -212,8 +207,6 @@ document.getElementById("agregar-item").addEventListener("click", () => {
   });
 
   tablaItems.appendChild(row);
-  
-  // Actualizar visibilidad de columnas después de agregar
   toggleColumnasItems();
   recalcular();
 });
@@ -225,7 +218,6 @@ function recalcular() {
   items = [];
   
   if (tipoCalculo === "por-items") {
-    // Cálculo por items - modo normal
     tablaItems.querySelectorAll("tr").forEach(tr => {
       const desc = tr.querySelector(".desc").value;
       const cant = Number(tr.querySelector(".cant").value) || 0;
@@ -238,10 +230,8 @@ function recalcular() {
     
     total = subtotal;
   } else {
-    // Cálculo por valor total directo - los items son informativos
     total = Number(inputValorTotal.value) || 0;
     
-    // Recolectar items para mostrar en el PDF (aunque no afecten el cálculo)
     tablaItems.querySelectorAll("tr").forEach(tr => {
       const desc = tr.querySelector(".desc").value;
       const cant = Number(tr.querySelector(".cant").value) || 0;
@@ -255,7 +245,6 @@ function recalcular() {
     subtotal = total;
   }
   
-  // Actualizar la interfaz
   document.getElementById("subtotal").textContent = `Subtotal: $${subtotal.toLocaleString("es-CO")}`;
   document.getElementById("total").textContent = `Total: $${total.toLocaleString("es-CO")}`;
   
@@ -270,20 +259,66 @@ function recalcular() {
 }
 
 // ============================
-// 🔹 Guardar cotización (MODIFICADO para incluir anexos)
+// 🔹 Notas por viñetas
+// ============================
+function leerNotasComoArray() {
+  // Lee el modo activo: "libre" o "vinetas"
+  const modoLibre = document.getElementById("notas-modo-libre");
+  if (modoLibre && !modoLibre.classList.contains("hidden")) {
+    // Modo texto libre: cada línea es una viñeta al guardar
+    const texto = document.getElementById("notas").value.trim();
+    return texto ? texto.split("\n").filter(l => l.trim() !== "") : [];
+  } else {
+    // Modo viñetas individuales
+    const inputs = document.querySelectorAll(".nota-vineta-input");
+    const arr = [];
+    inputs.forEach(inp => {
+      if (inp.value.trim()) arr.push(inp.value.trim());
+    });
+    return arr;
+  }
+}
+
+function agregarViñeta(texto = "") {
+  const container = document.getElementById("notas-vinetas-container");
+  if (!container) return;
+  const div = document.createElement("div");
+  div.className = "flex items-center gap-2 mb-2";
+  div.innerHTML = `
+    <span class="text-gray-400">•</span>
+    <input type="text" class="nota-vineta-input border rounded px-3 py-1.5 flex-grow text-sm"
+      placeholder="Escribe una nota..." value="${texto.replace(/"/g, '&quot;')}"
+      spellcheck="true" lang="es">
+    <button type="button" class="text-red-500 hover:text-red-700 text-lg leading-none">✕</button>
+  `;
+  div.querySelector("button").addEventListener("click", () => div.remove());
+  container.appendChild(div);
+}
+
+// ============================
+// 🔹 Guardar cotización
 // ============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const clienteId = clienteSelect.value;
-  const notas = document.getElementById("notas").value;
+
+  // 🔹 Leer notas (soporte viñetas)
+  const notasArray = leerNotasComoArray();
+  const notas = notasArray.join("\n"); // guardamos como texto separado por saltos
+
   const ubicacion = document.getElementById("ubicacion").value || "";
   const tipoCotizacion = document.querySelector('input[name="tipo"]:checked').value;
   const formaPago = formaPagoSelect.value;
   const mostrarValorLetras = document.getElementById("mostrar-valor-letras").checked;
   const { subtotal, total } = recalcular();
+
+  // 🔹 Leer checkbox de mostrar documento
+  const mostrarDocumento = document.getElementById("mostrar-documento")
+    ? document.getElementById("mostrar-documento").checked
+    : true;
   
   if (formaPago === "personalizado" && !validarPagos()) {
-    alert("Los pagos personalizados deben sumen 100%");
+    alert("Los pagos personalizados deben sumar 100%");
     return;
   }
 
@@ -304,6 +339,11 @@ form.addEventListener("submit", async (e) => {
 
   const clienteDoc = await db.collection("clientes").doc(clienteId).get();
   const clienteData = clienteDoc.data() || {};
+
+  // 🔹 Tomar datos del cliente seleccionado
+  const selectedOpt = clienteSelect.options[clienteSelect.selectedIndex];
+  const clienteNit = selectedOpt?.dataset.nit || clienteData.nit || "";
+  const clienteNumeroDocumento = selectedOpt?.dataset.numeroDocumento || clienteData.numeroDocumento || "";
 
   let planPagos = [];
   if (formaPago === "contado") {
@@ -342,14 +382,17 @@ form.addEventListener("submit", async (e) => {
     }
   }
 
-  // 🔹 MODIFICACIÓN: Procesar anexos antes de guardar
   const anexos = await procesarAnexos();
 
   const cotizacion = {
     clienteId,
     nombreCliente: clienteData.nombre || clienteData.nombreEmpresa || "Sin nombre",
     telefono: clienteData.telefono || "",
+    clienteNit,                 // 🔹 NUEVO
+    clienteNumeroDocumento,     // 🔹 NUEVO
+    mostrarDocumento,           // 🔹 NUEVO
     notas,
+    notasArray,                 // 🔹 NUEVO: guardamos también el array
     ubicacion,
     tipo: tipoCotizacion,
     formaPago,
@@ -361,7 +404,7 @@ form.addEventListener("submit", async (e) => {
     estado: "pendiente",
     mostrarValorLetras,
     tipoCalculo,
-    anexos // 🔹 NUEVO: Agregar anexos al objeto
+    anexos
   };
 
   const docRef = await db.collection("cotizaciones").add(cotizacion);
@@ -376,14 +419,13 @@ form.addEventListener("submit", async (e) => {
   pagosPersonalizadosDiv.classList.add("hidden");
   document.getElementById("valor-letras").textContent = "Cero pesos";
   
-  // Limpiar anexos
-  if (anexosInput) {
-    anexosInput.value = "";
-  }
-  if (listaAnexos) {
-    listaAnexos.innerHTML = "";
-  }
+  if (anexosInput) anexosInput.value = "";
+  if (listaAnexos) listaAnexos.innerHTML = "";
   anexosSeleccionados = [];
+
+  // Limpiar viñetas
+  const vContainer = document.getElementById("notas-vinetas-container");
+  if (vContainer) vContainer.innerHTML = "";
   
   document.querySelector('input[name="tipo-calculo"][value="por-items"]').checked = true;
   tipoCalculo = "por-items";
@@ -411,10 +453,7 @@ async function cargarCotizaciones() {
       default: tipoTexto = c.tipo || "No especificado";
     }
 
-    // 🔹 Mostrar indicador de anexos si existen
     const tieneAnexos = c.anexos && c.anexos.length > 0;
-    const anexosBadge = tieneAnexos ? 
-      '<span class="bg-blue-500 text-white text-xs px-2 py-1 rounded ml-2">📎</span>' : '';
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -443,4 +482,37 @@ document.addEventListener("DOMContentLoaded", function() {
   cargarClientes();
   cargarCotizaciones();
   toggleColumnasItems();
+
+  // ============================
+  // 🔹 Inicializar sistema de viñetas en notas
+  // ============================
+  const btnModoLibre = document.getElementById("btn-notas-libre");
+  const btnModoVinetas = document.getElementById("btn-notas-vinetas");
+  const modoLibreDiv = document.getElementById("notas-modo-libre");
+  const modoVinetasDiv = document.getElementById("notas-modo-vinetas");
+  const btnAgregarVineta = document.getElementById("agregar-vineta");
+
+  if (btnModoLibre && btnModoVinetas) {
+    btnModoLibre.addEventListener("click", () => {
+      modoLibreDiv.classList.remove("hidden");
+      modoVinetasDiv.classList.add("hidden");
+      btnModoLibre.classList.add("bg-orange-600", "text-white");
+      btnModoLibre.classList.remove("bg-gray-100", "text-gray-700");
+      btnModoVinetas.classList.remove("bg-orange-600", "text-white");
+      btnModoVinetas.classList.add("bg-gray-100", "text-gray-700");
+    });
+
+    btnModoVinetas.addEventListener("click", () => {
+      modoVinetasDiv.classList.remove("hidden");
+      modoLibreDiv.classList.add("hidden");
+      btnModoVinetas.classList.add("bg-orange-600", "text-white");
+      btnModoVinetas.classList.remove("bg-gray-100", "text-gray-700");
+      btnModoLibre.classList.remove("bg-orange-600", "text-white");
+      btnModoLibre.classList.add("bg-gray-100", "text-gray-700");
+    });
+  }
+
+  if (btnAgregarVineta) {
+    btnAgregarVineta.addEventListener("click", () => agregarViñeta());
+  }
 });
