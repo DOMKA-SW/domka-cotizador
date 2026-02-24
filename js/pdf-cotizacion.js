@@ -2,20 +2,29 @@
 
 // 🔹 Convierte imágenes a base64 dinámicamente
 async function imageToDataURL(path) {
-  const res = await fetch(path);
-  const blob = await res.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
-  });
+  try {
+    if (path.startsWith('data:')) return path;
+    const res = await fetch(path);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.warn("No se pudo cargar imagen:", path, e);
+    return null;
+  }
 }
 
-// 🔹 Pre-carga varias imágenes y devuelve un diccionario
 async function preloadImages(imagePaths) {
   const images = {};
   for (const [key, path] of Object.entries(imagePaths)) {
-    images[key] = await imageToDataURL(path);
+    try {
+      images[key] = await imageToDataURL(path);
+    } catch (e) {
+      images[key] = null;
+    }
   }
   return images;
 }
@@ -26,7 +35,8 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     items = [], 
     subtotal = 0, 
     total = 0, 
-    notas = "", 
+    notas = "",
+    notasArray = [],
     tipo = "mano-obra",
     formaPago = "contado",
     planPagos = [],
@@ -35,10 +45,13 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     id = "",
     firmaAprobacion = null,
     fechaAprobacion = null,
-    tipoCalculo = "por-items"
+    tipoCalculo = "por-items",
+    clienteNit = "",
+    clienteNumeroDocumento = "",
+    mostrarDocumento = true,
+    anexos = []
   } = cotizacion;
 
-  // 👇 Cargar imágenes necesarias
   const basePath = "/domka-cotizador";
   const images = await preloadImages({
     firma: `${basePath}/img/firma.png`,
@@ -46,21 +59,15 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     muneco: `${basePath}/img/muneco.png`
   });
 
-  // Formatear fechas
   const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    year: 'numeric', month: 'long', day: 'numeric'
   });
 
   const fechaAprobacionFormateada = fechaAprobacion ? 
     new Date(fechaAprobacion.seconds ? fechaAprobacion.seconds * 1000 : fechaAprobacion).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      year: 'numeric', month: 'long', day: 'numeric'
     }) : null;
 
-  // Tipo de cotización
   let tipoTexto = "";
   switch(tipo) {
     case "mano-obra": tipoTexto = "Mano de obra"; break;
@@ -120,7 +127,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // Firma del cliente
+  // Firma del cliente (aprobación)
   const contenidoAprobacion = firmaAprobacion ? [
     { text: " ", margin: [0, 20] },
     { text: "RECIBIDO", style: "aprobacionHeader" },
@@ -145,7 +152,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     { text: "Atentamente,", style: "firmaText" },
     {
       stack: [
-        { image: images.firma, width: 150, margin: [0, 0, 0, 5] },
+        images.firma ? { image: images.firma, width: 150, margin: [0, 0, 0, 5] } : { text: "[Firma]", style: "firmaText" },
         { text: "Alex Otalora", style: "firmaEmpresa" },
         { text: "Cel: +57 305 811 4595", style: "firmaDatos" },
         { text: "RUT: 79.597.683-1", style: "firmaDatos" }
@@ -154,13 +161,34 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ];
 
-  // Contenido del PDF
-  const contenido = [
+  // 🔹 Notas: usar array de viñetas si existe, sino texto plano
+  let notasContenido;
+  const viñetas = notasArray && notasArray.length > 0
+    ? notasArray
+    : (notas ? notas.split("\n").filter(l => l.trim()) : []);
 
+  if (viñetas.length > 1) {
+    notasContenido = { ul: viñetas, margin: [0, 0, 0, 20] };
+  } else {
+    notasContenido = { text: notas || "—", margin: [0, 0, 0, 20] };
+  }
+
+  // 🔹 Info cliente — incluir NIT y/o Número de Documento si aplica
+  const infoClienteRows = [
+    [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
+    ...(cotizacion.ubicacion ? [[{ text: "Ubicación:", style: "label" }, { text: cotizacion.ubicacion, style: "value" }]] : []),
+    [{ text: "Fecha:", style: "label" }, { text: fechaFormateada, style: "value" }],
+    [{ text: "Tipo de cotización:", style: "label" }, { text: tipoTexto, style: "value" }],
+    ...(mostrarDocumento && clienteNit ? [[{ text: "NIT:", style: "label" }, { text: clienteNit, style: "value" }]] : []),
+    ...(mostrarDocumento && clienteNumeroDocumento ? [[{ text: "N° Documento:", style: "label" }, { text: clienteNumeroDocumento, style: "value" }]] : []),
+  ];
+
+  // Contenido principal
+  const contenido = [
     // Encabezado
     {
       columns: [
-        { image: images.logo, width: 80 },
+        images.logo ? { image: images.logo, width: 80 } : { text: "DOMKA", style: "header" },
         {
           stack: [
             { text: "COTIZACIÓN", style: "header", alignment: "right" },
@@ -172,22 +200,14 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
       margin: [0, 0, 0, 20]
     },
     
-    // Info general
+    // Info cliente
     {
-      table: {
-        widths: ["*", "*"],
-        body: [
-          [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
-          ...(cotizacion.ubicacion ? [[{ text: "Ubicación:", style: "label" }, { text: cotizacion.ubicacion, style: "value" }]] : []),
-          [{ text: "Fecha:", style: "label" }, { text: fechaFormateada, style: "value" }],
-          [{ text: "Tipo de cotización:", style: "label" }, { text: tipoTexto, style: "value" }]
-        ]
-      },
+      table: { widths: ["*", "*"], body: infoClienteRows },
       layout: "noBorders",
       margin: [0, 0, 0, 15]
     },
     
-    // Detalle de items
+    // Detalle
     { text: "Detalle de la Cotización", style: "subheader" },
     { table: { widths: widths, body: tablaItems } },
     
@@ -216,9 +236,9 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     // Notas
     { text: " ", margin: [0, 10] },
     { text: "Notas", style: "subheader" },
-    { text: notas || "—", margin: [0, 0, 0, 20] },
+    notasContenido,
     
-    // Términos y condiciones (3 puntos)
+    // Términos y condiciones
     { text: "Términos y Condiciones", style: "subheader" },
     {
       ul: [
@@ -238,15 +258,35 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     { text: "DOMKA 2025 — Alex Otalora", style: "footer", alignment: "center" }
   ];
 
-  // Documento PDF
+  // 🔹 ANEXOS: agregar cada imagen como página adicional
+  const paginasAnexos = [];
+  for (const anexo of anexos) {
+    if (!anexo.base64) continue;
+
+    if (anexo.tipo && anexo.tipo.startsWith("image/")) {
+      paginasAnexos.push({ text: "", pageBreak: "before" });
+      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
+      paginasAnexos.push({ image: anexo.base64, width: 500, alignment: "center" });
+    } else if (anexo.tipo === "application/pdf") {
+      // Los PDFs embebidos no son nativos en pdfmake; indicamos referencia
+      paginasAnexos.push({ text: "", pageBreak: "before" });
+      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
+      paginasAnexos.push({ text: "(Archivo PDF adjunto — descargable desde el link público)", style: "valorLetras" });
+    } else {
+      paginasAnexos.push({ text: "", pageBreak: "before" });
+      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
+      paginasAnexos.push({ text: "(Archivo adjunto — descargable desde el link público)", style: "valorLetras" });
+    }
+  }
+
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
     background: [
-      { image: images.muneco, width: 100, opacity: 0.1, absolutePosition: { x: 445, y: 30 } },
-      { image: images.logo, width: 300, opacity: 0.05, absolutePosition: { x: 150, y: 200 } }
-    ],
-    content: contenido,
+      images.muneco ? { image: images.muneco, width: 100, opacity: 0.1, absolutePosition: { x: 445, y: 30 } } : null,
+      images.logo ? { image: images.logo, width: 300, opacity: 0.05, absolutePosition: { x: 150, y: 200 } } : null,
+    ].filter(Boolean),
+    content: [...contenido, ...paginasAnexos],
     styles: {
       header: { fontSize: 18, bold: true, color: "#F97316", font: "Roboto" },
       subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5], color: "#374151", font: "Roboto" },
