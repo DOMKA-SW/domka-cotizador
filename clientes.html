@@ -139,7 +139,7 @@
 <body class="min-h-screen p-4 md:p-6">
   <div class="max-w-7xl mx-auto">
     
-    <!-- Encabezado mejorado -->
+    <!-- Encabezado -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
       <div class="mb-4 md:mb-0">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Clientes</h1>
@@ -165,7 +165,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div class="section-spacing">
                 <label class="form-label">Nombre</label>
-                <input type="text" name="nombre" placeholder="Nombre completo" required class="form-input">
+                <input type="text" name="nombre" placeholder="Nombre completo" required
+                  spellcheck="true" lang="es" class="form-input">
               </div>
               
               <div class="section-spacing">
@@ -180,12 +181,19 @@
               
               <div class="section-spacing">
                 <label class="form-label">Empresa</label>
-                <input type="text" name="empresa" placeholder="Nombre de la empresa" class="form-input">
+                <input type="text" name="empresa" placeholder="Nombre de la empresa"
+                  spellcheck="true" lang="es" class="form-input">
               </div>
               
-              <div class="md:col-span-2 section-spacing">
+              <div class="section-spacing">
                 <label class="form-label">NIT</label>
                 <input type="text" name="nit" placeholder="Número de Identificación Tributaria" class="form-input">
+              </div>
+
+              <!-- 🔹 NUEVO: Número de Documento -->
+              <div class="section-spacing">
+                <label class="form-label">Número de Documento</label>
+                <input type="text" name="numeroDocumento" placeholder="CC, NIT, Pasaporte, etc." class="form-input">
               </div>
             </div>
             
@@ -212,6 +220,8 @@
                   <th class="p-3 text-left text-white">Email</th>
                   <th class="p-3 text-left text-white">Teléfono</th>
                   <th class="p-3 text-left text-white">Empresa</th>
+                  <th class="p-3 text-left text-white">NIT</th>
+                  <th class="p-3 text-left text-white">N° Documento</th><!-- 🔹 NUEVO -->
                   <th class="p-3 text-left text-white">Acciones</th>
                 </tr>
               </thead>
