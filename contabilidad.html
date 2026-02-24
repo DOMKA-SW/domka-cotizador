@@ -6,295 +6,449 @@
   <title>DOMKA - Contabilidad</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    .tab-btn { transition: all 0.2s; }
-    .tab-btn.active { background: #f97316; color: white; }
-    .tab-btn:not(.active) { background: #f3f4f6; color: #374151; }
+    body { background: #f4f5f7; }
+
+    .tab-btn { padding: 10px 18px; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; transition: all .2s; border: none; }
+    .tab-btn.active { background: #f97316; color: white; box-shadow: 0 2px 8px rgba(249,115,22,.3); }
+    .tab-btn:not(.active) { background: white; color: #6b7280; border: 1px solid #e5e7eb; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
-    .card-stat { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; }
-    .form-input { border:1.5px solid #d1d5db; border-radius:8px; padding:8px 12px; width:100%; font-size:0.9rem; transition:border-color .2s; }
-    .form-input:focus { outline:none; border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.1); }
-    .btn-primary { background:#f97316; color:white; font-weight:600; border-radius:8px; padding:9px 18px; transition:all .2s; cursor:pointer; }
-    .btn-primary:hover { background:#ea580c; }
-    canvas { max-height: 280px; }
+
+    .card { background: white; border-radius: 14px; box-shadow: 0 1px 6px rgba(0,0,0,.06); border: 1px solid #e5e7eb; }
+
+    .kpi { background: white; border-radius: 12px; padding: 16px 18px; border: 1px solid #e5e7eb; }
+    .kpi-title { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #9ca3af; margin-bottom: 4px; }
+    .kpi-val { font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
+
+    .inp { border: 1.5px solid #d1d5db; border-radius: 8px; padding: 8px 12px; width: 100%; font-size: .88rem; transition: border-color .2s; background: white; }
+    .inp:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,.1); }
+    select.inp { appearance: auto; }
+
+    .btn { padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: .875rem; cursor: pointer; border: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-orange { background: #f97316; color: white; }  .btn-orange:hover { background: #ea580c; }
+    .btn-gray   { background: #f3f4f6; color: #374151; } .btn-gray:hover { background: #e5e7eb; }
+    .btn-blue   { background: #3b82f6; color: white; }  .btn-blue:hover { background: #2563eb; }
+    .btn-red    { background: #ef4444; color: white; }  .btn-red:hover { background: #dc2626; }
+    .btn-sm { padding: 5px 12px; font-size: .78rem; border-radius: 6px; }
+
+    /* tarjeta de cuenta bancaria */
+    .cuenta-card { border-radius: 14px; padding: 20px; color: white; position: relative; overflow: hidden; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+    .cuenta-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .cuenta-card::before { content:''; position:absolute; right:-20px; top:-20px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.12); }
+    .cuenta-card::after  { content:''; position:absolute; right:14px; bottom:-30px; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,.07); }
+
+    /* filas de movimiento */
+    .mov-row { border-left: 4px solid #e5e7eb; padding: 10px 14px; border-radius: 0 8px 8px 0; }
+    .mov-row.ingreso { border-left-color: #22c55e; background: #f0fdf4; }
+    .mov-row.gasto   { border-left-color: #ef4444; background: #fef2f2; }
+    .mov-row.pendiente { opacity: .75; }
+
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:.68rem; font-weight:700; }
+    .badge-green  { background:#dcfce7; color:#166534; }
+    .badge-red    { background:#fee2e2; color:#991b1b; }
+    .badge-orange { background:#ffedd5; color:#9a3412; }
+    .badge-blue   { background:#dbeafe; color:#1e40af; }
+    .badge-yellow { background:#fef9c3; color:#713f12; }
+    .badge-gray   { background:#f3f4f6; color:#374151; }
+
+    th { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#9ca3af; padding:10px 12px; text-align:left; }
+    td { padding:10px 12px; font-size:.875rem; border-bottom:1px solid #f3f4f6; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafafa; }
+
+    .hidden { display: none !important; }
+    .lbl { display:block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6b7280; margin-bottom:4px; }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-<div class="max-w-7xl mx-auto p-4 md:p-6">
+<body class="min-h-screen p-4 md:p-6">
+<div class="max-w-7xl mx-auto">
 
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
     <div>
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Contabilidad</h1>
-      <p class="text-gray-500 text-sm mt-1">Resumen financiero de DOMKA</p>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800">💰 Finanzas Personales</h1>
+      <p class="text-gray-500 text-sm mt-1">Control de cuentas, gastos, ingresos y proyectos</p>
     </div>
-    <a href="dashboard.html" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 text-sm">← Volver</a>
+    <div class="flex gap-2 flex-wrap">
+      <button id="btn-export" class="btn btn-blue btn-sm"><i class="fas fa-download"></i> Exportar CSV</button>
+      <a href="dashboard.html" class="btn btn-gray btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+    </div>
   </div>
 
-  <!-- Filtro fechas -->
-  <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap gap-3 items-end">
+  <!-- FILTRO FECHAS -->
+  <div class="card p-4 mb-5 flex flex-wrap gap-3 items-end">
     <div>
-      <label class="block text-xs font-semibold text-gray-500 mb-1">Desde</label>
-      <input id="desde" type="date" class="form-input w-auto">
+      <label class="lbl">Desde</label>
+      <input id="desde" type="date" class="inp" style="width:155px">
     </div>
     <div>
-      <label class="block text-xs font-semibold text-gray-500 mb-1">Hasta</label>
-      <input id="hasta" type="date" class="form-input w-auto">
+      <label class="lbl">Hasta</label>
+      <input id="hasta" type="date" class="inp" style="width:155px">
     </div>
-    <button id="btn-filtrar" class="btn-primary">Filtrar</button>
-    <button id="btn-limpiar-filtro" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm cursor-pointer">Limpiar</button>
-    <div class="ml-auto">
-      <button id="btn-export" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm cursor-pointer">📥 Exportar CSV</button>
+    <button id="btn-filtrar" class="btn btn-orange btn-sm"><i class="fas fa-filter"></i> Filtrar</button>
+    <button id="btn-limpiar" class="btn btn-gray btn-sm">Limpiar</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="kpi">
+      <div class="kpi-title">Total Ingresos</div>
+      <div class="kpi-val text-green-600" id="kpi-ingresos">—</div>
+      <p class="text-xs text-gray-400 mt-1">Pagos + ingresos manuales</p>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Total Gastos</div>
+      <div class="kpi-val text-red-500" id="kpi-gastos">—</div>
+      <p class="text-xs text-gray-400 mt-1">Gastos en el período</p>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Balance Neto</div>
+      <div class="kpi-val" id="kpi-balance">—</div>
+      <p class="text-xs text-gray-400 mt-1">Ingresos − Gastos</p>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Patrimonio Total</div>
+      <div class="kpi-val text-blue-600" id="kpi-patrimonio">—</div>
+      <p class="text-xs text-gray-400 mt-1">Suma de todas las cuentas</p>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Cot. Pendientes</div>
+      <div class="kpi-val text-yellow-500" id="kpi-cot-pendientes">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Cot. Aprobadas</div>
+      <div class="kpi-val text-green-600" id="kpi-cot-aprobadas">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Por Cobrar</div>
+      <div class="kpi-val text-orange-500" id="kpi-por-cobrar">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Cuentas Pagadas</div>
+      <div class="kpi-val text-green-700" id="kpi-cue-pagadas">—</div>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="flex gap-2 mb-6 flex-wrap">
-    <button class="tab-btn active px-4 py-2 rounded-lg font-medium text-sm" data-tab="resumen">📊 Resumen</button>
-    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="movimientos">💸 Gastos / Ingresos</button>
-    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="cuentas-bancarias">🏦 Cuentas</button>
-    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="graficos">📈 Gráficos</button>
-    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm" data-tab="logs">📋 Logs</button>
+  <!-- TABS -->
+  <div class="flex gap-2 mb-5 flex-wrap">
+    <button class="tab-btn active" data-tab="cuentas">🏦 Mis Cuentas</button>
+    <button class="tab-btn" data-tab="movimientos">💸 Movimientos</button>
+    <button class="tab-btn" data-tab="graficos">📊 Gráficos</button>
+    <button class="tab-btn" data-tab="transacciones">📋 Transacciones</button>
+    <button class="tab-btn" data-tab="logs">👁 Logs</button>
   </div>
 
-  <!-- ===== TAB RESUMEN ===== -->
-  <div id="tab-resumen" class="tab-panel active">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="card-stat">
-        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cotiz. Pendientes</p>
-        <p id="kpi-cot-pendientes" class="text-2xl font-bold text-yellow-600 mt-2">—</p>
-      </div>
-      <div class="card-stat">
-        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cotiz. Aprobadas</p>
-        <p id="kpi-cot-aprobadas" class="text-2xl font-bold text-green-600 mt-2">—</p>
-      </div>
-      <div class="card-stat">
-        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cuentas Pendientes</p>
-        <p id="kpi-cue-pendientes" class="text-2xl font-bold text-orange-500 mt-2">—</p>
-      </div>
-      <div class="card-stat">
-        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Cuentas Pagadas</p>
-        <p id="kpi-cue-pagadas" class="text-2xl font-bold text-green-600 mt-2">—</p>
-      </div>
-    </div>
+  <!-- ====================================================
+       TAB: MIS CUENTAS BANCARIAS
+  ==================================================== -->
+  <div class="tab-panel active" id="tab-cuentas">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="card-stat border-l-4 border-green-500">
-        <p class="text-xs text-gray-500 font-semibold uppercase">Ingresos Confirmados</p>
-        <p class="text-xs text-gray-400">(cuentas pagadas + ingresos manuales)</p>
-        <p id="kpi-ingresos" class="text-2xl font-bold text-green-600 mt-2">—</p>
-      </div>
-      <div class="card-stat border-l-4 border-red-400">
-        <p class="text-xs text-gray-500 font-semibold uppercase">Gastos Registrados</p>
-        <p class="text-xs text-gray-400">(gastos manuales)</p>
-        <p id="kpi-gastos" class="text-2xl font-bold text-red-500 mt-2">—</p>
-      </div>
-      <div class="card-stat border-l-4 border-blue-500">
-        <p class="text-xs text-gray-500 font-semibold uppercase">Balance Neto</p>
-        <p class="text-xs text-gray-400">(ingresos − gastos)</p>
-        <p id="kpi-balance" class="text-2xl font-bold text-blue-600 mt-2">—</p>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm p-5">
-      <h2 class="font-bold text-gray-800 mb-4">Transacciones (Cotizaciones y Cuentas de Cobro)</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm" id="tabla-trans">
-          <thead class="bg-gray-50 text-gray-600">
-            <tr>
-              <th class="p-2 text-left">Tipo</th>
-              <th class="p-2 text-left">Cliente</th>
-              <th class="p-2 text-right">Total</th>
-              <th class="p-2 text-center">Estado</th>
-              <th class="p-2 text-left">Fecha</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-trans" class="divide-y divide-gray-100"></tbody>
-        </table>
-        <div id="empty-trans" class="text-center py-8 text-gray-400 hidden">Sin datos en este rango</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== TAB MOVIMIENTOS ===== -->
-  <div id="tab-movimientos" class="tab-panel">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      <!-- Formulario -->
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h2 class="font-bold text-gray-800 mb-4">Registrar Movimiento</h2>
-        <div class="space-y-4">
+      <!-- Formulario cuenta -->
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-700 mb-4 pb-3 border-b" id="titulo-form-banco">Agregar Cuenta</h3>
+        <input type="hidden" id="banco-id-editando">
+        <div class="space-y-3">
           <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Tipo</label>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="tipo-mov" value="ingreso" checked>
-                <span class="font-medium text-green-700">💰 Ingreso</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="tipo-mov" value="gasto">
-                <span class="font-medium text-red-600">💸 Gasto</span>
-              </label>
+            <label class="lbl">Nombre de la cuenta *</label>
+            <input id="banco-nombre" class="inp" placeholder="Ej: Bancolombia Ahorros, Nequi, Efectivo...">
+          </div>
+          <div>
+            <label class="lbl">Entidad bancaria</label>
+            <input id="banco-entidad" class="inp" placeholder="Ej: Bancolombia, Davivienda, Nequi...">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="lbl">Tipo de cuenta</label>
+              <select id="banco-tipo" class="inp">
+                <option value="ahorros">Ahorros</option>
+                <option value="corriente">Corriente</option>
+                <option value="digital">Billetera Digital</option>
+                <option value="efectivo">Efectivo / Caja</option>
+                <option value="inversion">Inversión / CDT</option>
+                <option value="credito">Crédito / Deuda</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">Número (opcional)</label>
+              <input id="banco-numero" class="inp" placeholder="****1234">
             </div>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Descripción</label>
-            <input type="text" id="mov-descripcion" class="form-input" placeholder="Ej: Pago servicios, Compra materiales..." spellcheck="true" lang="es">
+            <label class="lbl">Saldo actual ($)</label>
+            <input id="banco-saldo" type="number" class="inp" value="0">
+            <p class="text-xs text-gray-400 mt-1">Ingresa el saldo real que tienes ahora en esta cuenta</p>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Monto ($)</label>
-            <input type="number" id="mov-monto" class="form-input" placeholder="0" min="0">
+            <label class="lbl">Color</label>
+            <input id="banco-color" type="color" class="inp h-10 p-1 cursor-pointer" value="#f97316">
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Categoría</label>
-            <select id="mov-categoria" class="form-input">
-              <option value="general">General</option>
-              <option value="materiales">Materiales</option>
-              <option value="mano-obra">Mano de obra</option>
-              <option value="servicios">Servicios / Utilities</option>
-              <option value="herramientas">Herramientas / Equipos</option>
-              <option value="transporte">Transporte</option>
-              <option value="marketing">Marketing</option>
-              <option value="impuestos">Impuestos</option>
-              <option value="otro">Otro</option>
-            </select>
+          <button id="btn-guardar-banco" class="btn btn-orange w-full justify-center">
+            <i class="fas fa-save"></i> Guardar Cuenta
+          </button>
+          <button id="btn-cancelar-banco" class="btn btn-gray w-full justify-center hidden">
+            Cancelar edición
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de cuentas + patrimonio -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lista-cuentas-bancarias">
+          <div class="col-span-2 text-center py-10 text-gray-400">
+            <i class="fas fa-university text-4xl mb-2"></i>
+            <p>Cargando cuentas...</p>
           </div>
+        </div>
+
+        <!-- Totalizador -->
+        <div class="card p-4 flex justify-between items-center">
           <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Cuenta Bancaria</label>
-            <select id="mov-cuenta-bancaria" class="form-input">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Patrimonio total</p>
+            <p class="text-2xl font-bold text-gray-800 mt-1" id="patrimonio-display">—</p>
+            <p class="text-xs text-gray-400 mt-0.5">Suma de saldos en todas las cuentas</p>
+          </div>
+          <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center">
+            <i class="fas fa-wallet text-orange-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de movimientos de la cuenta clickeada -->
+    <div id="detalle-cuenta-wrap" class="card p-5 mt-5 hidden">
+      <div class="flex justify-between items-center mb-4 pb-3 border-b">
+        <h3 class="font-bold text-gray-700" id="detalle-cuenta-titulo">Movimientos de la cuenta</h3>
+        <button id="btn-cerrar-detalle" class="btn btn-gray btn-sm">
+          <i class="fas fa-times"></i> Cerrar
+        </button>
+      </div>
+      <div id="detalle-cuenta-contenido"></div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       TAB: MOVIMIENTOS (gastos e ingresos)
+  ==================================================== -->
+  <div class="tab-panel" id="tab-movimientos">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+      <!-- Formulario nuevo movimiento -->
+      <div class="lg:col-span-2 card p-5">
+        <h3 class="font-bold text-gray-700 mb-4 pb-3 border-b">Registrar Movimiento</h3>
+        <div class="space-y-3">
+
+          <!-- Tipo ingreso/gasto -->
+          <div>
+            <label class="lbl">Tipo *</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 border-2 border-green-300 bg-green-50 rounded-lg p-3 cursor-pointer" id="lbl-tipo-ingreso">
+                <input type="radio" name="tipo-mov" value="ingreso" checked class="accent-green-500">
+                <span class="text-green-700 font-bold text-sm">💰 Ingreso</span>
+              </label>
+              <label class="flex items-center gap-2 border-2 border-gray-200 rounded-lg p-3 cursor-pointer" id="lbl-tipo-gasto">
+                <input type="radio" name="tipo-mov" value="gasto" class="accent-red-500">
+                <span class="text-red-600 font-bold text-sm">💸 Gasto</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="lbl">Descripción *</label>
+            <input id="mov-descripcion" class="inp" placeholder="Ej: Arriendo, Supermercado, Pago cliente..." spellcheck="true" lang="es">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="lbl">Monto ($) *</label>
+              <input id="mov-monto" type="number" class="inp" placeholder="0" min="0">
+            </div>
+            <div>
+              <label class="lbl">Fecha *</label>
+              <input id="mov-fecha" type="date" class="inp">
+            </div>
+          </div>
+
+          <div>
+            <label class="lbl">Cuenta bancaria</label>
+            <select id="mov-cuenta-bancaria" class="inp">
               <option value="">Sin asignar</option>
             </select>
           </div>
+
           <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Fecha</label>
-            <input type="date" id="mov-fecha" class="form-input">
+            <label class="lbl">Categoría</label>
+            <select id="mov-categoria" class="inp">
+              <option value="general">General</option>
+              <optgroup label="── Ingresos ──">
+                <option value="servicios-prestados">Servicios Prestados</option>
+                <option value="salario">Salario / Sueldo</option>
+                <option value="freelance">Freelance / Proyecto</option>
+                <option value="ventas">Ventas</option>
+                <option value="arriendo-recibido">Arriendo Recibido</option>
+                <option value="transferencia">Transferencia Recibida</option>
+                <option value="rendimiento">Rendimiento / Inversión</option>
+              </optgroup>
+              <optgroup label="── Gastos ──">
+                <option value="vivienda">Vivienda / Arriendo</option>
+                <option value="alimentacion">Alimentación / Mercado</option>
+                <option value="transporte">Transporte / Gasolina</option>
+                <option value="salud">Salud / Médico</option>
+                <option value="educacion">Educación</option>
+                <option value="entretenimiento">Entretenimiento / Salidas</option>
+                <option value="ropa">Ropa / Calzado</option>
+                <option value="servicios-publicos">Servicios Públicos</option>
+                <option value="tecnologia">Tecnología / Suscripciones</option>
+                <option value="materiales">Materiales de Trabajo</option>
+                <option value="nomina">Nómina / Pagos a Terceros</option>
+                <option value="publicidad">Publicidad / Marketing</option>
+                <option value="impuestos">Impuestos / Obligaciones</option>
+                <option value="deudas">Deudas / Cuotas</option>
+              </optgroup>
+            </select>
           </div>
+
           <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Notas (opcional)</label>
-            <input type="text" id="mov-notas" class="form-input" placeholder="Observaciones...">
+            <label class="lbl">Estado</label>
+            <select id="mov-estado" class="inp">
+              <option value="realizado">✅ Realizado</option>
+              <option value="pendiente">⏳ Pendiente</option>
+              <option value="programado">📅 Programado</option>
+            </select>
           </div>
-          <button id="btn-guardar-mov" class="btn-primary w-full">Guardar Movimiento</button>
+
+          <div>
+            <label class="lbl">Notas</label>
+            <input id="mov-notas" class="inp" placeholder="Observación opcional..." spellcheck="true" lang="es">
+          </div>
+
+          <button id="btn-guardar-mov" class="btn btn-orange w-full justify-center">
+            <i class="fas fa-plus"></i> Guardar Movimiento
+          </button>
         </div>
       </div>
 
-      <!-- Lista movimientos -->
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h2 class="font-bold text-gray-800 mb-4">Historial</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-600">
-              <tr>
-                <th class="p-2 text-left">Descripción</th>
-                <th class="p-2 text-left">Cat.</th>
-                <th class="p-2 text-right">Monto</th>
-                <th class="p-2 text-left">Fecha</th>
-                <th class="p-2"></th>
-              </tr>
-            </thead>
-            <tbody id="tbody-movimientos" class="divide-y divide-gray-100"></tbody>
-          </table>
+      <!-- Lista de movimientos -->
+      <div class="lg:col-span-3 card p-5">
+        <div class="flex justify-between items-center mb-3 pb-3 border-b flex-wrap gap-2">
+          <h3 class="font-bold text-gray-700">Historial</h3>
+          <div class="flex gap-2 flex-wrap">
+            <button data-filtro="todos"     class="filtro-mov-btn btn btn-gray btn-sm">Todos</button>
+            <button data-filtro="ingreso"   class="filtro-mov-btn btn btn-sm" style="background:#dcfce7;color:#15803d">Ingresos</button>
+            <button data-filtro="gasto"     class="filtro-mov-btn btn btn-sm" style="background:#fee2e2;color:#b91c1c">Gastos</button>
+            <button data-filtro="pendiente" class="filtro-mov-btn btn btn-sm" style="background:#fef9c3;color:#854d0e">Pendientes</button>
+          </div>
         </div>
-        <div id="empty-movimientos" class="text-center py-8 text-gray-400">Sin movimientos registrados</div>
+
+        <!-- Mini resumen -->
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="bg-green-50 rounded-xl p-3 text-center">
+            <p class="text-xs text-green-600 font-semibold">Ingresos</p>
+            <p class="font-bold text-green-700 text-lg" id="mov-sum-ing">$0</p>
+          </div>
+          <div class="bg-red-50 rounded-xl p-3 text-center">
+            <p class="text-xs text-red-500 font-semibold">Gastos</p>
+            <p class="font-bold text-red-600 text-lg" id="mov-sum-gas">$0</p>
+          </div>
+          <div class="bg-blue-50 rounded-xl p-3 text-center">
+            <p class="text-xs text-blue-500 font-semibold">Balance</p>
+            <p class="font-bold text-blue-600 text-lg" id="mov-bal">$0</p>
+          </div>
+        </div>
+
+        <div id="lista-movimientos" class="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+          <p class="text-gray-400 text-sm text-center py-8">Cargando...</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ===== TAB CUENTAS BANCARIAS ===== -->
-  <div id="tab-cuentas-bancarias" class="tab-panel">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      <!-- Formulario -->
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h2 class="font-bold text-gray-800 mb-4" id="titulo-form-banco">Agregar Cuenta Bancaria</h2>
-        <div class="space-y-4">
-          <input type="hidden" id="banco-id-editando">
-          <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Nombre de la cuenta</label>
-            <input type="text" id="banco-nombre" class="form-input" placeholder="Ej: Bancolombia, Nequi, Efectivo...">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Banco / Entidad</label>
-            <input type="text" id="banco-entidad" class="form-input" placeholder="Ej: Bancolombia S.A.">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Saldo actual ($)</label>
-            <input type="number" id="banco-saldo" class="form-input" placeholder="0" min="0" value="0">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Número de cuenta (opcional)</label>
-            <input type="text" id="banco-numero" class="form-input" placeholder="**** **** 1234">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-600 mb-1">Color</label>
-            <input type="color" id="banco-color" value="#f97316" class="h-10 w-20 rounded cursor-pointer border p-1">
-          </div>
-          <div class="flex gap-3">
-            <button id="btn-guardar-banco" class="btn-primary flex-1">Guardar Cuenta</button>
-            <button id="btn-cancelar-banco" class="hidden px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm cursor-pointer">Cancelar</button>
-          </div>
-        </div>
+  <!-- ====================================================
+       TAB: GRÁFICOS
+  ==================================================== -->
+  <div class="tab-panel" id="tab-graficos">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-700 mb-3">📊 Ingresos vs Gastos por Mes</h3>
+        <div style="height:270px"><canvas id="chart-ig"></canvas></div>
       </div>
-
-      <!-- Lista cuentas -->
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h2 class="font-bold text-gray-800 mb-4">Mis Cuentas</h2>
-        <div id="lista-cuentas-bancarias" class="space-y-3"></div>
-        <div id="empty-cuentas" class="text-center py-8 text-gray-400">Sin cuentas registradas</div>
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-700 mb-3">📈 Evolución del Balance (línea)</h3>
+        <div style="height:270px"><canvas id="chart-balance"></canvas></div>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-700 mb-3">🥧 Gastos por Categoría</h3>
+        <div style="height:270px"><canvas id="chart-cat"></canvas></div>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-700 mb-3">🏦 Saldo por Cuenta Bancaria</h3>
+        <div style="height:270px"><canvas id="chart-bancos"></canvas></div>
+      </div>
+      <div class="card p-5 md:col-span-2">
+        <h3 class="font-bold text-gray-700 mb-3">📉 Gastos mensuales acumulados (línea)</h3>
+        <div style="height:240px"><canvas id="chart-gastos-linea"></canvas></div>
       </div>
     </div>
   </div>
 
-  <!-- ===== TAB GRÁFICOS ===== -->
-  <div id="tab-graficos" class="tab-panel">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h3 class="font-bold text-gray-700 mb-4">Ingresos vs Gastos (mensual)</h3>
-        <canvas id="chart-ingresos-gastos"></canvas>
-      </div>
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h3 class="font-bold text-gray-700 mb-4">Gastos por Categoría</h3>
-        <canvas id="chart-categorias"></canvas>
-      </div>
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h3 class="font-bold text-gray-700 mb-4">Cotizaciones por Estado</h3>
-        <canvas id="chart-cotizaciones"></canvas>
-      </div>
-      <div class="bg-white rounded-xl shadow-sm p-5">
-        <h3 class="font-bold text-gray-700 mb-4">Saldo por Cuenta Bancaria</h3>
-        <canvas id="chart-cuentas"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== TAB LOGS ===== -->
-  <div id="tab-logs" class="tab-panel">
-    <div class="bg-white rounded-xl shadow-sm p-5">
+  <!-- ====================================================
+       TAB: TRANSACCIONES (todas combinadas)
+  ==================================================== -->
+  <div class="tab-panel" id="tab-transacciones">
+    <div class="card p-5">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="font-bold text-gray-800">Registro de Actividad</h2>
-        <span class="text-sm text-gray-500" id="logs-count">0 registros</span>
+        <h3 class="font-bold text-gray-700">Todas las Transacciones</h3>
+        <span class="text-sm text-gray-400" id="trans-count"></span>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50 text-gray-600">
+        <table class="w-full">
+          <thead class="border-b">
             <tr>
-              <th class="p-2 text-left">Acción</th>
-              <th class="p-2 text-left">Tipo Doc</th>
-              <th class="p-2 text-left">Cliente</th>
-              <th class="p-2 text-right">Total</th>
-              <th class="p-2 text-left">Ciudad</th>
-              <th class="p-2 text-left">Fecha</th>
+              <th>Tipo</th><th>Descripción / Cliente</th>
+              <th class="text-right">Monto</th><th>Categoría</th>
+              <th>Cuenta</th><th>Fecha</th><th>Estado</th>
             </tr>
           </thead>
-          <tbody id="tbody-logs" class="divide-y divide-gray-100"></tbody>
+          <tbody id="tbody-trans"></tbody>
         </table>
+        <div id="empty-trans" class="text-center py-10 text-gray-400 hidden">
+          <i class="fas fa-search text-3xl mb-2 block"></i> Sin registros en este período
+        </div>
       </div>
-      <div id="empty-logs" class="text-center py-8 text-gray-400 hidden">Sin logs registrados</div>
     </div>
   </div>
 
-</div>
+  <!-- ====================================================
+       TAB: LOGS
+  ==================================================== -->
+  <div class="tab-panel" id="tab-logs">
+    <div class="card p-5">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-gray-700">Actividad Reciente (logs)</h3>
+        <span class="text-sm text-gray-400" id="logs-count"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="border-b">
+            <tr>
+              <th>Acción</th><th>Tipo</th><th>Cliente</th>
+              <th class="text-right">Valor</th><th>Ciudad</th><th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-logs"></tbody>
+        </table>
+        <div id="empty-logs" class="text-center py-10 text-gray-400 hidden">
+          <i class="fas fa-eye-slash text-3xl mb-2 block"></i> Sin actividad registrada
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /max-w -->
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
