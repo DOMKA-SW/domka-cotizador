@@ -589,7 +589,7 @@ const bloquePago = [
     content: [
       bloqueHeader,
       lineaHeader,
-      bloqueSubHeader,
+      //bloqueSubHeader,
       hr(),
       bloqueInfo,
       hr(),
