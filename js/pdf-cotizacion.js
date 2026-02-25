@@ -601,7 +601,7 @@ const bloquePago = [
       ...bloquePago,
       ...bloqueNotas,
       ...bloqueTerminos,
-      ...bloqueAprobacion,
+      //...bloqueAprobacion,
       ...bloqueEmpresa,
       ...paginasAdjuntos
     ],
