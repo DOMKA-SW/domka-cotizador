@@ -1,316 +1,414 @@
-// js/pdf-cuenta.js
+// js/pdf-cuenta.js — DOMKA 2025 · Diseño editorial final
+// Mismo lenguaje visual que pdf-cotizacion.js
+// REGLAS: fondo #f4efe7 · acento #1b7a51 · texto #1A1A1A · CERO fondos oscuros
+
 async function imageToDataURL(path) {
   try {
-    if (path.startsWith('data:')) return path;
-    
-    let absolutePath = path;
-    if (!path.startsWith('http') && !path.startsWith('data:')) {
-      absolutePath = `https://domka-sw.github.io/domka-cotizador${path.startsWith('/') ? path : '/' + path}`;
+    if (path && path.startsWith("data:")) return path;
+    let url = path;
+    if (!path.startsWith("http")) {
+      url = `https://domka-sw.github.io/domka-cotizador${path.startsWith("/") ? path : "/" + path}`;
     }
-    
-    const res = await fetch(absolutePath);
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
     const blob = await res.blob();
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
     });
-  } catch (e) {
-    console.warn("No se pudo cargar la imagen:", path, e);
-    return null;
-  }
+  } catch { return null; }
 }
 
-async function preloadImages(imagePaths) {
-  const images = {};
-  for (const [key, path] of Object.entries(imagePaths)) {
-    try {
-      images[key] = await imageToDataURL(path);
-    } catch (e) {
-      images[key] = null;
-    }
-  }
-  return images;
+async function preloadImagesCuenta(paths) {
+  const imgs = {};
+  for (const [k, p] of Object.entries(paths)) imgs[k] = await imageToDataURL(p).catch(() => null);
+  return imgs;
+}
+
+const PC = {
+  bg:        "#f4efe7",
+  bgRow:     "#ede7dc",
+  black:     "#1A1A1A",
+  gray:      "#5a5a5a",
+  grayLight: "#9a9a9a",
+  green:     "#1b7a51",
+  line:      "#c8c0b4"
+};
+
+// ⚠️ Edita aquí tus cuentas reales
+const BANCOS_CC = [
+  { banco: "Bancolombia",       tipo: "Cuenta de Ahorros",  numero: "912-941792-97",    titular: "Alexander Otalora" }
+  //{ banco: "Nequi / Daviplata", tipo: "Billetera Digital",  numero: "+57 305 811 4595", titular: "Alexander Otalora Camayo" }
+];
+
+function fmtDateCC(f) {
+  if (!f) return "—";
+  const d = new Date(f && f.seconds ? f.seconds * 1000 : f);
+  return d.toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" });
+}
+function fmtMCC(n) { return `$${Number(n || 0).toLocaleString("es-CO")}`; }
+
+function sLabelCC(text) {
+  return { text, fontSize: 7.5, bold: true, color: PC.green, characterSpacing: 2, font: "Roboto", margin: [0,0,0,7] };
+}
+function hrCC(margin = [0,14,0,12]) {
+  return { canvas: [{ type: "line", x1:0, y1:0, x2:515, y2:0, lineWidth:1, lineColor:PC.green }], margin };
+}
+function cellCC(content, opts = {}) {
+  return {
+    text: content, font: "Roboto",
+    fontSize: opts.fs || 9.5, bold: opts.bold || false,
+    color: opts.color || PC.black, alignment: opts.align || "left",
+    fillColor: opts.fill || PC.bg,
+    border: [false,false,false,false],
+    margin: opts.margin || [10,9,10,9]
+  };
 }
 
 async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
-  const { 
-    items = [], 
-    total = 0, 
-    notas = "",
-    notasArray = [],
-    fecha = new Date(),
-    mostrarValorLetras = true,
-    id = "",
-    firmaConfirmacion = null,
-    fechaConfirmacion = null,
-    clienteNit = "",
-    clienteNumeroDocumento = "",
-    mostrarDocumento = true,
-    anexos = []
+  const {
+    items = [], total = 0,
+    notas = "", notasArray = null,
+    fecha = new Date(), mostrarValorLetras = true,
+    id = "", firmaConfirmacion = null, fechaConfirmacion = null,
+    concepto = "",
+    clienteNit = "", clienteNumeroDocumento = "",
+    mostrarDocumento = true, adjuntos = []
   } = cuenta;
 
-  const firmaNombre = "Alex Otalora";
-  const firmaTelefono = "+57 305 811 4595";
-  const firmaRut = "RUT: 79597683-1";
-  const firmaEmail = "Email: piter030509@gmail.com";
+  const images = await preloadImagesCuenta({ logo: "/img/logo.png", firma: "/img/firma.png" });
 
-  const images = await preloadImages({
-    logo: "/img/logo.png",
-    firma: "/img/firma.png",
-    muneco: "/img/muneco.png"
-  });
+  const numDoc      = (id || "").substring(0, 8).toUpperCase() || "—";
+  const fechaStr    = fmtDateCC(fecha);
+  const fechaConfStr = fechaConfirmacion ? fmtDateCC(fechaConfirmacion) : null;
 
-  const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  });
-
-  const fechaConfirmacionFormateada = fechaConfirmacion ? 
-    new Date(fechaConfirmacion.seconds ? fechaConfirmacion.seconds * 1000 : fechaConfirmacion).toLocaleDateString('es-CO', {
-      year: 'numeric', month: 'long', day: 'numeric'
-    }) : null;
-
-  // Firma del cliente si existe
-  const contenidoFirmaCliente = firmaConfirmacion ? [
-    { text: " ", margin: [0, 20] },
-    { text: "CONFORMIDAD DEL CLIENTE", style: "aprobacionHeader" },
-    {
-      columns: [
-        { text: " ", width: "*" },
+  // ── HEADER ────────────────────────────────────────────────
+  const bloqueHeader = {
+    table: {
+      widths: ["*", "auto"],
+      body: [[
         {
           stack: [
-            { text: `Fecha de confirmación: ${fechaConfirmacionFormateada}`, style: "aprobacionText" },
-            { image: firmaConfirmacion, width: 150, margin: [0, 10, 0, 5] },
-            { text: "Firma del cliente", alignment: "center", style: "aprobacionText" }
+            { text: "DOMKA", fontSize: 28, bold: true, color: PC.green, font: "Roboto" },
+            { text: "Construcción", fontSize: 9, color: PC.gray, font: "Roboto", margin: [0,3,0,0] },
+            { text: `Fecha: ${fechaStr}`, fontSize: 9, color: PC.gray, font: "Roboto", fillColor: PC.bg, border: [false,false,false,false], margin: [0,8,0,8] }
           ],
-          width: 200
+          fillColor: PC.bg, border: [false,false,false,false], margin: [0,0,20,0]
+        },
+        {
+          stack: [
+            { text: "Cuenta de Cobro", fontSize: 24, bold: true, color: PC.black, alignment: "right", font: "Roboto" },
+            { text: `N° ${numDoc}`, fontSize: 9, color: PC.grayLight, alignment: "right", font: "Roboto", margin: [0,4,0,0] }
+          ],
+          fillColor: PC.bg, border: [false,false,false,false], margin: [0,0,0,0]
         }
-      ]
-    }
+      ]]
+    },
+    layout: "noBorders"
+  };
+
+  const lineaHeader = hrCC([0,10,0,0]);
+
+  // Sub-header: fecha + logo
+  //const bloqueSubHeader = {
+    //table: {
+      //widths: ["*","auto"],
+      //body: [[
+        //{ text: `Fecha: ${fechaStr}`, fontSize: 9, color: PC.gray, font: "Roboto", fillColor: PC.bg, border: [false,false,false,false], margin: [0,8,0,8] },
+        //images.logo
+          //? { image: images.logo, width: 50, fillColor: PC.bg, border: [false,false,false,false], margin: [0,4,0,4] }
+          //: { text: "", fillColor: PC.bg, border: [false,false,false,false] }
+      //]]
+    //},
+    //layout: "noBorders"
+  //};
+
+  // ── "DEBE A" ─────────────────────────────────────────────
+  // Tabla 3 cols: línea | DEBE A | línea
+  const bloqueDebeA = {
+    table: {
+      widths: ["*","auto","*"],
+      body: [[
+        { canvas: [{ type:"line", x1:0, y1:5, x2:200, y2:5, lineWidth:0.5, lineColor:PC.line }], fillColor:PC.bg, border:[false,false,false,false] },
+        { text:"DEBE A", fontSize:7.5, bold:true, color:PC.grayLight, characterSpacing:3, font:"Roboto", alignment:"center", fillColor:PC.bg, border:[false,false,false,false], margin:[14,0,14,0] },
+        { canvas: [{ type:"line", x1:0, y1:5, x2:200, y2:5, lineWidth:0.5, lineColor:PC.line }], fillColor:PC.bg, border:[false,false,false,false] }
+      ]]
+    },
+    layout: "noBorders",
+    margin: [0,16,0,10]
+  };
+
+  const bloqueNombreEmpresa = {
+    table: {
+      widths:["*"],
+      body:[[{
+        stack:[
+          { text:"Alexander Otalora Camayo", fontSize:16, bold:true, color:PC.black, alignment:"center", font:"Roboto", margin:[0,0,0,3] },
+          { text:"DOMKA Construcción", fontSize:9, color:PC.grayLight, alignment:"center", font:"Roboto" }
+        ],
+        fillColor:PC.bg, border:[false,false,false,false], margin:[0,0,0,0]
+      }]]
+    },
+    layout:"noBorders"
+  };
+
+  // ── INFO CLIENTE ─────────────────────────────────────────
+  const bloqueInfo = {
+    table: {
+      widths: ["50%","50%"],
+      body: [[
+        {
+          stack: [
+            sLabelCC("CLIENTE"),
+            { text: nombreCliente, fontSize:13, bold:true, color:PC.black, font:"Roboto", margin:[0,0,0,4] },
+            ...(mostrarDocumento && clienteNit ? [{ text:`NIT: ${clienteNit}`, fontSize:9, color:PC.gray, font:"Roboto" }] : []),
+            ...(mostrarDocumento && clienteNumeroDocumento ? [{ text:`Doc: ${clienteNumeroDocumento}`, fontSize:9, color:PC.gray, font:"Roboto" }] : [])
+          ],
+          fillColor:PC.bg, border:[false,false,false,false], margin:[0,14,16,14]
+        },
+        {
+          stack: [
+            sLabelCC("DETALLES"),
+            { text: fechaStr,         fontSize:9, color:PC.gray,  font:"Roboto", margin:[0,0,0,2] },
+            { text: `N°: ${numDoc}`,  fontSize:9, color:PC.black, font:"Roboto", bold:true }
+          ],
+          fillColor:PC.bg, border:[false,false,false,false], margin:[16,14,0,14]
+        }
+      ]]
+    },
+    layout: "noBorders"
+  };
+
+  // ── CONCEPTO ─────────────────────────────────────────────
+  const bloqueConcepto = concepto ? [
+    hrCC(),
+    sLabelCC("POR CONCEPTO DE"),
+    { text: concepto, fontSize:11, bold:true, color:PC.black, font:"Roboto" }
   ] : [];
 
-  // 🔹 Notas: viñetas si hay array, sino texto plano
-  const viñetas = notasArray && notasArray.length > 0
-    ? notasArray
-    : (notas ? notas.split("\n").filter(l => l.trim()) : []);
+  // ── TABLA SERVICIOS ───────────────────────────────────────
+  const thCC = (text, align = "left", mL = 10, mR = 10) => ({
+    text, fontSize:8, bold:true, color:PC.green, font:"Roboto",
+    alignment: align, fillColor: PC.bgRow,
+    border:[false,false,false,false], margin:[mL,9,mR,9]
+  });
 
-  let notasContenido;
-  if (viñetas.length > 1) {
-    notasContenido = { ul: viñetas, margin: [0, 0, 0, 20] };
-  } else {
-    notasContenido = { text: notas || "—", margin: [0, 0, 0, 20] };
-  }
+  const tablaItems = {
+    table: {
+      widths: [28,"*"],
+      body: [
+        [ thCC("N°","center",8,8), thCC("DESCRIPCIÓN DEL SERVICIO","left",12,12) ],
+        ...items.map((it,i) => {
+          const bg = i%2===0 ? PC.bg : PC.bgRow;
+          return [
+            cellCC(String(i+1).padStart(2,"0"), { align:"center", color:PC.grayLight, fill:bg, margin:[8,9,8,9] }),
+            cellCC(it.descripcion||"—",          { fill:bg, margin:[12,9,12,9] })
+          ];
+        })
+      ]
+    },
+    layout: {
+      hLineWidth:(i,n)=>(i===0||i===n.table.body.length)?0:0.4,
+      vLineWidth:()=>0, hLineColor:()=>PC.line
+    }
+  };
 
-  // 🔹 Filas de info del cliente con NIT y N° Documento opcionales
-  const infoClienteRows = [
-    [{ text: "Nombre/Empresa:", style: "label" }, { text: nombreCliente, style: "value" }],
-    [{ text: "Fecha de emisión:", style: "label" }, { text: fechaFormateada, style: "value" }],
-    [{ text: "ID de cuenta:", style: "label" }, { text: id || "No especificado", style: "value" }],
-    ...(mostrarDocumento && clienteNit ? [[{ text: "NIT:", style: "label" }, { text: clienteNit, style: "value" }]] : []),
-    ...(mostrarDocumento && clienteNumeroDocumento ? [[{ text: "N° Documento:", style: "label" }, { text: clienteNumeroDocumento, style: "value" }]] : []),
-  ];
-
-  const contenido = [
-    // Encabezado
-    {
-      columns: [
-        images.logo ? { image: images.logo, width: 80, height: 80 } : { text: "DOMKA", style: "logo" },
+  // ── TOTAL ─────────────────────────────────────────────────
+  const bloqueTotales = {
+    table: {
+      widths: ["*","auto"],
+      body: [[
         {
           stack: [
-            { text: "CUENTA DE COBRO", style: "header", alignment: "right" },
-            { text: `N°: ${id || "Sin ID"}`, style: "subheader", alignment: "right", margin: [0, 5] }
+            sLabelCC("TOTAL A PAGAR"),
+            { text: fmtMCC(total), fontSize:28, bold:true, color:PC.green, font:"Roboto", margin:[0,0,0,4] },
+            ...(mostrarValorLetras && typeof numeroAPalabras === "function"
+              ? [{ text:`Son: ${numeroAPalabras(total)}`, fontSize:8, italic:true, color:PC.grayLight, font:"Roboto" }]
+              : [])
           ],
-          width: "*"
+          fillColor:PC.bg, border:[false,false,false,false], margin:[0,14,20,14]
+        },
+        {
+          stack: [
+            { text:"TOTAL",      fontSize:8.5, bold:true,  color:PC.grayLight, font:"Roboto", margin:[0,0,0,4] },
+            { text:fmtMCC(total), fontSize:13, bold:true,  color:PC.green,     font:"Roboto" },
+            { text:`Son: ${numeroAPalabras(total)}`, fontSize:8, italic:true, color:PC.grayLight, font:"Roboto" }
+          ],
+          fillColor:PC.bg, border:[false,false,false,false], margin:[0,14,0,14]
         }
-      ],
-      margin: [0, 0, 0, 20]
+      ]]
     },
-    
-    // Info general
-    {
-      table: { widths: ["*", "*"], body: infoClienteRows },
-      layout: "noBorders",
-      margin: [0, 0, 0, 15]
-    },
+    layout:"noBorders"
+  };
 
-    // Debe a / concepto
-    {
-      text: "Debe a: Alexander Otalora Camayo",
-      alignment: "center",
-      style: "subheader",
-      margin: [0, 10, 0, 20]
-    },
-    {
-      text: `Por concepto de: ${cuenta.concepto || "-"}`,
-      style: "subheader",
-      margin: [0, 0, 0, 10]
-    },
+  // ── MÉTODOS DE PAGO ───────────────────────────────────────
+  const bancoCeldasCC = BANCOS_CC.map(b => ({
+    stack:[
+      { text:b.banco,               fontSize:11, bold:true, color:PC.black,     font:"Roboto", margin:[0,0,0,2] },
+      { text:b.tipo,                fontSize:8,             color:PC.grayLight, font:"Roboto", margin:[0,0,0,8] },
+      { text:b.numero,              fontSize:12, bold:true, color:PC.green,     font:"Roboto", margin:[0,0,0,3] },
+      { text:`Titular: ${b.titular}`, fontSize:8,           color:PC.gray,      font:"Roboto" }
+    ],
+    fillColor:PC.bgRow, border:[false,false,false,false], margin:[16,14,16,14]
+  }));
 
-    // Detalle de items
-    { text: "Descripción del Servicio", style: "subheader" },
+  const bloquePago = [
+    hrCC(),
+    sLabelCC("MÉTODO DE PAGO"),
     {
-      table: {
-        widths: ["*"],
-        body: [
-          [{ text: "Descripción", style: "tableHeader" }],
-          ...items.map(it => [it.descripcion || "-"])
-        ]
+      table: { widths: BANCOS_CC.map(()=>"*"), body:[bancoCeldasCC] },
+      layout: {
+        hLineWidth:()=>0,
+        vLineWidth:(i)=>(i>0&&i<BANCOS_CC.length)?0.6:0,
+        vLineColor:()=>PC.line
       }
-    },
-    
-    // Valor total
-    { text: " ", margin: [0, 10] },
-    {
-      table: {
-        widths: ["*", "auto"],
-        body: [
-          [{ text: "VALOR TOTAL", style: "totalLabel" }, { text: `$${Number(total || 0).toLocaleString("es-CO")}`, style: "totalValue" }]
-        ]
-      },
-      layout: "noBorders"
-    },
-    
-    // Valor en letras
-    ...(mostrarValorLetras ? [
-      { text: " ", margin: [0, 5] },
-      { text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 0, 0, 15] }
-    ] : []),
-    
-    // Notas
-    ...(notas || (notasArray && notasArray.length > 0) ? [
-      { text: " ", margin: [0, 10] },
-      { text: "Notas", style: "subheader" },
-      notasContenido
-    ] : []),
-    
-    // Firma del cliente
-    ...contenidoFirmaCliente,
-    
-    // Firma de la empresa
-    { text: " ", margin: [0, 20] },
-    { text: "Atentamente,", style: "firmaText" },
-    images.firma ? { image: images.firma, width: 150, margin: [0, 10, 0, 5] } 
-                 : { text: "[Firma digital]", style: "firmaPlaceholder", margin: [0, 10, 0, 5] },
-    { text: firmaNombre, style: "firmaNombre" },
-    { text: firmaTelefono, style: "firmaDatos" },
-    { text: firmaRut, style: "firmaDatos" },
-    { text: firmaEmail, style: "firmaDatos", margin: [0, 0, 0, 30] },
-    
-    // Pie
-    { text: "Gracias por su preferencia", style: "pie", alignment: "center", margin: [0, 30, 0, 0] }
+    }
   ];
 
-  // 🔹 ANEXOS: agregar imágenes como páginas adicionales
-  const paginasAnexos = [];
-  for (const anexo of anexos) {
-    if (!anexo.base64) continue;
+  // ── NOTAS ─────────────────────────────────────────────────
+  const notasLineas = (() => {
+    if (notasArray && notasArray.length>0) return notasArray.map(n=>n.trim()).filter(Boolean);
+    if (notas) return notas.split("\n").map(l=>l.trim()).filter(Boolean);
+    return [];
+  })();
 
-    if (anexo.tipo && anexo.tipo.startsWith("image/")) {
-      paginasAnexos.push({ text: "", pageBreak: "before" });
-      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
-      paginasAnexos.push({ image: anexo.base64, width: 500, alignment: "center" });
-    } else if (anexo.tipo === "application/pdf") {
-      paginasAnexos.push({ text: "", pageBreak: "before" });
-      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
-      paginasAnexos.push({ text: "(Archivo PDF adjunto — descargable desde el link público)", style: "valorLetras" });
-    } else {
-      paginasAnexos.push({ text: "", pageBreak: "before" });
-      paginasAnexos.push({ text: `Anexo: ${anexo.nombre}`, style: "subheader", margin: [0, 0, 0, 10] });
-      paginasAnexos.push({ text: "(Archivo adjunto — descargable desde el link público)", style: "valorLetras" });
+  const bloqueNotas = notasLineas.length>0 ? [
+    hrCC(),
+    sLabelCC("NOTAS"),
+    { ul:notasLineas, fontSize:9.5, color:PC.gray, font:"Roboto", lineHeight:1.5, markerColor:PC.green }
+  ] : [];
+
+  // ── CONFIRMACIÓN ──────────────────────────────────────────
+  //const bloqueConfirmacion = firmaConfirmacion ? [
+    //hrCC(),
+    //{
+      //table: {
+        //widths:["*",200],
+        //body:[[
+          //{ text:"", fillColor:PC.bg, border:[false,false,false,false] },
+          //{
+            //stack:[
+              //{ canvas:[{type:"line",x1:0,y1:0,x2:185,y2:0,lineWidth:2,lineColor:PC.green}], margin:[0,0,0,10] },
+              //sLabelCC("CONFORMIDAD DEL CLIENTE"),
+              //...(fechaConfStr?[{text:`Fecha: ${fechaConfStr}`,fontSize:8.5,color:PC.gray,font:"Roboto",margin:[0,0,0,8]}]:[]),
+              //{ image:firmaConfirmacion, width:115, margin:[0,0,0,5] },
+              //{ text:nombreCliente,       fontSize:9, bold:true, color:PC.black,     font:"Roboto" },
+              //{ text:"Firma del cliente", fontSize:8,             color:PC.grayLight, font:"Roboto" }
+            //],
+            //fillColor:PC.bg, border:[false,false,false,false]
+          //}
+        //]]
+      //},
+      //layout:"noBorders"
+    //}
+  //] : [];
+
+  // ── FIRMA EMPRESA ─────────────────────────────────────────
+  const bloqueEmpresa = [
+    hrCC([0,22,0,18]),
+    {
+      table: {
+        widths:["45%","*","35%"],
+        body:[[
+          {
+            stack:[
+              sLabelCC("CONTÁCTANOS"),
+              { text:"piter030509@gmail.com",         fontSize:9, color:PC.gray, font:"Roboto", margin:[0,0,0,2] },
+              { text:"Cel: +57 305 811 4595",          fontSize:9, color:PC.gray, font:"Roboto", margin:[0,0,0,2] },
+              { text:"RUT: 79.597.683-1",              fontSize:9, color:PC.gray, font:"Roboto" }
+            ],
+            fillColor:PC.bg, border:[false,false,false,false], margin:[0,0,0,0]
+          },
+          { text:"", fillColor:PC.bg, border:[false,false,false,false] },
+          {
+            stack:[
+              sLabelCC("ELABORADO POR"),
+              images.firma
+                ? { image:images.firma, width:100, margin:[0,6,0,8] }
+                : { text:"— firma —", fontSize:9, italic:true, color:PC.grayLight, font:"Roboto", margin:[0,16,0,8] },
+              { text:"Alexander Otalora Camayo", fontSize:10, bold:true, color:PC.black,     font:"Roboto" },
+              { text:"DOMKA",                   fontSize:8.5,             color:PC.grayLight, font:"Roboto" }
+            ],
+            fillColor:PC.bg, border:[false,false,false,false], margin:[0,0,0,0]
+          }
+        ]]
+      },
+      layout:"noBorders"
+    }
+  ];
+
+  // ── ADJUNTOS ──────────────────────────────────────────────
+  const paginasAdjuntos = [];
+  for (const adj of (adjuntos||[])) {
+    if (adj.tipo && adj.tipo.startsWith("image/") && adj.datos) {
+      paginasAdjuntos.push({ text:"", pageBreak:"before" });
+      paginasAdjuntos.push(sLabelCC(`ADJUNTO: ${(adj.nombre||"IMAGEN").toUpperCase()}`));
+      paginasAdjuntos.push({ image:adj.datos, width:490 });
+    } else if (adj.tipo==="application/pdf") {
+      paginasAdjuntos.push({ text:"", pageBreak:"before" });
+      paginasAdjuntos.push({ text:`Adjunto PDF: "${adj.nombre}" — disponible en el link público.`, fontSize:9, color:PC.grayLight, font:"Roboto", italic:true, margin:[0,20,0,0] });
     }
   }
 
+  // ── FOOTER + BACKGROUND ───────────────────────────────────
+  const footerFn = (pg,tot) => ({
+    table: {
+      widths:["*","auto"],
+      body:[[
+        { text:`DOMKA Construcción & Diseño  ·  +57 305 811 4595  ·  piter030509@gmail.com`, fontSize:7, color:PC.grayLight, font:"Roboto", border:[false,false,false,false], margin:[45,0,0,0] },
+        { text:`Página ${pg} de ${tot}`, fontSize:7, color:PC.grayLight, font:"Roboto", alignment:"right", border:[false,false,false,false], margin:[0,0,45,0] }
+      ]]
+    },
+    layout:"noBorders", margin:[0,6,0,0]
+  });
+
+  const bgFn = (pg,pageSize) => {
+    const elems = [{ canvas:[{type:"rect",x:0,y:0,w:pageSize.width,h:pageSize.height,color:PC.bg}] }];
+    if (images.logo) elems.push({ image:images.logo, width:260, opacity:0.035, absolutePosition:{x:(pageSize.width-260)/2,y:(pageSize.height-260)/2} });
+    return elems;
+  };
+
   const docDefinition = {
-    pageSize: 'A4',
-    pageMargins: [40, 60, 40, 60],
-    background: function(currentPage, pageSize) {
-      if (currentPage === 1) {
-        const bg = [];
-        if (images.logo) {
-          bg.push({ image: images.logo, width: 300, opacity: 0.05, absolutePosition: { x: (pageSize.width - 300) / 2, y: (pageSize.height - 300) / 2 } });
-        }
-        if (images.muneco) {
-          bg.push({ image: images.muneco, width: 100, opacity: 0.1, absolutePosition: { x: 455, y: 30 } });
-        }
-        return bg;
-      }
-      return [];
-    },
-    content: [...contenido, ...paginasAnexos],
-    styles: {
-      header: { fontSize: 18, bold: true, color: "#F97316" },
-      logo: { fontSize: 22, bold: true, color: "#F97316" },
-      subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5], color: "#374151" },
-      tableHeader: { bold: true, fillColor: "#F97316", color: "white", alignment: "center" },
-      label: { bold: true, fontSize: 10, color: "#374151" },
-      value: { fontSize: 10 },
-      totalLabel: { bold: true, fontSize: 12, color: "#374151" },
-      totalValue: { bold: true, fontSize: 12, color: "#F97316", alignment: "right" },
-      valorLetras: { italic: true, fontSize: 10, color: "#4B5563" },
-      firmaText: { fontSize: 12, bold: true, margin: [0, 20, 0, 5] },
-      firmaNombre: { fontSize: 12, bold: true, color: "#F97316" },
-      firmaDatos: { fontSize: 9, color: "#374151" },
-      firmaPlaceholder: { fontSize: 10, color: "#9CA3AF", italic: true, alignment: "center" },
-      aprobacionHeader: { fontSize: 14, bold: true, color: "#059669", alignment: "center", margin: [0, 0, 0, 10] },
-      aprobacionText: { fontSize: 10, color: "#374151", alignment: "center" },
-      pie: { fontSize: 10, color: "#9CA3AF", italic: true }
-    },
-    defaultStyle: { fontSize: 10 }
+    pageSize:"A4", pageMargins:[48,44,44,52],
+    footer:footerFn, background:bgFn,
+    content:[
+      bloqueHeader, lineaHeader, //bloqueSubHeader,
+      hrCC(),
+      bloqueDebeA,
+      bloqueNombreEmpresa,
+      hrCC([0,14,0,14]),
+      bloqueInfo,
+      ...bloqueConcepto,
+      hrCC(),
+      sLabelCC("DESCRIPCIÓN DEL SERVICIO"),
+      tablaItems,
+      hrCC([0,10,0,0]),
+      bloqueTotales,
+      ...bloquePago,
+      ...bloqueNotas,
+      //...bloqueConfirmacion,
+      ...bloqueEmpresa,
+      ...paginasAdjuntos
+    ],
+    defaultStyle:{ font:"Roboto", fontSize:10, color:PC.black }
   };
 
   try {
-    pdfMake.createPdf(docDefinition).download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
-  } catch (error) {
-    console.error("Error al generar el PDF:", error);
-    generarPDFCuentaSimple(cuenta, nombreCliente);
+    pdfMake.createPdf(docDefinition).download(`CuentaCobro_DOMKA_${numDoc}.pdf`);
+  } catch(err) {
+    console.error("Error PDF:", err);
+    pdfMake.createPdf({
+      pageSize:"A4",
+      content:[
+        { text:"DOMKA — CUENTA DE COBRO", fontSize:18, bold:true, color:PC.green },
+        { text:`Cliente: ${nombreCliente}`, margin:[0,10,0,5] },
+        { text:`Total: $${Number(total).toLocaleString("es-CO")}`, fontSize:14, bold:true, color:PC.green }
+      ],
+      defaultStyle:{ font:"Roboto" }
+    }).download(`CuentaCobro_DOMKA_${numDoc}.pdf`);
   }
 }
 
-// Función simple de respaldo (sin cambios, mantener igual)
-function generarPDFCuentaSimple(cuenta, nombreCliente = "Cliente") {
-  const { items = [], total = 0, notas = "", fecha = new Date(), mostrarValorLetras = true, id = "", firmaConfirmacion = null } = cuenta;
-
-  const firmaNombre = "Alex Otalora";
-  const firmaTelefono = "+57 305 811 4595";
-  const firmaRut = "RUT: 79597683-1";
-
-  const fechaFormateada = new Date(fecha.seconds ? fecha.seconds * 1000 : fecha).toLocaleDateString('es-CO');
-
-  const docDefinition = {
-    pageSize: 'A4',
-    pageMargins: [40, 60, 40, 60],
-    content: [
-      { text: "DOMKA - CUENTA DE COBRO", style: "header" },
-      { text: `N°: ${id || "Sin ID"}`, style: "subheader" },
-      { text: `Cliente: ${nombreCliente}`, margin: [0, 10, 0, 5] },
-      { text: `Fecha: ${fechaFormateada}`, margin: [0, 0, 0, 15] },
-      { text: "Descripción del Servicio:", style: "subheader" },
-      { ul: items.map(item => item.descripcion || "-"), margin: [0, 0, 0, 15] },
-      { text: "Total:", style: "subheader" },
-      { text: `$${Number(total || 0).toLocaleString("es-CO")}`, style: "totalValue" },
-      ...(mostrarValorLetras ? [{ text: `Son: ${numeroAPalabras(total)}`, style: "valorLetras", margin: [0, 5, 0, 15] }] : []),
-      ...(notas ? [{ text: "Notas:", style: "subheader" }, { text: notas, margin: [0, 0, 0, 15] }] : []),
-      ...(firmaConfirmacion ? [{ text: "Firma de confirmación:", style: "subheader" }, { image: firmaConfirmacion, width: 150, margin: [0, 10] }] : []),
-      { text: "Atentamente,", style: "firmaText" },
-      { text: firmaNombre, style: "firmaNombre" },
-      { text: firmaTelefono, style: "firmaDatos" },
-      { text: firmaRut, style: "firmaDatos" }
-    ],
-    styles: {
-      header: { fontSize: 18, bold: true, color: "#F97316", margin: [0, 0, 0, 5] },
-      subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
-      totalValue: { fontSize: 16, bold: true, color: "#F97316" },
-      valorLetras: { italic: true, fontSize: 10 },
-      firmaText: { fontSize: 12, bold: true, margin: [0, 20, 0, 5] },
-      firmaNombre: { fontSize: 12, bold: true, color: "#F97316" },
-      firmaDatos: { fontSize: 9, color: "#374151" }
-    }
-  };
-
-  pdfMake.createPdf(docDefinition).download(`Cuenta_Cobro_DOMKA_${id || Date.now()}.pdf`);
-}
-
-window.generarPDFCuenta = generarPDFCuenta;
+if (typeof window !== "undefined") window.generarPDFCuenta = generarPDFCuenta;
