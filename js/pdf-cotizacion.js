@@ -143,7 +143,7 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
           stack: [
             { text: "DOMKA", fontSize: 28, bold: true, color: P.green, font: "Roboto" },
             { text: "Construcción", fontSize: 9, color: P.gray, font: "Roboto", margin: [0, 3, 0, 0] },
-            { text: `Fecha: ${fechaStr}`
+            { text: `Fecha: ${fechaStr}` }
           ],
           fillColor: P.bg, border: [false,false,false,false], margin: [0, 0, 20, 0]
         },
