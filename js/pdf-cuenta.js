@@ -215,34 +215,25 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     }
   };
 
-  // ── TOTAL ─────────────────────────────────────────────────
-  const bloqueTotales = {
-    table: {
-      widths: ["*","auto"],
-      body: [[
-        {
-          stack: [
-            sLabelCC("TOTAL A PAGAR"),
-            { text: fmtMCC(total), fontSize:28, bold:true, color:PC.green, font:"Roboto", margin:[0,0,0,4] },
-            ...(mostrarValorLetras && typeof numeroAPalabras === "function"
-              ? [{ text:`Son: ${numeroAPalabras(total)}`, fontSize:8, italic:true, color:PC.grayLight, font:"Roboto" }]
-              : [])
-          ],
-          fillColor:PC.bg, border:[false,false,false,false], margin:[0,14,20,14]
-        },
-        {
-          stack: [
-            { text:"TOTAL",      fontSize:8.5, bold:true,  color:PC.grayLight, font:"Roboto", margin:[0,0,0,4] },
-            { text:fmtMCC(total), fontSize:13, bold:true,  color:PC.green,     font:"Roboto" },
-            { text:`Son: ${numeroAPalabras(total)}`, fontSize:8, italic:true, color:PC.grayLight, font:"Roboto" }
-          ],
-          fillColor:PC.bg, border:[false,false,false,false], margin:[0,14,0,14]
-        }
-      ]]
-    },
-    layout:"noBorders"
-  };
-
+// ── TOTAL ─────────────────────────────────────────────────
+const bloqueTotales = {
+  table: {
+    widths: ["*"], // solo una columna
+    body: [[
+      {
+        stack: [
+          { text:"TOTAL", fontSize:8.5, bold:true,  color:PC.grayLight, font:"Roboto", margin:[0,0,0,4] },
+          { text:fmtMCC(total), fontSize:13, bold:true,  color:PC.green, font:"Roboto" },
+          { text:`Son: ${numeroAPalabras(total)}`, fontSize:8, italic:true, color:PC.grayLight, font:"Roboto" }
+        ],
+        fillColor:PC.bg,
+        border:[false,false,false,false],
+        margin:[0,14,0,14]
+      }
+    ]]
+  },
+  layout:"noBorders"
+};
   // ── MÉTODOS DE PAGO ───────────────────────────────────────
   const bancoCeldasCC = BANCOS_CC.map(b => ({
     stack:[
