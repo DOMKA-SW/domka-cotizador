@@ -349,7 +349,7 @@ const bloqueTotales = {
     table: {
       widths:["*","auto"],
       body:[[
-        { text:`DOMKA Construcción & Diseño  ·  +57 305 811 4595  ·  piter030509@gmail.com`, fontSize:7, color:PC.grayLight, font:"Roboto", border:[false,false,false,false], margin:[45,0,0,0] },
+        { text:`DOMKA Construcción  ·  +57 305 811 4595  ·  piter030509@gmail.com`, fontSize:7, color:PC.grayLight, font:"Roboto", border:[false,false,false,false], margin:[45,0,0,0] },
         { text:`Página ${pg} de ${tot}`, fontSize:7, color:PC.grayLight, font:"Roboto", alignment:"right", border:[false,false,false,false], margin:[0,0,45,0] }
       ]]
     },
