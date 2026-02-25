@@ -3,492 +3,204 @@
 <head>
   <meta charset="utf-8" />
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>DOMKA - Dashboard Navideño 2025</title>
+  <title>DOMKA · Dashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
-    color: #111827;
-    overflow-x: hidden;
-  }
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+  color: #111827;
+}
 
-  /* Fondo decorativo sutil */
-  .snowflake {
-    display: none;
-  }
+/* Botón principal */
+.btn-primary {
+  background: linear-gradient(135deg, #1a7a4a, #14613b);
+  color: white;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  transition: all .25s ease;
+  box-shadow: 0 6px 20px rgba(26,122,74,.25);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(26,122,74,.35);
+}
 
-  /* =========================
-     BOTONES PRINCIPALES
-  ========================== */
-  .btn-orange-christmas {
-    background: linear-gradient(135deg, #1a7a4a 0%, #14613b 100%);
-    color: #ffffff;
-    font-weight: 600;
-    border-radius: 10px;
-    border: 1px solid #0f3d27;
-    padding: 0.6rem 1.2rem;
-    transition: all 0.25s ease;
-    box-shadow: 0 6px 20px rgba(26, 122, 74, 0.25);
-  }
+/* Cards */
+.card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  transition: all .3s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 35px rgba(0,0,0,.08);
+  border-left: 4px solid #1a7a4a;
+}
 
-  .btn-orange-christmas:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(26, 122, 74, 0.35);
-    background: linear-gradient(135deg, #14613b 0%, #0f3d27 100%);
-  }
+/* Accesos */
+.access-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  transition: all .3s ease;
+}
+.access-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px rgba(0,0,0,.08);
+}
 
-  /* =========================
-     TARJETAS
-  ========================== */
-  .card-hover-christmas {
-    background: #ffffff;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-    position: relative;
-  }
+/* Header text */
+.header-gradient {
+  background: linear-gradient(90deg, #0f172a, #1a7a4a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
 
-  .card-hover-christmas:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
-    border-left: 4px solid #1a7a4a;
-  }
-
-  .card-hover-christmas::after {
-    content: '';
-  }
-
-  /* =========================
-     ACCESOS / DASHBOARD
-  ========================== */
-  .access-card-christmas {
-    background: #ffffff;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .access-card-christmas:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
-  }
-
-  .access-card-christmas::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 4px;
-    width: 100%;
-    background: linear-gradient(90deg, #1a7a4a, #22c55e);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
-  }
-
-  .access-card-christmas:hover::before {
-    transform: scaleX(1);
-  }
-
-  /* =========================
-     ANIMACIONES SUAVES
-  ========================== */
-  @keyframes softPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
-  }
-
-  .christmas-pulse {
-    animation: softPulse 2.5s ease-in-out infinite;
-  }
-
-  /* =========================
-     ENCABEZADOS
-  ========================== */
-  .header-gradient-christmas {
-    background: linear-gradient(90deg, #0f172a 0%, #1a7a4a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-  }
-
-  /* =========================
-     BADGES / INDICADORES
-  ========================== */
-  .stat-badge-christmas {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: #1a7a4a;
-    color: #ffffff;
-    border-radius: 999px;
-    min-width: 26px;
-    height: 26px;
-    padding: 0 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(26, 122, 74, 0.35);
-    border: 2px solid #ffffff;
-  }
-
-  /* =========================
-     TEXTO CON BRILLO SUAVE
-  ========================== */
-  .christmas-glow {
-    text-shadow: 0 0 10px rgba(26, 122, 74, 0.35);
-  }
-
-  /* =========================
-     ETIQUETA DE AÑO / ESTADO
-  ========================== */
-  .year-2025 {
-    background: #1a7a4a;
-    color: #ffffff;
-    border-radius: 999px;
-    padding: 4px 14px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    box-shadow: 0 4px 10px rgba(26, 122, 74, 0.25);
-  }
+/* Badge */
+.stat-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #1a7a4a;
+  color: white;
+  border-radius: 999px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  font-size: .75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(26,122,74,.35);
+  border: 2px solid white;
+}
 </style>
 </head>
+
 <body class="min-h-screen">
-  <!-- Copos de nieve sutiles -->
-  <div id="snowflakes"></div>
-  
-  <div class="p-4 md:p-6 max-w-6xl mx-auto">
-    <!-- Encabezado con toque navideño -->
-    <header class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-10 p-6 bg-white rounded-2xl shadow-lg border border-orange-200">
-      <div class="mb-4 md:mb-0">
-        <div class="flex items-center gap-3 mb-2">
-          <h1 class="text-3xl font-bold header-gradient-christmas">DOMKA</h1>
-          <span class="year-2025 text-sm">2025</span>
-        </div>
-        <p class="text-gray-600 mt-1 flex items-center gap-2">
-          <span class="text-orange-500">🎄</span> 
-          Panel de control navideño
-          <span class="text-orange-500">✨</span>
-        </p>
-      </div>
-      
-      <div class="flex items-center gap-4">
-        <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-lg border border-orange-200">
-          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span class="text-sm font-medium text-gray-700" id="user-email">Cargando...</span>
-        </div>
-        
-        <button onclick="logout()" class="btn-orange-christmas px-5 py-2.5 rounded-lg flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-          </svg>
-          Cerrar sesión
-        </button>
-      </div>
-    </header>
+<div class="p-4 md:p-6 max-w-6xl mx-auto">
 
-    <!-- Mensaje de bienvenida navideño -->
-    <div class="mb-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-      <div class="absolute inset-0 opacity-20">
-        <div class="absolute top-4 left-4 text-3xl">🎅</div>
-        <div class="absolute bottom-4 right-4 text-3xl">🎁</div>
-      </div>
-      
-      <div class="relative z-10">
-        <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">
-          <span class="christmas-pulse">🎄</span> 
-          ¡Feliz Navidad y Próspero 2025!
-          <span class="christmas-pulse">🎄</span>
-        </h2>
-        <p class="opacity-95">Que esta temporada traiga éxito y crecimiento a tu negocio DOMKA.</p>
-      </div>
-    </div>
-
-    <!-- Resumen rápido con toque navideño -->
-    <section class="mb-10">
-      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-        </svg>
-        <span class="christmas-glow">Resumen Fin de Año 2025</span>
-      </h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <!-- Cotizaciones -->
-        <div id="card-cot" class="card-hover-christmas p-5 rounded-xl shadow relative">
-          <div class="flex items-start justify-between">
-            <div>
-              <h3 class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                Cotizaciones
-                <span class="text-sm text-red-500">🎯</span>
-              </h3>
-              <p class="text-3xl font-bold text-orange-600" id="count-cot">—</p>
-              <p class="text-sm text-gray-500 mt-2">Total de cotizaciones 2025</p>
-            </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Cuentas de Cobro -->
-        <div id="card-cuentas" class="card-hover-christmas p-5 rounded-xl shadow relative">
-          <div class="flex items-start justify-between">
-            <div>
-              <h3 class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                Cuentas de Cobro
-                <span class="text-sm text-green-500">💰</span>
-              </h3>
-              <p class="text-3xl font-bold text-orange-600" id="count-cuentas">—</p>
-              <p class="text-sm text-gray-500 mt-2">Cuentas generadas</p>
-            </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Ingresos -->
-        <div id="card-ingresos" class="card-hover-christmas p-5 rounded-xl shadow relative">
-          <div class="flex items-start justify-between">
-            <div>
-              <h3 class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                Ingresos (pagadas)
-                <span class="text-sm text-amber-500">🎁</span>
-              </h3>
-              <p class="text-3xl font-bold text-orange-600 christmas-glow" id="sum-pagadas">—</p>
-              <p class="text-sm text-gray-500 mt-2">Total de cuentas pagadas</p>
-            </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 112-2 2 2 0 01-2 2zm8-2a2 2 0 112-2 2 2 0 01-2 2z" clip-rule="evenodd" />
-                <path d="M14 7h3a2 2 0 012 2v6a2 2 0 01-2 2h-3v-10z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Accesos rápidos navideños -->
-    <section>
-      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-        </svg>
-        <span class="christmas-glow">Accesos Rápidos para Fin de Año</span>
-      </h2>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <!-- Cotizaciones -->
-        <a href="cotizaciones.html" class="access-card-christmas bg-white p-6 rounded-xl shadow flex flex-col items-center text-center">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <h2 class="font-bold text-lg text-gray-800 mb-2">Cotizaciones</h2>
-          <p class="text-sm text-gray-600 mb-4">Crear y gestionar cotizaciones</p>
-          <span class="text-orange-600 font-medium text-sm flex items-center gap-1">
-            Acceder <span class="text-lg">→</span>
-          </span>
-        </a>
-        
-        <!-- Cuentas de Cobro -->
-        <a href="cuentas.html" class="access-card-christmas bg-white p-6 rounded-xl shadow flex flex-col items-center text-center">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <h2 class="font-bold text-lg text-gray-800 mb-2">Cuentas de Cobro</h2>
-          <p class="text-sm text-gray-600 mb-4">Crear y gestionar cuentas</p>
-          <span class="text-orange-600 font-medium text-sm flex items-center gap-1">
-            Acceder <span class="text-lg">→</span>
-          </span>
-        </a>
-        
-        <!-- Clientes -->
-        <a href="clientes.html" class="access-card-christmas bg-white p-6 rounded-xl shadow flex flex-col items-center text-center">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-            </svg>
-          </div>
-          <h2 class="font-bold text-lg text-gray-800 mb-2">Clientes</h2>
-          <p class="text-sm text-gray-600 mb-4">Administrar clientes</p>
-          <span class="text-orange-600 font-medium text-sm flex items-center gap-1">
-            Acceder <span class="text-lg">→</span>
-          </span>
-        </a>
-        
-        <!-- Contabilidad -->
-        <a href="contabilidad.html" class="access-card-christmas bg-white p-6 rounded-xl shadow flex flex-col items-center text-center">
-          <div class="p-3 bg-orange-100 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <h2 class="font-bold text-lg text-gray-800 mb-2">Contabilidad</h2>
-          <p class="text-sm text-gray-600 mb-4">Reportes y exportes de fin de año</p>
-          <span class="text-orange-600 font-medium text-sm flex items-center gap-1">
-            Acceder <span class="text-lg">→</span>
-          </span>
-        </a>
-      </div>
-    </section>
-    
-    <!-- Mensaje especial 2025 -->
-    <div class="mt-10 p-6 bg-gradient-to-r from-orange-100 to-amber-100 rounded-2xl border-2 border-orange-300 text-center">
-      <h3 class="text-xl font-bold text-orange-800 mb-3 flex items-center justify-center gap-3">
-        <span class="text-2xl">🎆</span> 
-        ¡Preparados para un exitoso 2025!
-        <span class="text-2xl">🎆</span>
-      </h3>
-      <p class="text-gray-700 opacity-90">Que el nuevo año traiga crecimiento, éxito y nuevas oportunidades para DOMKA.</p>
-    </div>
-    
-    <!-- Pie de página -->
-    <footer class="mt-12 pt-6 border-t border-orange-200 text-center text-gray-600 text-sm">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="flex items-center gap-2">
-          <span class="text-orange-500">🎄</span>
-          DOMKA Dashboard Navideño 2025
-          <span class="text-orange-500">✨</span>
-        </p>
-        <p class="flex items-center gap-2">
-          <span>Made with</span>
-          <span class="text-orange-500">❤️</span>
-          <span>• © 2025 Todos los derechos reservados</span>
-        </p>
-      </div>
-    </footer>
+<!-- HEADER -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 p-6 bg-white rounded-2xl shadow border">
+  <div>
+    <h1 class="text-3xl header-gradient">DOMKA</h1>
+    <p class="text-gray-500 mt-1">Panel de control</p>
   </div>
 
-  <!-- Firebase (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <div class="flex items-center gap-4 mt-4 md:mt-0">
+    <span class="text-sm text-gray-600" id="user-email">Cargando…</span>
+    <button onclick="logout()" class="btn-primary flex items-center gap-2">
+      Cerrar sesión
+    </button>
+  </div>
+</header>
 
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
+<!-- BIENVENIDA -->
+<section class="mb-10 p-6 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl text-white">
+  <h2 class="text-2xl font-bold mb-2">Bienvenido a tu dashboard</h2>
+  <p class="opacity-90">Consulta métricas clave y accede rápidamente a tus herramientas.</p>
+</section>
 
-  <script>
-    // Crear copos de nieve sutiles
-    function createSnowflakes() {
-      const snowflakesContainer = document.getElementById('snowflakes');
-      const snowflakeCount = 30; // Menos copos para que sea más sutil
-      
-      for (let i = 0; i < snowflakeCount; i++) {
-        const snowflake = document.createElement('div');
-        snowflake.classList.add('snowflake');
-        snowflake.innerHTML = '❄';
-        
-        // Tamaño pequeño y naranja claro
-        const size = Math.random() * 15 + 10;
-        snowflake.style.fontSize = `${size}px`;
-        snowflake.style.color = `rgba(249, 115, 22, ${Math.random() * 0.3 + 0.1})`;
-        
-        // Posición inicial aleatoria
-        const startX = Math.random() * 100;
-        snowflake.style.left = `${startX}vw`;
-        
-        // Duración de animación lenta
-        const duration = Math.random() * 20 + 20;
-        snowflake.style.animationDuration = `${duration}s`;
-        
-        // Retraso inicial aleatorio
-        const delay = Math.random() * 10;
-        snowflake.style.animationDelay = `${delay}s`;
-        
-        snowflakesContainer.appendChild(snowflake);
-      }
-    }
-    
-    // Mostrar email del usuario actual
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        document.getElementById("user-email").textContent = user.email || "Usuario";
-      } else {
-        document.getElementById("user-email").textContent = "Invitado";
-      }
-    });
+<!-- RESUMEN -->
+<section class="mb-10">
+  <h2 class="text-xl font-bold mb-4 text-gray-800">Resumen general</h2>
 
-    // Función de logout
-    function logout() {
-      auth.signOut().then(() => {
-        window.location.href = "home.html";
-      }).catch((error) => {
-        console.error("Error al cerrar sesión:", error);
-        alert("Error al cerrar sesión. Intenta de nuevo.");
-      });
-    }
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div id="card-cot" class="card p-5 relative">
+      <h3 class="font-semibold text-gray-600">Cotizaciones</h3>
+      <p class="text-3xl font-bold text-gray-900" id="count-cot">—</p>
+    </div>
 
-    // dashboard quick stats
-    (async function () {
-      try {
-        // Crear copos de nieve (sutiles)
-        createSnowflakes();
-        
-        const cotSnap = await db.collection("cotizaciones").get();
-        const cuentasSnap = await db.collection("cuentas").get();
+    <div id="card-cuentas" class="card p-5 relative">
+      <h3 class="font-semibold text-gray-600">Cuentas de cobro</h3>
+      <p class="text-3xl font-bold text-gray-900" id="count-cuentas">—</p>
+    </div>
 
-        document.getElementById("count-cot").textContent = cotSnap.size.toLocaleString("es-CO");
-        document.getElementById("count-cuentas").textContent = cuentasSnap.size.toLocaleString("es-CO");
+    <div class="card p-5">
+      <h3 class="font-semibold text-gray-600">Ingresos pagados</h3>
+      <p class="text-3xl font-bold text-green-700" id="sum-pagadas">—</p>
+    </div>
+  </div>
+</section>
 
-        let sumaPagadas = 0;
-        cuentasSnap.forEach(d => {
-          const data = d.data();
-          if (data.estado === "pagada") sumaPagadas += Number(data.total || 0);
-        });
+<!-- ACCESOS -->
+<section>
+  <h2 class="text-xl font-bold mb-4 text-gray-800">Accesos rápidos</h2>
 
-        document.getElementById("sum-pagadas").textContent = `$${sumaPagadas.toLocaleString("es-CO")}`;
-        
-        // Añadir badge navideño si hay cuentas pendientes
-        let cuentasPendientes = 0;
-        cuentasSnap.forEach(d => {
-          const data = d.data();
-          if (data.estado === "pendiente") cuentasPendientes++;
-        });
-        
-        if (cuentasPendientes > 0) {
-          const badge = document.createElement('div');
-          badge.className = 'stat-badge-christmas';
-          badge.textContent = cuentasPendientes > 9 ? '9+' : cuentasPendientes;
-          badge.title = `${cuentasPendientes} cuentas pendientes`;
-          document.getElementById('card-cuentas').appendChild(badge);
-        }
-        
-        // Efecto especial si hay buenos ingresos
-        if (sumaPagadas > 500000) {
-          const confetti = document.createElement('div');
-          confetti.innerHTML = '🎉';
-          confetti.className = 'absolute top-4 right-4 text-2xl animate-bounce';
-          document.getElementById('card-ingresos').appendChild(confetti);
-        }
-        
-      } catch (e) {
-        console.error("Error cargando estadísticas:", e);
-        document.getElementById("count-cot").textContent = "Error";
-        document.getElementById("count-cuentas").textContent = "Error";
-        document.getElementById("sum-pagadas").textContent = "$0";
-      }
-    })();
-  </script>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <a href="cotizaciones.html" class="access-card p-6 text-center">
+      <h3 class="font-bold">Cotizaciones</h3>
+      <p class="text-sm text-gray-500">Crear y gestionar</p>
+    </a>
+
+    <a href="cuentas.html" class="access-card p-6 text-center">
+      <h3 class="font-bold">Cuentas</h3>
+      <p class="text-sm text-gray-500">Cobros y estados</p>
+    </a>
+
+    <a href="clientes.html" class="access-card p-6 text-center">
+      <h3 class="font-bold">Clientes</h3>
+      <p class="text-sm text-gray-500">Administración</p>
+    </a>
+
+    <a href="contabilidad.html" class="access-card p-6 text-center">
+      <h3 class="font-bold">Contabilidad</h3>
+      <p class="text-sm text-gray-500">Reportes</p>
+    </a>
+  </div>
+</section>
+
+<footer class="mt-14 pt-6 border-t text-center text-sm text-gray-500">
+  © 2025 DOMKA · Todos los derechos reservados
+</footer>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+auth.onAuthStateChanged(user => {
+  document.getElementById("user-email").textContent = user?.email || "Usuario";
+});
+
+function logout() {
+  auth.signOut().then(() => location.href = "home.html");
+}
+
+(async function () {
+  const cotSnap = await db.collection("cotizaciones").get();
+  const cuentasSnap = await db.collection("cuentas").get();
+
+  count-cot.textContent = cotSnap.size;
+  count-cuentas.textContent = cuentasSnap.size;
+
+  let total = 0;
+  cuentasSnap.forEach(d => {
+    if (d.data().estado === "pagada") total += Number(d.data().total || 0);
+  });
+  sum-pagadas.textContent = `$${total.toLocaleString("es-CO")}`;
+
+  const pendientes = cuentasSnap.docs.filter(d => d.data().estado === "pendiente").length;
+  if (pendientes) {
+    const badge = document.createElement("div");
+    badge.className = "stat-badge";
+    badge.textContent = pendientes;
+    document.getElementById("card-cuentas").appendChild(badge);
+  }
+})();
+</script>
 </body>
 </html>
