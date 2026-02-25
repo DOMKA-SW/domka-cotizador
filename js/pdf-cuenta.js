@@ -218,8 +218,9 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
 // ── TOTAL ─────────────────────────────────────────────────
 const bloqueTotales = {
   table: {
-    widths: ["*"], // solo una columna
+    widths: ["*", 200], // primera columna vacía empuja a la derecha
     body: [[
+      {}, // columna izquierda vacía
       {
         stack: [
           { text:"TOTAL", fontSize:8.5, bold:true,  color:PC.grayLight, font:"Roboto", margin:[0,0,0,4] },
