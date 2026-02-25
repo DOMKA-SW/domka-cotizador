@@ -49,8 +49,8 @@ const P = {
 // ── CUENTAS BANCARIAS ─────────────────────────────────────────
 // ⚠️ Edita aquí tus cuentas reales
 const BANCOS = [
-  { banco: "Bancolombia",       tipo: "Cuenta de Ahorros",  numero: "123-456789-00",    titular: "Alexander Otalora Camayo" },
-  { banco: "Nequi / Daviplata", tipo: "Billetera Digital",  numero: "+57 305 811 4595", titular: "Alexander Otalora Camayo" }
+  { banco: "Bancolombia",       tipo: "Cuenta de Ahorros",  numero: "912-941792-97",    titular: "Alexander Otalora" }
+  //{ banco: "Nequi / Daviplata", tipo: "Billetera Digital",  numero: "+57 305 811 4595", titular: "Alexander Otalora Camayo" }
 ];
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -142,7 +142,8 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
           // DOMKA — nombre empresa
           stack: [
             { text: "DOMKA", fontSize: 28, bold: true, color: P.green, font: "Roboto" },
-            { text: "Construcción & Diseño", fontSize: 9, color: P.gray, font: "Roboto", margin: [0, 3, 0, 0] }
+            { text: "Construcción", fontSize: 9, color: P.gray, font: "Roboto", margin: [0, 3, 0, 0] },
+            { text: `Fecha: ${fechaStr}`
           ],
           fillColor: P.bg, border: [false,false,false,false], margin: [0, 0, 20, 0]
         },
@@ -165,22 +166,17 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   // ════════════════════════════════════════════════════════════
   // BLOQUE 2 · FECHA + LOGO PEQUEÑO (zona gris muy suave)
   // ════════════════════════════════════════════════════════════
-  const bloqueSubHeader = {
-    table: {
-      widths: ["*", "auto"],
-      body: [[
-        {
-          text: `Fecha: ${fechaStr}`,
-          fontSize: 9, color: P.gray, font: "Roboto",
-          fillColor: P.bg, border: [false,false,false,false], margin: [0, 8, 0, 8]
-        },
-        images.logo
-          ? { image: images.logo, width: 50, fillColor: P.bg, border: [false,false,false,false], margin: [0, 4, 0, 4], alignment: "right" }
-          : { text: "", fillColor: P.bg, border: [false,false,false,false] }
-      ]]
-    },
-    layout: "noBorders"
-  };
+  //const bloqueSubHeader = {
+    //table: {
+      //widths: ["*", "auto"],
+      //body: [[
+        //images.logo
+          //? { image: images.logo, width: 50, fillColor: P.bg, border: [false,false,false,false], margin: [0, 4, 0, 4], alignment: "right" }
+          //: { text: "", fillColor: P.bg, border: [false,false,false,false] }
+      //]]
+    //},
+    //layout: "noBorders"
+  //};
 
   // ════════════════════════════════════════════════════════════
   // BLOQUE 3 · CLIENTE + DETALLES DEL PROYECTO
@@ -284,61 +280,84 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     };
   }
 
-  // ════════════════════════════════════════════════════════════
-  // BLOQUE 5 · TOTALES
-  // Izquierda: label + monto grande en verde
-  // Derecha: desglose subtotal/iva/total
-  // TODO en fondo beige — sin fondos oscuros
-  // ════════════════════════════════════════════════════════════
-  const iva = total - subtotal;
-  const tieneIva = iva > 1 && tipoCalculo !== "valor-total";
+// ════════════════════════════════════════════════════════════
+// BLOQUE 5 · TOTAL (único, alineado a la derecha)
+// Número grande + valor en letras
+// ════════════════════════════════════════════════════════════
 
-  // Filas del desglose (derecha)
-  const filasDesglose = [];
-  if (tieneIva) {
-    filasDesglose.push([
-      { text: "Subtotal", fontSize: 8.5, color: P.gray, font: "Roboto", border: [false,false,false,false], margin: [0,5,16,5], fillColor: P.bg },
-      { text: fmtM(subtotal), fontSize: 8.5, color: P.gray, alignment: "right", font: "Roboto", border: [false,false,false,false], margin: [0,5,0,5], fillColor: P.bg }
-    ]);
-    filasDesglose.push([
-      { text: "IVA", fontSize: 8.5, color: P.gray, font: "Roboto", border: [false,false,false,false], margin: [0,5,16,5], fillColor: P.bg },
-      { text: fmtM(iva), fontSize: 8.5, color: P.gray, alignment: "right", font: "Roboto", border: [false,false,false,false], margin: [0,5,0,5], fillColor: P.bg }
-    ]);
-    filasDesglose.push([
-      { canvas: [{ type: "line", x1: 0, y1: 0, x2: 180, y2: 0, lineWidth: 0.5, lineColor: P.line }], border: [false,false,false,false], colSpan: 2, margin: [0,2,0,2], fillColor: P.bg },
-      {}
-    ]);
-  }
-  filasDesglose.push([
-    { text: "TOTAL",  fontSize: 10, bold: true, color: P.green, font: "Roboto", border: [false,false,false,false], margin: [0, tieneIva ? 4 : 10, 16, 10], fillColor: P.bg },
-    { text: fmtM(total), fontSize: 12, bold: true, color: P.green, alignment: "right", font: "Roboto", border: [false,false,false,false], margin: [0, tieneIva ? 4 : 10, 0, 10], fillColor: P.bg }
-  ]);
-
-  const bloqueTotales = {
-    table: {
-      widths: ["*", 200],
-      body: [[
-        // Izquierda: "TOTAL A PAGAR" + monto grande
-        {
-          stack: [
-            sLabel("TOTAL A PAGAR"),
-            { text: fmtM(total), fontSize: 28, bold: true, color: P.green, font: "Roboto", margin: [0, 0, 0, 4] },
-            ...(mostrarValorLetras && typeof numeroAPalabras === "function"
-              ? [{ text: `Son: ${numeroAPalabras(total)}`, fontSize: 8, italic: true, color: P.grayLight, font: "Roboto" }]
-              : [])
-          ],
-          fillColor: P.bg, border: [false,false,false,false], margin: [0, 14, 20, 14]
-        },
-        // Derecha: desglose
-        {
-          table: { widths: ["*", "auto"], body: filasDesglose },
-          layout: "noBorders",
-          fillColor: P.bg, border: [false,false,false,false], margin: [0, 14, 0, 14]
-        }
-      ]]
+const filasTotal = [
+  [
+    {
+      text: "TOTAL",
+      fontSize: 10,
+      bold: true,
+      color: P.green,
+      font: "Roboto",
+      border: [false, false, false, false],
+      margin: [0, 6, 16, 4],
+      fillColor: P.bg
     },
-    layout: "noBorders"
-  };
+    {
+      text: fmtM(total),
+      fontSize: 16,
+      bold: true,
+      color: P.green,
+      alignment: "right",
+      font: "Roboto",
+      border: [false, false, false, false],
+      margin: [0, 6, 0, 4],
+      fillColor: P.bg
+    }
+  ]
+];
+
+// Total en letras (opcional)
+if (mostrarValorLetras && typeof numeroAPalabras === "function") {
+  filasTotal.push([
+    {
+      text: "SON:",
+      fontSize: 8,
+      color: P.grayLight,
+      font: "Roboto",
+      border: [false, false, false, false],
+      margin: [0, 0, 16, 0],
+      fillColor: P.bg
+    },
+    {
+      text: numeroAPalabras(total),
+      fontSize: 8,
+      italic: true,
+      color: P.grayLight,
+      alignment: "right",
+      font: "Roboto",
+      border: [false, false, false, false],
+      margin: [0, 0, 0, 0],
+      fillColor: P.bg
+    }
+  ]);
+}
+
+const bloqueTotales = {
+  table: {
+    widths: ["*", 200],
+    body: [
+      [
+        {}, // columna izquierda vacía
+        {
+          table: {
+            widths: ["*", "auto"],
+            body: filasTotal
+          },
+          layout: "noBorders",
+          fillColor: P.bg,
+          border: [false, false, false, false],
+          margin: [0, 14, 0, 14]
+        }
+      ]
+    ]
+  },
+  layout: "noBorders"
+};
 
   // ════════════════════════════════════════════════════════════
   // BLOQUE 6 · PLAN DE PAGOS
@@ -365,35 +384,36 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
     }
   ] : [];
 
-  // ════════════════════════════════════════════════════════════
-  // BLOQUE 7 · MÉTODOS DE PAGO
-  // Tarjetas beige con número en verde
-  // ════════════════════════════════════════════════════════════
-  const bancoCeldas = BANCOS.map(b => ({
-    stack: [
-      { text: b.banco,              fontSize: 11, bold: true, color: P.black,  font: "Roboto", margin: [0,0,0,2] },
-      { text: b.tipo,               fontSize: 8,  color: P.grayLight,          font: "Roboto", margin: [0,0,0,8] },
-      { text: b.numero,             fontSize: 12, bold: true, color: P.green,  font: "Roboto", margin: [0,0,0,3] },
-      { text: `Titular: ${b.titular}`, fontSize: 8, color: P.gray,             font: "Roboto" }
-    ],
-    fillColor: P.bgRow, border: [false,false,false,false], margin: [16, 14, 16, 14]
-  }));
+// ════════════════════════════════════════════════════════════
+// BLOQUE 7 · MÉTODOS DE PAGO (versión compacta)
+// ════════════════════════════════════════════════════════════
+const bancoCeldas = BANCOS.map(b => ({
+  stack: [
+    { text: b.banco,                fontSize: 10, bold: true, color: P.black, font: "Roboto", margin: [0,0,0,1] },
+    { text: b.tipo,                  fontSize: 7,  color: P.grayLight,       font: "Roboto", margin: [0,0,0,4] },
+    { text: b.numero,                fontSize: 10, bold: true, color: P.green, font: "Roboto", margin: [0,0,0,2] },
+    { text: `Titular: ${b.titular}`, fontSize: 7, color: P.gray,              font: "Roboto" }
+  ],
+  fillColor: P.bgRow,
+  border: [false,false,false,false],
+  margin: [8, 8, 8, 8]  // márgenes reducidos
+}));
 
-  const bloquePago = [
-    hr(),
-    sLabel("MÉTODO DE PAGO"),
-    {
-      table: {
-        widths: BANCOS.map(() => "*"),
-        body: [bancoCeldas]
-      },
-      layout: {
-        hLineWidth: () => 0,
-        vLineWidth: (i) => (i > 0 && i < BANCOS.length) ? 0.6 : 0,
-        vLineColor: () => P.line
-      }
+const bloquePago = [
+  hr(),
+  sLabel("MÉTODO DE PAGO", { fontSize: 10 }),  // si tu sLabel permite pasar fontSize
+  {
+    table: {
+      widths: BANCOS.map(() => "*"),
+      body: [bancoCeldas]
+    },
+    layout: {
+      hLineWidth: () => 0,
+      vLineWidth: (i) => (i > 0 && i < BANCOS.length) ? 0.4 : 0,
+      vLineColor: () => P.line
     }
-  ];
+  }
+];
 
   // ════════════════════════════════════════════════════════════
   // BLOQUE 8 · NOTAS
@@ -447,30 +467,30 @@ async function generarPDFCotizacion(cotizacion, nombreCliente = "Cliente") {
   // ════════════════════════════════════════════════════════════
   // BLOQUE 10 · APROBACIÓN (firma cliente, si existe)
   // ════════════════════════════════════════════════════════════
-  const bloqueAprobacion = firmaAprobacion ? [
-    hr(),
-    {
-      table: {
-        widths: ["*", 200],
-        body: [[
-          { text: "", fillColor: P.bg, border: [false,false,false,false] },
-          {
-            stack: [
+  //const bloqueAprobacion = firmaAprobacion ? [
+    //hr(),
+    //{
+      //table: {
+        //widths: ["*", 200],
+        //body: [[
+          //{ text: "", fillColor: P.bg, border: [false,false,false,false] },
+          //{
+            //stack: [
               // Línea verde decorativa arriba
-              { canvas: [{ type: "line", x1: 0, y1: 0, x2: 185, y2: 0, lineWidth: 2, lineColor: P.green }], margin: [0,0,0,10] },
-              sLabel("APROBADO POR"),
-              ...(fechaAprobStr ? [{ text: `Fecha: ${fechaAprobStr}`, fontSize: 8.5, color: P.gray, font: "Roboto", margin: [0,0,0,8] }] : []),
-              { image: firmaAprobacion, width: 115, margin: [0,0,0,5] },
-              { text: nombreCliente,       fontSize: 9, bold: true, color: P.black,   font: "Roboto" },
-              { text: "Firma del cliente", fontSize: 8,             color: P.grayLight, font: "Roboto" }
-            ],
-            fillColor: P.bg, border: [false,false,false,false], margin: [0,0,0,0]
-          }
-        ]]
-      },
-      layout: "noBorders"
-    }
-  ] : [];
+              //{ canvas: [{ type: "line", x1: 0, y1: 0, x2: 185, y2: 0, lineWidth: 2, lineColor: P.green }], margin: [0,0,0,10] },
+              //sLabel("APROBADO POR"),
+              //...(fechaAprobStr ? [{ text: `Fecha: ${fechaAprobStr}`, fontSize: 8.5, color: P.gray, font: "Roboto", margin: [0,0,0,8] }] : []),
+              //{ image: firmaAprobacion, width: 115, margin: [0,0,0,5] },
+              //{ text: nombreCliente,       fontSize: 9, bold: true, color: P.black,   font: "Roboto" },
+              //{ text: "Firma del cliente", fontSize: 8,             color: P.grayLight, font: "Roboto" }
+            //],
+            //fillColor: P.bg, border: [false,false,false,false], margin: [0,0,0,0]
+          //}
+        //]]
+      //},
+      //layout: "noBorders"
+    //}
+  //] : [];
 
   // ════════════════════════════════════════════════════════════
   // BLOQUE 11 · FIRMA EMPRESA + CONTACTO
