@@ -1,1204 +1,197 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DOMKA | Plataforma de Cotización y Cuentas de Cobro</title>
-  <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOMKA | Plataforma de Cotización Moderna</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <style>
     /* ===== VARIABLES Y RESET ===== */
     :root {
-      --domka: #f97316;
-      --domka-dark: #e55b00;
-      --domka-light: #ffedd5;
-      --domka-gradient: linear-gradient(135deg, #f97316, #fb923c);
-      --bg: #f9fafb;
-      --text: #1f2937;
+      --accent: #1a7a4a;
+      --bg: #f9f9f9;
+      --card-bg: #ffffff;
+      --text: #1c1c1c;
       --text-light: #6b7280;
-      --white: #ffffff;
-      --radius: 16px;
-      --radius-lg: 24px;
-      --shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15);
+      --shadow: 0 4px 20px rgba(0,0,0,0.05);
+      --radius: 12px;
       --transition: all 0.3s ease;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Poppins", sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); overflow-x: hidden; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
+    p { color: var(--text-light); line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; font-family: inherit; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      overflow-x: hidden;
-    }
+    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-    /* ===== TIPOGRAFÍA Y ELEMENTOS GENERALES ===== */
-    h1, h2, h3, h4 {
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    p {
-      color: var(--text-light);
-      line-height: 1.6;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      font-family: inherit;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .section {
-      padding: 100px 0;
-    }
-
-    .section-title {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-
-    .section-title h2 {
-      font-size: 2.5rem;
-      margin-bottom: 15px;
-      background: var(--domka-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-    }
-
-    .section-title p {
-      max-width: 700px;
-      margin: 0 auto;
-      font-size: 1.1rem;
-    }
-
-    /* ===== COMPONENTES ===== */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 32px;
-      border-radius: 10px;
-      font-weight: 600;
-      text-align: center;
-      transition: var(--transition);
-      background: var(--domka-gradient);
-      color: white;
-      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-    }
-
-    .btn:hover {
-      box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
-      transform: translateY(-3px);
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--domka);
-      color: var(--domka);
-      box-shadow: none;
-    }
-
-    .btn-outline:hover {
-      background: var(--domka);
-      color: white;
-    }
-
-    .card {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      transition: var(--transition);
-      overflow: hidden;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    }
-
-    /* ===== NAVIGATION ===== */
+    /* ===== NAVBAR ===== */
     .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      z-index: 1000;
-      padding: 15px 0;
-      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+      padding: 15px 0; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
     }
+    .nav-container { display: flex; justify-content: space-between; align-items: center; }
+    .nav-logo img { height: 40px; }
+    .nav-links { display: flex; gap: 30px; }
+    .nav-links a:hover { color: var(--accent); transition: var(--transition); }
+    .nav-actions { display: flex; gap: 15px; }
+    .btn { padding: 12px 28px; border-radius: var(--radius); font-weight: 500; transition: var(--transition); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+    .btn-outline { border: 2px solid var(--accent); color: var(--accent); background: transparent; }
+    .btn-outline:hover { background: var(--accent); color: white; }
 
-    .nav-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    /* ===== HERO ===== */
+    .hero { background: #fff; padding: 160px 0 100px; text-align: center; }
+    .hero h1 { font-size: 3rem; margin-bottom: 20px; }
+    .hero p { font-size: 1.2rem; margin-bottom: 40px; color: var(--text-light); }
+    .hero-actions { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
 
-    .nav-logo img {
-      height: 40px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 30px;
-    }
-
-    .nav-links a {
-      font-weight: 500;
-      transition: var(--transition);
-    }
-
-    .nav-links a:hover {
-      color: var(--domka);
-    }
-
-    .nav-actions {
-      display: flex;
-      gap: 15px;
-    }
-
-    /* ===== HERO BANNER ===== */
-    .hero {
-      background: var(--domka-gradient);
-      color: white;
-      padding: 160px 0 100px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 800px;
-      height: 800px;
-      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      bottom: -30%;
-      left: -10%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      padding: 8px 20px;
-      border-radius: 50px;
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-    }
-
-    .hero h1 {
-      font-size: 3.5rem;
-      margin-bottom: 20px;
-      line-height: 1.1;
-    }
-
-    .hero p {
-      font-size: 1.3rem;
-      color: rgba(255, 255, 255, 0.9);
-      margin-bottom: 40px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .hero-stats {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin-top: 60px;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      text-align: center;
-    }
-
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-
-    .stat-label {
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-
-    /* ===== FEATURES SECTION ===== */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 30px;
-    }
-
-    .feature {
-      background: white;
-      border-radius: var(--radius);
-      padding: 40px 30px;
-      box-shadow: var(--shadow);
-      transition: var(--transition);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: var(--domka-gradient);
-    }
-
-    .feature-icon {
-      width: 70px;
-      height: 70px;
-      background: var(--domka-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 1.8rem;
-      color: var(--domka);
-    }
-
-    .feature h3 {
-      font-size: 1.4rem;
-      margin-bottom: 15px;
-    }
-
-    .feature:hover {
-      transform: translateY(-10px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    /* ===== HOW IT WORKS ===== */
-    .how-it-works {
-      background: var(--domka-light);
-      position: relative;
-    }
-
-    .steps {
-      display: flex;
-      justify-content: space-between;
-      position: relative;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .steps::before {
-      content: "";
-      position: absolute;
-      top: 40px;
-      left: 10%;
-      width: 80%;
-      height: 3px;
-      background: var(--domka);
-      opacity: 0.3;
-    }
-
-    .step {
-      text-align: center;
-      position: relative;
-      z-index: 1;
-      flex: 1;
-    }
-
-    .step-number {
-      width: 80px;
-      height: 80px;
-      background: var(--domka);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin: 0 auto 20px;
-      box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
-    }
-
-    .step h3 {
-      margin-bottom: 10px;
-    }
+    /* ===== FEATURES ===== */
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 60px; }
+    .feature { background: var(--card-bg); border-radius: var(--radius); padding: 30px; text-align: center; box-shadow: var(--shadow); transition: var(--transition); }
+    .feature:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    .feature-icon { font-size: 2rem; color: var(--accent); margin-bottom: 20px; }
 
     /* ===== DASHBOARD PREVIEW ===== */
-    .dashboard-preview {
-      text-align: center;
-    }
+    .dashboard-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; background: var(--card-bg); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); }
+    .dashboard-main { display: flex; flex-direction: column; gap: 20px; }
+    .chart-placeholder { background: #f5f5f5; border-radius: var(--radius); height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-light); }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .stat-card { background: #f5f5f5; padding: 15px; border-radius: var(--radius); text-align: center; }
+    .stat-card h4 { color: var(--accent); margin-bottom: 5px; }
 
-    .dashboard-container {
-      max-width: 900px;
-      margin: 0 auto;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      transform: perspective(1000px) rotateX(5deg);
-      transition: var(--transition);
-    }
-
-    .dashboard-container:hover {
-      transform: perspective(1000px) rotateX(0deg);
-    }
-
-    .dashboard-header {
-      background: #2d3748;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .dashboard-window-controls {
-      display: flex;
-      gap: 8px;
-    }
-
-    .window-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-
-    .red { background: #ff5f56; }
-    .yellow { background: #ffbd2e; }
-    .green { background: #27c93f; }
-
-    .dashboard-nav {
-      display: flex;
-      gap: 20px;
-    }
-
-    .dashboard-nav a {
-      color: #a0aec0;
-      font-size: 0.9rem;
-    }
-
-    .dashboard-content {
-      background: white;
-      padding: 30px;
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-    }
-
-    .dashboard-main {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .chart-placeholder {
-      height: 200px;
-      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-light);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-    }
-
-    .stat-card {
-      background: #f8fafc;
-      padding: 15px;
-      border-radius: var(--radius);
-      text-align: center;
-    }
-
-    .stat-card h4 {
-      font-size: 1.8rem;
-      color: var(--domka);
-      margin-bottom: 5px;
-    }
-
-    .dashboard-sidebar {
-      background: #f8fafc;
-      border-radius: var(--radius);
-      padding: 20px;
-    }
-
-    .activity-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .activity-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .activity-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--domka);
-      border-radius: 50%;
-    }
+    .dashboard-sidebar { background: #f5f5f5; border-radius: var(--radius); padding: 20px; }
+    .activity-list { display: flex; flex-direction: column; gap: 15px; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 10px; }
 
     /* ===== TESTIMONIALS ===== */
-    .testimonials {
-      background: var(--white);
-    }
+    .testimonial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 30px; margin-top: 40px; }
+    .testimonial { background: var(--card-bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; }
+    .testimonial-text { margin-bottom: 20px; }
+    .author-avatar { width: 50px; height: 50px; border-radius: 50%; background: #e5e5e5; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; color: var(--accent); }
+    .testimonial-author { display: flex; align-items: center; gap: 15px; }
 
-    .testimonial-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 30px;
-    }
+    /* ===== AUTH ===== */
+    .auth-section { background: #f5f5f5; padding: 100px 0; }
+    .auth-container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+    .auth-box { background: var(--card-bg); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); width: 350px; }
+    .auth-box h2 { margin-bottom: 25px; text-align: center; color: var(--accent); }
+    .form-control { width: 100%; padding: 14px 16px; border-radius: var(--radius); border: 1px solid #ddd; margin-bottom: 20px; transition: var(--transition); }
+    .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,122,74,0.1); }
+    .auth-box button { width: 100%; padding: 14px; border-radius: var(--radius); background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
 
-    .testimonial {
-      background: white;
-      border-radius: var(--radius);
-      padding: 30px;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-
-    .testimonial::before {
-      content: """;
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 4rem;
-      color: var(--domka-light);
-      opacity: 0.3;
-      font-family: Georgia, serif;
-    }
-
-    .testimonial-text {
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .testimonial-author {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .author-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--domka-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--domka);
-      font-weight: bold;
-    }
-
-    .author-info h4 {
-      margin-bottom: 5px;
-    }
-
-    .author-info p {
-      font-size: 0.9rem;
-      opacity: 0.7;
-    }
-
-    /* ===== AUTH SECTION ===== */
-    .auth-section {
-      background: linear-gradient(135deg, #fff8f3, #ffffff);
-    }
-
-    .auth-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 40px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .auth-box {
-      background: white;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 40px;
-      width: 350px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .auth-box::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: var(--domka-gradient);
-    }
-
-    .auth-box h2 {
-      color: var(--domka);
-      margin-bottom: 25px;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 1rem;
-      transition: var(--transition);
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: var(--domka);
-      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
-    }
-
-    .auth-box button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 8px;
-      background: var(--domka-gradient);
-      color: white;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: var(--transition);
-      margin-top: 10px;
-    }
-
-    .auth-box button:hover {
-      opacity: 0.9;
-    }
-
-    .auth-box p {
-      margin-top: 15px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    .auth-box a {
-      color: var(--domka);
-      font-weight: 500;
-    }
-
-    /* ===== CTA SECTION ===== */
-    .cta-section {
-      background: var(--domka-gradient);
-      color: white;
-      text-align: center;
-      padding: 80px 0;
-    }
-
-    .cta-section h2 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-    }
-
-    .cta-section p {
-      color: rgba(255, 255, 255, 0.9);
-      max-width: 600px;
-      margin: 0 auto 30px;
-      font-size: 1.1rem;
-    }
+    /* ===== CTA ===== */
+    .cta-section { background: var(--accent); color: white; text-align: center; padding: 80px 0; }
+    .cta-section a { background: white; color: var(--accent); padding: 14px 32px; border-radius: var(--radius); font-weight: 600; display: inline-block; margin-top: 20px; }
 
     /* ===== FOOTER ===== */
-    footer {
-      background: #1a202c;
-      color: white;
-      padding: 60px 0 30px;
-    }
-
-    .footer-content {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 40px;
-      margin-bottom: 40px;
-    }
-
-    .footer-column h3 {
-      color: var(--domka);
-      margin-bottom: 20px;
-      font-size: 1.2rem;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .footer-links a {
-      color: #a0aec0;
-      transition: var(--transition);
-    }
-
-    .footer-links a:hover {
-      color: var(--domka);
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 30px;
-      border-top: 1px solid #2d3748;
-      color: #a0aec0;
-      font-size: 0.9rem;
-    }
-
-    /* ===== ANIMACIONES ===== */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-in {
-      animation: fadeInUp 0.8s ease forwards;
-    }
-
-    .delay-1 {
-      animation-delay: 0.2s;
-    }
-
-    .delay-2 {
-      animation-delay: 0.4s;
-    }
-
-    .delay-3 {
-      animation-delay: 0.6s;
-    }
+    footer { background: #1c1c1c; color: #ccc; padding: 60px 0; }
+    .footer-content { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 40px; margin-bottom: 40px; }
+    .footer-column h3 { color: var(--accent); margin-bottom: 20px; }
+    .footer-links a { color: #aaa; transition: var(--transition); }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-bottom { text-align: center; border-top: 1px solid #333; padding-top: 30px; font-size: 0.9rem; }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 10px 0;
-      }
-      
-      .nav-links {
-        display: none;
-      }
-      
-      .hero h1 {
-        font-size: 2.5rem;
-      }
-      
-      .hero p {
-        font-size: 1.1rem;
-      }
-      
-      .hero-actions {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .section-title h2 {
-        font-size: 2rem;
-      }
-      
-      .steps {
-        flex-direction: column;
-        gap: 40px;
-      }
-      
-      .steps::before {
-        display: none;
-      }
-      
-      .dashboard-content {
-        grid-template-columns: 1fr;
-      }
-      
-      .auth-container {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .auth-box {
-        width: 100%;
-        max-width: 350px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .hero {
-        padding: 120px 0 60px;
-      }
-      
-      .hero h1 {
-        font-size: 2rem;
-      }
-      
-      .section {
-        padding: 70px 0;
-      }
-      
-      .stat-number {
-        font-size: 2rem;
-      }
-    }
+    @media(max-width:768px){.dashboard-container{grid-template-columns:1fr}.auth-container{flex-direction:column;align-items:center;}.hero h1{font-size:2rem;}.hero p{font-size:1rem;}.features{gap:20px;}}
   </style>
 </head>
 
 <body>
+
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="container nav-container">
-      <div class="nav-logo">
-        <img src="img/logo.png" alt="DOMKA Logo" />
-      </div>
+      <div class="nav-logo"><img src="img/logo.png" alt="DOMKA"></div>
       <div class="nav-links">
         <a href="#features">Características</a>
         <a href="#how-it-works">Cómo Funciona</a>
-        <a href="#testimonials">Testimonios</a>
-        <a href="#pricing">Precios</a>
       </div>
       <div class="nav-actions">
         <a href="#login" class="btn-outline">Ingresar</a>
-        <a href="#registro" class="btn">Registrarse</a>
       </div>
     </div>
   </nav>
 
-  <!-- HERO BANNER -->
+  <!-- HERO -->
   <section class="hero">
     <div class="container">
-      <div class="hero-content">
-        <div class="hero-badge fade-in">
-          <i class="fas fa-rocket"></i>
-          <span>La plataforma #1 para cotizaciones en Colombia</span>
-        </div>
-        <h1 class="fade-in delay-1">Transforma tus <span style="text-decoration: underline;">cotizaciones</span> en experiencias digitales ✨</h1>
-        <p class="fade-in delay-1">Crea, gestiona y envía cotizaciones profesionales en minutos. Aumenta tus ventas con DOMKA.</p>
-        <div class="hero-actions fade-in delay-2">
-          <a href="#registro" class="btn" style="background: white; color: var(--domka);">
-            <i class="fas fa-play-circle"></i>
-            Comenzar Gratis
-          </a>
-          <a href="https://wa.link/54lg8f" target="_blank" class="btn btn-outline" style="border-color: white; color: white;">
-            <i class="fab fa-whatsapp"></i>
-            Hablar con Asesor
-          </a>
-        </div>
-        <div class="hero-stats fade-in delay-3">
-          <div class="stat">
-            <div class="stat-number">+500</div>
-            <div class="stat-label">Empresas</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number">+15K</div>
-            <div class="stat-label">Cotizaciones</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number">98%</div>
-            <div class="stat-label">Satisfacción</div>
-          </div>
-        </div>
+      <h1>Moderniza tus <span style="color: var(--accent);">cotizaciones</span> fácilmente</h1>
+      <p>Crea, gestiona y envía cotizaciones profesionales en minutos, con una interfaz clara y moderna.</p>
+      <div class="hero-actions">
+        <a href="#registro" class="btn-primary">Comenzar</a>
+        <a href="https://wa.link/54lg8f" target="_blank" class="btn-outline">Hablar con Asesor</a>
       </div>
     </div>
   </section>
 
-  <!-- FEATURES SECTION -->
-  <section class="section" id="features">
-    <div class="container">
-      <div class="section-title fade-in">
-        <h2>💼 Todo lo que necesitas en un solo lugar</h2>
-        <p>DOMKA simplifica la creación y gestión de cotizaciones para que puedas enfocarte en lo que realmente importa: hacer crecer tu negocio.</p>
-      </div>
-
-      <div class="features">
-        <div class="feature fade-in delay-1">
-          <div class="feature-icon">
-            <i class="fas fa-bolt"></i>
-          </div>
-          <h3>Cotizador Rápido</h3>
-          <p>Diseña, calcula y guarda cotizaciones profesionales en cuestión de segundos, sin complicaciones.</p>
-        </div>
-        <div class="feature fade-in delay-1">
-          <div class="feature-icon">
-            <i class="fas fa-paper-plane"></i>
-          </div>
-          <h3>Envíos Automáticos</h3>
-          <p>Comparte tus cotizaciones con clientes directamente por WhatsApp o correo electrónico al instante.</p>
-        </div>
-        <div class="feature fade-in delay-1">
-          <div class="feature-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <h3>Seguimiento Inteligente</h3>
-          <p>Analiza métricas, ventas y clientes con nuestro panel visual e interactivo en tiempo real.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section class="section how-it-works" id="how-it-works">
-    <div class="container">
-      <div class="section-title fade-in">
-        <h2>🚀 Cómo funciona DOMKA</h2>
-        <p>En solo 4 sencillos pasos podrás crear y enviar cotizaciones profesionales.</p>
-      </div>
-
-      <div class="steps">
-        <div class="step fade-in">
-          <div class="step-number">1</div>
-          <h3>Regístrate</h3>
-          <p>Crea tu cuenta en menos de 2 minutos</p>
-        </div>
-        <div class="step fade-in delay-1">
-          <div class="step-number">2</div>
-          <h3>Configura</h3>
-          <p>Personaliza tu perfil y productos</p>
-        </div>
-        <div class="step fade-in delay-2">
-          <div class="step-number">3</div>
-          <h3>Crea</h3>
-          <p>Genera cotizaciones profesionales</p>
-        </div>
-        <div class="step fade-in delay-3">
-          <div class="step-number">4</div>
-          <h3>Envía</h3>
-          <p>Comparte con tus clientes al instante</p>
-        </div>
-      </div>
-    </div>
+  <!-- FEATURES -->
+  <section class="container features" id="features">
+    <div class="feature"><div class="feature-icon"><i class="fas fa-bolt"></i></div><h3>Cotizador Rápido</h3><p>Genera cotizaciones en segundos sin complicaciones.</p></div>
+    <div class="feature"><div class="feature-icon"><i class="fas fa-paper-plane"></i></div><h3>Envíos Automáticos</h3><p>Comparte cotizaciones al instante por WhatsApp o correo.</p></div>
+    <div class="feature"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3>Seguimiento Inteligente</h3><p>Analiza métricas y ventas en tiempo real con dashboards claros.</p></div>
   </section>
 
   <!-- DASHBOARD PREVIEW -->
-  <section class="section dashboard-preview">
-    <div class="container">
-      <div class="section-title fade-in">
-        <h2>📊 Dashboard Intuitivo</h2>
-        <p>Gestiona todas tus cotizaciones desde un panel moderno y fácil de usar.</p>
-      </div>
-
-      <div class="dashboard-container fade-in delay-1">
-        <div class="dashboard-header">
-          <div class="dashboard-window-controls">
-            <div class="window-dot red"></div>
-            <div class="window-dot yellow"></div>
-            <div class="window-dot green"></div>
-          </div>
-          <div class="dashboard-nav">
-            <a href="#">Inicio</a>
-            <a href="#">Cotizaciones</a>
-            <a href="#">Clientes</a>
-            <a href="#">Reportes</a>
-          </div>
-          <div></div>
+  <section class="container" id="how-it-works" style="margin-top:80px;">
+    <div class="dashboard-container">
+      <div class="dashboard-main">
+        <div class="chart-placeholder"><i class="fas fa-chart-bar" style="margin-right:10px;"></i>Gráfico de Cotizaciones</div>
+        <div class="stats-grid">
+          <div class="stat-card"><h4>24</h4><p>Cotizaciones Activas</p></div>
+          <div class="stat-card"><h4>18</h4><p>Clientes este Mes</p></div>
+          <div class="stat-card"><h4>$8.2M</h4><p>Valor Cotizado</p></div>
+          <div class="stat-card"><h4>76%</h4><p>Tasa de Conversión</p></div>
         </div>
-        <div class="dashboard-content">
-          <div class="dashboard-main">
-            <div class="chart-placeholder">
-              <i class="fas fa-chart-bar" style="font-size: 2rem; margin-right: 10px;"></i>
-              Gráfico de Cotizaciones Mensuales
-            </div>
-            <div class="stats-grid">
-              <div class="stat-card">
-                <h4>24</h4>
-                <p>Cotizaciones Activas</p>
-              </div>
-              <div class="stat-card">
-                <h4>18</h4>
-                <p>Clientes este Mes</p>
-              </div>
-              <div class="stat-card">
-                <h4>$8.2M</h4>
-                <p>Valor Cotizado</p>
-              </div>
-              <div class="stat-card">
-                <h4>76%</h4>
-                <p>Tasa de Conversión</p>
-              </div>
-            </div>
-          </div>
-          <div class="dashboard-sidebar">
-            <h4>Actividad Reciente</h4>
-            <div class="activity-list">
-              <div class="activity-item">
-                <div class="activity-dot"></div>
-                <div>
-                  <p><strong>Nueva cotización</strong> para Cliente S.A.</p>
-                  <small>Hace 2 horas</small>
-                </div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-dot"></div>
-                <div>
-                  <p><strong>Cotización aprobada</strong> por Constructora XYZ</p>
-                  <small>Hace 5 horas</small>
-                </div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-dot"></div>
-                <div>
-                  <p><strong>Recordatorio enviado</strong> a Importadores LTDA</p>
-                  <small>Ayer</small>
-                </div>
-              </div>
-            </div>
-          </div>
+      </div>
+      <div class="dashboard-sidebar">
+        <h4>Actividad Reciente</h4>
+        <div class="activity-list">
+          <div class="activity-item"><div class="activity-dot"></div><p><strong>Nueva cotización</strong> Cliente S.A.</p></div>
+          <div class="activity-item"><div class="activity-dot"></div><p><strong>Cotización aprobada</strong> Constructora XYZ</p></div>
+          <div class="activity-item"><div class="activity-dot"></div><p><strong>Recordatorio enviado</strong> Importadores LTDA</p></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- TESTIMONIALS -->
-  <section class="section testimonials" id="testimonials">
-    <div class="container">
-      <div class="section-title fade-in">
-        <h2>⭐ Lo que dicen nuestros clientes</h2>
-        <p>Empresas que han transformado su proceso de cotización con DOMKA.</p>
-      </div>
-
-      <div class="testimonial-cards">
-        <div class="testimonial fade-in">
-          <div class="testimonial-text">
-            "DOMKA ha simplificado nuestro proceso de cotización enormemente. Ahora enviamos propuestas profesionales en minutos en lugar de horas."
-          </div>
-          <div class="testimonial-author">
-            <div class="author-avatar">MC</div>
-            <div class="author-info">
-              <h4>María Camila Rodríguez</h4>
-              <p>Directora, Constructora Innovar</p>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial fade-in delay-1">
-          <div class="testimonial-text">
-            "El envío automático por WhatsApp ha aumentado nuestras tasas de respuesta en un 40%. Nuestros clientes aman la inmediatez."
-          </div>
-          <div class="testimonial-author">
-            <div class="author-avatar">JL</div>
-            <div class="author-info">
-              <h4>Javier López</h4>
-              <p>Gerente, Suministros Industriales S.A.</p>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial fade-in delay-2">
-          <div class="testimonial-text">
-            "El dashboard me permite seguir el estado de cada cotización en tiempo real. He mejorado mi seguimiento con clientes significativamente."
-          </div>
-          <div class="testimonial-author">
-            <div class="author-avatar">AC</div>
-            <div class="author-info">
-              <h4>Ana Cristina Vargas</h4>
-              <p>CEO, Soluciones Digitales LTDA</p>
-            </div>
-          </div>
-        </div>
+  <!-- AUTH -->
+  <section class="auth-section" id="login">
+    <div class="auth-container">
+      <div class="auth-box">
+        <h2>Ingresar</h2>
+        <input type="email" class="form-control" placeholder="Correo electrónico">
+        <input type="password" class="form-control" placeholder="Contraseña">
+        <button>Ingresar a mi cuenta</button>
       </div>
     </div>
   </section>
 
-  <!-- AUTH SECTION -->
-  <section class="section auth-section" id="login">
-    <div class="container">
-      <div class="section-title fade-in">
-        <h2>🔐 Accede a tu cuenta o regístrate</h2>
-        <p>Únete a cientos de empresas que ya usan DOMKA para simplificar sus cotizaciones.</p>
-      </div>
-      
-      <div class="auth-container">
-        <!-- LOGIN -->
-        <div class="auth-box fade-in delay-1">
-          <h2>Ingresar</h2>
-          <div class="form-group">
-            <input id="email" type="email" class="form-control" placeholder="Correo electrónico" />
-          </div>
-          <div class="form-group">
-            <input id="password" type="password" class="form-control" placeholder="Contraseña" />
-          </div>
-          <button onclick="login()">Ingresar a mi cuenta</button>
-          <p>¿Aún no tienes cuenta? <a href="#registro">Regístrate gratis</a></p>
-        </div>
-
-        <!-- REGISTER -->
-        <div class="auth-box fade-in delay-2" id="registro">
-          <h2>Registro rápido</h2>
-          <div class="form-group">
-            <input type="text" class="form-control" placeholder="Nombre completo" />
-          </div>
-          <div class="form-group">
-            <input type="email" class="form-control" placeholder="Correo electrónico" />
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" placeholder="Contraseña" />
-          </div>
-          <a href="https://wa.link/54lg8f" target="_blank">
-            <button>
-              <i class="fab fa-whatsapp"></i>
-              Registrarme por WhatsApp
-            </button>
-          </a>
-          <p>Al registrarte aceptas nuestros <a href="#">Términos y Condiciones</a></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA SECTION -->
+  <!-- CTA -->
   <section class="cta-section">
-    <div class="container">
-      <h2 class="fade-in">¿Listo para transformar tus cotizaciones?</h2>
-      <p class="fade-in delay-1">Comienza hoy mismo y aumenta tu productividad con DOMKA.</p>
-      <a href="#registro" class="btn fade-in delay-2" style="background: white; color: var(--domka);">
-        <i class="fas fa-rocket"></i>
-        Comenzar Gratis
-      </a>
-    </div>
+    <h2>¿Listo para transformar tus cotizaciones?</h2>
+    <a href="#registro">Comenzar</a>
   </section>
 
   <!-- FOOTER -->
   <footer>
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-column">
-          <h3>DOMKA</h3>
-          <p>La plataforma líder en Colombia para creación y gestión de cotizaciones profesionales.</p>
-        </div>
-        <div class="footer-column">
-          <h3>Enlaces Rápidos</h3>
-          <div class="footer-links">
-            <a href="#features">Características</a>
-            <a href="#how-it-works">Cómo Funciona</a>
-            <a href="#testimonials">Testimonios</a>
-            <a href="#pricing">Precios</a>
-          </div>
-        </div>
-        <div class="footer-column">
-          <h3>Legal</h3>
-          <div class="footer-links">
-            <a href="#">Términos y Condiciones</a>
-            <a href="#">Política de Privacidad</a>
-            <a href="#">Cookies</a>
-          </div>
-        </div>
-        <div class="footer-column">
-          <h3>Contacto</h3>
-          <div class="footer-links">
-            <a href="mailto:software.domka@gmail.com">software.domka@gmail.com</a>
-            <a href="tel:+573058114595">+57 305 811 4595</a>
-            <a href="https://wa.link/54lg8f" target="_blank">WhatsApp</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        © 2025 DOMKA · Plataforma Inteligente de Cotización · Colombia
-      </div>
+    <div class="container footer-content">
+      <div class="footer-column"><h3>DOMKA</h3><p>Plataforma para cotizaciones.</p></div>
+      <div class="footer-column"><h3>Enlaces</h3><a href="#features">Características</a><a href="#how-it-works">Cómo Funciona</a><a href="#testimonials"></a></div>
+      <div class="footer-column"><h3>Contacto</h3><a href="mailto:software.domka@gmail.com">software.domka@gmail.com</a><a href="tel:+573058114595">+57 305 811 4595</a></div>
     </div>
+    <div class="footer-bottom">© 2026 DOMKA · Colombia</div>
   </footer>
 
-  <!-- Firebase Scripts (MANTENIDOS SIN CAMBIOS) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
-
-  <script>
-    // Animaciones al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-      // Scroll suave para enlaces internos
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute('href'));
-          if (target) {
-            target.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-        });
-      });
-      
-      // Navbar background on scroll
-      window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
-        if (window.scrollY > 50) {
-          navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-          navbar.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.1)';
-        } else {
-          navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-          navbar.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.1)';
-        }
-      });
-    });
-  </script>
 </body>
 </html>
