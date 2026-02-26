@@ -537,7 +537,8 @@
       `$${Number(n || 0).toLocaleString("es-CO")}`
     );
 
-    const fmtDate = f => {
+    // ── FIX: usar window.fmtDate para evitar conflicto con pdf-cotizacion.js ──
+    window.fmtDate = window.fmtDate || (f => {
       if (!f) return "—";
       return new Date(f.seconds ? f.seconds * 1000 : f)
         .toLocaleDateString("es-CO", {
@@ -545,8 +546,8 @@
           month: "long",
           year: "numeric"
         });
-    };
-    
+    });
+
     const tipoMap = {"mano-obra":"Mano de obra","materiales":"Materiales","ambos":"Mano de obra y materiales"};
     const pagoMap = {"contado":"Pago al contado","60-40":"60% anticipo — 40% al finalizar","50-50":"50% anticipo — 50% al finalizar","tres-pagos":"Tres cuotas","personalizado":"Plan personalizado"};
 
