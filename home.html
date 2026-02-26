@@ -3,195 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DOMKA | Plataforma de Cotización Moderna</title>
+  <title>DOMKA — Acceso al Sistema</title>
+  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
   <style>
-    /* ===== VARIABLES Y RESET ===== */
     :root {
-      --accent: #1a7a4a;
-      --bg: #f9f9f9;
-      --card-bg: #ffffff;
-      --text: #1c1c1c;
-      --text-light: #6b7280;
-      --shadow: 0 4px 20px rgba(0,0,0,0.05);
-      --radius: 12px;
-      --transition: all 0.3s ease;
+      --bg:       #f4efe7;
+      --bg-alt:   #ede7dc;
+      --green:    #1b7a51;
+      --green-dk: #155c3c;
+      --green-lt: #e8f5ee;
+      --text:     #2c2c2c;
+      --gray:     #5a5a5a;
+      --gray-lt:  #9a9a9a;
+      --line:     #d6cfc5;
+      --white:    #ffffff;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
-    p { color: var(--text-light); line-height: 1.6; }
-    a { text-decoration: none; color: inherit; }
-    button { cursor: pointer; border: none; font-family: inherit; }
-
-    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-
-    /* ===== NAVBAR ===== */
-    .navbar {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-      padding: 15px 0; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    body {
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
     }
-    .nav-container { display: flex; justify-content: space-between; align-items: center; }
-    .nav-logo img { height: 40px; }
-    .nav-links { display: flex; gap: 30px; }
-    .nav-links a:hover { color: var(--accent); transition: var(--transition); }
-    .nav-actions { display: flex; gap: 15px; }
-    .btn { padding: 12px 28px; border-radius: var(--radius); font-weight: 500; transition: var(--transition); }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-    .btn-outline { border: 2px solid var(--accent); color: var(--accent); background: transparent; }
-    .btn-outline:hover { background: var(--accent); color: white; }
 
-    /* ===== HERO ===== */
-    .hero { background: #fff; padding: 160px 0 100px; text-align: center; }
-    .hero h1 { font-size: 3rem; margin-bottom: 20px; }
-    .hero p { font-size: 1.2rem; margin-bottom: 40px; color: var(--text-light); }
-    .hero-actions { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .login-wrapper {
+      width: 100%;
+      max-width: 440px;
+    }
 
-    /* ===== FEATURES ===== */
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 60px; }
-    .feature { background: var(--card-bg); border-radius: var(--radius); padding: 30px; text-align: center; box-shadow: var(--shadow); transition: var(--transition); }
-    .feature:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    .feature-icon { font-size: 2rem; color: var(--accent); margin-bottom: 20px; }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
 
-    /* ===== DASHBOARD PREVIEW ===== */
-    .dashboard-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; background: var(--card-bg); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); }
-    .dashboard-main { display: flex; flex-direction: column; gap: 20px; }
-    .chart-placeholder { background: #f5f5f5; border-radius: var(--radius); height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-light); }
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .stat-card { background: #f5f5f5; padding: 15px; border-radius: var(--radius); text-align: center; }
-    .stat-card h4 { color: var(--accent); margin-bottom: 5px; }
+    .login-logo h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.2rem;
+      color: var(--green);
+      letter-spacing: .02em;
+      margin-bottom: 4px;
+    }
 
-    .dashboard-sidebar { background: #f5f5f5; border-radius: var(--radius); padding: 20px; }
-    .activity-list { display: flex; flex-direction: column; gap: 15px; }
-    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 10px; }
+    .login-logo p {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gray-lt);
+    }
 
-    /* ===== TESTIMONIALS ===== */
-    .testimonial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 30px; margin-top: 40px; }
-    .testimonial { background: var(--card-bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; }
-    .testimonial-text { margin-bottom: 20px; }
-    .author-avatar { width: 50px; height: 50px; border-radius: 50%; background: #e5e5e5; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; color: var(--accent); }
-    .testimonial-author { display: flex; align-items: center; gap: 15px; }
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 8px 40px rgba(27,122,81,.1);
+      position: relative;
+      overflow: hidden;
+    }
 
-    /* ===== AUTH ===== */
-    .auth-section { background: #f5f5f5; padding: 100px 0; }
-    .auth-container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
-    .auth-box { background: var(--card-bg); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); width: 350px; }
-    .auth-box h2 { margin-bottom: 25px; text-align: center; color: var(--accent); }
-    .form-control { width: 100%; padding: 14px 16px; border-radius: var(--radius); border: 1px solid #ddd; margin-bottom: 20px; transition: var(--transition); }
-    .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,122,74,0.1); }
-    .auth-box button { width: 100%; padding: 14px; border-radius: var(--radius); background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: var(--green);
+    }
 
-    /* ===== CTA ===== */
-    .cta-section { background: var(--accent); color: white; text-align: center; padding: 80px 0; }
-    .cta-section a { background: white; color: var(--accent); padding: 14px 32px; border-radius: var(--radius); font-weight: 600; display: inline-block; margin-top: 20px; }
+    .login-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
 
-    /* ===== FOOTER ===== */
-    footer { background: #1c1c1c; color: #ccc; padding: 60px 0; }
-    .footer-content { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 40px; margin-bottom: 40px; }
-    .footer-column h3 { color: var(--accent); margin-bottom: 20px; }
-    .footer-links a { color: #aaa; transition: var(--transition); }
-    .footer-links a:hover { color: var(--accent); }
-    .footer-bottom { text-align: center; border-top: 1px solid #333; padding-top: 30px; font-size: 0.9rem; }
+    .login-sub {
+      font-size: .84rem;
+      color: var(--gray-lt);
+      margin-bottom: 28px;
+    }
 
-    /* ===== RESPONSIVE ===== */
-    @media(max-width:768px){.dashboard-container{grid-template-columns:1fr}.auth-container{flex-direction:column;align-items:center;}.hero h1{font-size:2rem;}.hero p{font-size:1rem;}.features{gap:20px;}}
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 7px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .92rem;
+      color: var(--text);
+      background: #faf8f4;
+      transition: all .2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(27,122,81,.1);
+      background: #fff;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(27,122,81,.22);
+      transition: all .2s;
+      margin-top: 6px;
+    }
+
+    .btn-login:hover {
+      background: var(--green-dk);
+      transform: translateY(-1px);
+    }
+
+    .login-error {
+      display: none;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      border-radius: 7px;
+      padding: 10px 14px;
+      font-size: .84rem;
+      margin-top: 14px;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: .8rem;
+      color: var(--gray-lt);
+    }
+
+    .login-footer a { color: var(--green); font-weight: 600; }
   </style>
 </head>
-
 <body>
-
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="container nav-container">
-      <div class="nav-logo"><img src="img/logo.png" alt="DOMKA"></div>
-      <div class="nav-links">
-        <a href="#features">Características</a>
-        <a href="#how-it-works">Cómo Funciona</a>
-      </div>
-      <div class="nav-actions">
-        <a href="#login" class="btn-outline">Ingresar</a>
-      </div>
+  <div class="login-wrapper">
+    <div class="login-logo">
+      <h1>DOMKA</h1>
+      <p>Construcción &amp; Diseño</p>
     </div>
-  </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container">
-      <h1>Moderniza tus <span style="color: var(--accent);">cotizaciones</span> fácilmente</h1>
-      <p>Crea, gestiona y envía cotizaciones profesionales en minutos, con una interfaz clara y moderna.</p>
-      <div class="hero-actions">
-        <a href="#registro" class="btn-primary">Comenzar</a>
-        <a href="https://wa.link/54lg8f" target="_blank" class="btn-outline">Hablar con Asesor</a>
+    <div class="login-card">
+      <h2>Accede a tu cuenta</h2>
+      <p class="login-sub">Ingresa tus credenciales para continuar</p>
+
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input id="email" type="email" class="form-control" placeholder="tu@correo.com">
       </div>
-    </div>
-  </section>
 
-  <!-- FEATURES -->
-  <section class="container features" id="features">
-    <div class="feature"><div class="feature-icon"><i class="fas fa-bolt"></i></div><h3>Cotizador Rápido</h3><p>Genera cotizaciones en segundos sin complicaciones.</p></div>
-    <div class="feature"><div class="feature-icon"><i class="fas fa-paper-plane"></i></div><h3>Envíos Automáticos</h3><p>Comparte cotizaciones al instante por WhatsApp o correo.</p></div>
-    <div class="feature"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3>Seguimiento Inteligente</h3><p>Analiza métricas y ventas en tiempo real con dashboards claros.</p></div>
-  </section>
-
-  <!-- DASHBOARD PREVIEW -->
-  <section class="container" id="how-it-works" style="margin-top:80px;">
-    <div class="dashboard-container">
-      <div class="dashboard-main">
-        <div class="chart-placeholder"><i class="fas fa-chart-bar" style="margin-right:10px;"></i>Gráfico de Cotizaciones</div>
-        <div class="stats-grid">
-          <div class="stat-card"><h4>24</h4><p>Cotizaciones Activas</p></div>
-          <div class="stat-card"><h4>18</h4><p>Clientes este Mes</p></div>
-          <div class="stat-card"><h4>$8.2M</h4><p>Valor Cotizado</p></div>
-          <div class="stat-card"><h4>76%</h4><p>Tasa de Conversión</p></div>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input id="password" type="password" class="form-control" placeholder="••••••••">
       </div>
-      <div class="dashboard-sidebar">
-        <h4>Actividad Reciente</h4>
-        <div class="activity-list">
-          <div class="activity-item"><div class="activity-dot"></div><p><strong>Nueva cotización</strong> Cliente S.A.</p></div>
-          <div class="activity-item"><div class="activity-dot"></div><p><strong>Cotización aprobada</strong> Constructora XYZ</p></div>
-          <div class="activity-item"><div class="activity-dot"></div><p><strong>Recordatorio enviado</strong> Importadores LTDA</p></div>
-        </div>
-      </div>
+
+      <button class="btn-login" onclick="login()">
+        Ingresar al sistema
+      </button>
+
+      <div class="login-error" id="error-msg"></div>
     </div>
-  </section>
 
-  <!-- AUTH -->
-  <section class="auth-section" id="login">
-    <div class="auth-container">
-      <div class="auth-box">
-        <h2>Ingresar</h2>
-        <input type="email" class="form-control" placeholder="Correo electrónico">
-        <input type="password" class="form-control" placeholder="Contraseña">
-        <button>Ingresar a mi cuenta</button>
-      </div>
+    <div class="login-footer">
+      ¿Necesitas acceso?
+      <a href="https://wa.link/54lg8f" target="_blank"> Contáctanos por WhatsApp</a>
     </div>
-  </section>
+  </div>
 
-  <!-- CTA -->
-  <section class="cta-section">
-    <h2>¿Listo para transformar tus cotizaciones?</h2>
-    <a href="#registro">Comenzar</a>
-  </section>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="container footer-content">
-      <div class="footer-column"><h3>DOMKA</h3><p>Plataforma para cotizaciones.</p></div>
-      <div class="footer-column"><h3>Enlaces</h3><a href="#features">Características</a><a href="#how-it-works">Cómo Funciona</a><a href="#testimonials"></a></div>
-      <div class="footer-column"><h3>Contacto</h3><a href="mailto:software.domka@gmail.com">software.domka@gmail.com</a><a href="tel:+573058114595">+57 305 811 4595</a></div>
-    </div>
-    <div class="footer-bottom">© 2026 DOMKA · Colombia</div>
-  </footer>
-
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>
