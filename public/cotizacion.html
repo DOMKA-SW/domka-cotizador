@@ -34,11 +34,8 @@
 
     /* ── TOPBAR ───────────────────────────────────────────── */
     .topbar {
-      background: var(--black);
-      padding: 16px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
     }
     .topbar-left { display: flex; flex-direction: column; gap: 2px; }
     .topbar-brand {
@@ -536,12 +533,20 @@
     let cotRef, cotData;
 
     // ── helpers ──
-    const fmtM = n => `$${Number(n||0).toLocaleString("es-CO")}`;
+    window.fmtM = window.fmtM || (n =>
+      `$${Number(n || 0).toLocaleString("es-CO")}`
+    );
+
     const fmtDate = f => {
       if (!f) return "—";
-      return new Date(f.seconds?f.seconds*1000:f)
-        .toLocaleDateString("es-CO",{day:"2-digit",month:"long",year:"numeric"});
+      return new Date(f.seconds ? f.seconds * 1000 : f)
+        .toLocaleDateString("es-CO", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        });
     };
+    
     const tipoMap = {"mano-obra":"Mano de obra","materiales":"Materiales","ambos":"Mano de obra y materiales"};
     const pagoMap = {"contado":"Pago al contado","60-40":"60% anticipo — 40% al finalizar","50-50":"50% anticipo — 50% al finalizar","tres-pagos":"Tres cuotas","personalizado":"Plan personalizado"};
 
