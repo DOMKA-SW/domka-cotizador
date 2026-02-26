@@ -2,252 +2,172 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOMKA — Clientes</title>
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-  <title>DOMKA - Clientes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/app-pages.css">
   <style>
-    body {
-      background: #f9fafb;
-      min-height: 100vh;
-    }
-    
-    .form-container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e5e7eb;
-    }
-    
-    .btn-primary {
-      background: #f97316;
-      color: white;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      border: none;
-    }
-    
-    .btn-primary:hover {
-      background: #ea580c;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(249, 115, 22, 0.2);
-    }
-    
-    .btn-secondary {
-      background: #4b5563;
-      color: white;
-      font-weight: 600;
-      transition: all 0.2s ease;
-    }
-    
-    .btn-secondary:hover {
-      background: #374151;
-      transform: translateY(-1px);
-    }
-    
-    .form-input {
-      border: 1.5px solid #d1d5db;
-      border-radius: 8px;
-      padding: 10px 12px;
-      transition: all 0.2s ease;
-      width: 100%;
-      font-size: 0.95rem;
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: #f97316;
-      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
-    }
-    
-    .table-header {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-      color: white;
-      font-weight: 600;
-    }
-    
-    .table-row-striped:nth-child(odd) {
-      background-color: #fffbeb;
-    }
-    
-    .table-row-striped:hover {
-      background-color: #fed7aa;
-    }
-    
-    .scrollable-table {
-      overflow-x: auto;
-    }
-    
-    .scrollable-table::-webkit-scrollbar {
-      height: 6px;
-    }
-    
-    .scrollable-table::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 3px;
-    }
-    
-    .scrollable-table::-webkit-scrollbar-thumb {
-      background: #f97316;
-      border-radius: 3px;
-    }
-    
-    .section-spacing {
-      margin-bottom: 20px;
-    }
-    
-    .form-label {
-      display: block;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-    }
-    
-    .action-btn {
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      transition: all 0.2s ease;
-    }
-    
+    .hidden { display: none !important; }
+    .scrollable-table::-webkit-scrollbar { height: 5px; }
+    .scrollable-table::-webkit-scrollbar-thumb { background: var(--green); border-radius: 3px; }
+
     .action-btn-edit {
-      background: #3b82f6;
-      color: white;
+      background: #dbeafe; color: #1e40af;
+      padding: 5px 12px; border-radius: 6px;
+      font-size: .8rem; font-weight: 600; transition: all .2s;
     }
-    
-    .action-btn-edit:hover {
-      background: #2563eb;
-    }
-    
+    .action-btn-edit:hover { background: #bfdbfe; }
+
     .action-btn-delete {
-      background: #ef4444;
-      color: white;
+      background: #fee2e2; color: #991b1b;
+      padding: 5px 12px; border-radius: 6px;
+      font-size: .8rem; font-weight: 600; transition: all .2s;
     }
-    
-    .action-btn-delete:hover {
-      background: #dc2626;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: #6b7280;
-    }
+    .action-btn-delete:hover { background: #fecaca; }
+
+    .empty-state { text-align: center; padding: 48px 20px; }
+    .empty-state i { font-size: 2.5rem; color: var(--line); margin-bottom: 14px; display: block; }
+    .empty-state p { color: var(--gray-lt); font-size: .9rem; }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-6">
-  <div class="max-w-7xl mx-auto">
-    
-    <!-- Encabezado -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-      <div class="mb-4 md:mb-0">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Clientes</h1>
-        <p class="text-gray-600 text-sm md:text-base">Administra la información de tus clientes</p>
-      </div>
-      <div>
-        <a href="dashboard.html" class="btn-secondary px-4 py-2.5 rounded-lg inline-flex items-center gap-2 text-sm md:text-base">
-          <i class="fas fa-arrow-left"></i>
-          Volver al Dashboard
-        </a>
-      </div>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="app-sidebar">
+  <div class="sidebar-brand-wrap">
+    <span class="sidebar-brand-name">DOMKA</span>
+    <span class="sidebar-brand-sub">Construcción &amp; Diseño</span>
+  </div>
+  <nav class="sidebar-links">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="cotizaciones.html" class="sidebar-link"><i class="fas fa-file-alt"></i> Cotizaciones</a>
+    <a href="cuentas.html" class="sidebar-link"><i class="fas fa-file-invoice-dollar"></i> Cuentas de cobro</a>
+    <a href="clientes.html" class="sidebar-link active"><i class="fas fa-users"></i> Clientes</a>
+    <a href="contabilidad.html" class="sidebar-link"><i class="fas fa-chart-bar"></i> Contabilidad</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-indicator">
+      <div class="user-dot"></div>
+      <span class="user-email-text" id="user-email">Cargando…</span>
     </div>
+    <button onclick="logout()" class="btn-logout">
+      <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+    </button>
+  </div>
+</aside>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- Formulario -->
-      <div>
-        <div class="form-container p-4 md:p-6 mb-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200">
-            Agregar / Editar Cliente
-          </h2>
-          
-          <form id="form-clientes" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div class="section-spacing">
-                <label class="form-label">Nombre</label>
-                <input type="text" name="nombre" placeholder="Nombre completo" required
-                  spellcheck="true" lang="es" class="form-input">
-              </div>
-              
-              <div class="section-spacing">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" placeholder="correo@ejemplo.com" required class="form-input">
-              </div>
-              
-              <div class="section-spacing">
-                <label class="form-label">Teléfono</label>
-                <input type="text" name="telefono" placeholder="+57 300 123 4567" class="form-input">
-              </div>
-              
-              <div class="section-spacing">
-                <label class="form-label">Empresa</label>
-                <input type="text" name="empresa" placeholder="Nombre de la empresa"
-                  spellcheck="true" lang="es" class="form-input">
-              </div>
-              
-              <div class="section-spacing">
-                <label class="form-label">NIT</label>
-                <input type="text" name="nit" placeholder="Número de Identificación Tributaria" class="form-input">
-              </div>
+<!-- MAIN -->
+<div class="page-with-sidebar">
 
-              <!-- 🔹 NUEVO: Número de Documento -->
-              <div class="section-spacing">
-                <label class="form-label">Número de Documento</label>
-                <input type="text" name="numeroDocumento" placeholder="CC, NIT, Pasaporte, etc." class="form-input">
-              </div>
-            </div>
-            
-            <button type="submit" class="btn-primary px-6 py-3 rounded-lg text-lg w-full">
-              Guardar Cliente
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Lista de Clientes -->
-      <div>
-        <div class="form-container p-4 md:p-6">
-          <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-200">
-            <h2 class="text-xl font-bold text-gray-800">Lista de Clientes</h2>
-            <span class="text-sm text-gray-500" id="clientes-count">0 clientes</span>
-          </div>
-
-          <div class="scrollable-table">
-            <table class="w-full border-collapse">
-              <thead class="table-header">
-                <tr>
-                  <th class="p-3 text-left text-white">Nombre</th>
-                  <th class="p-3 text-left text-white">Email</th>
-                  <th class="p-3 text-left text-white">Teléfono</th>
-                  <th class="p-3 text-left text-white">Empresa</th>
-                  <th class="p-3 text-left text-white">NIT</th>
-                  <th class="p-3 text-left text-white">N° Documento</th><!-- 🔹 NUEVO -->
-                  <th class="p-3 text-left text-white">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="clientes-list" class="divide-y divide-gray-200">
-                <!-- Los clientes se cargarán aquí -->
-              </tbody>
-            </table>
-          </div>
-          
-          <div id="empty-state" class="empty-state">
-            <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
-            <p>No hay clientes registrados</p>
-            <p class="text-sm text-gray-500 mt-1">Comienza agregando tu primer cliente</p>
-          </div>
-        </div>
-      </div>
+  <div class="page-topbar">
+    <div>
+      <h1 class="page-heading">Clientes</h1>
+      <p class="page-subheading">Administra la información de tus clientes</p>
     </div>
+    <a href="dashboard.html" class="btn-secondary px-4 py-2 rounded-lg inline-flex items-center gap-2 text-sm">
+      <i class="fas fa-arrow-left"></i> Volver al Dashboard
+    </a>
   </div>
 
-  <!-- Firebase + Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/clientes.js"></script>
+    <!-- Formulario -->
+    <div>
+      <div class="form-container p-6">
+        <h2 class="text-xl mb-6 pb-3" style="border-bottom:1px solid var(--line)">
+          Agregar / Editar Cliente
+        </h2>
+
+        <form id="form-clientes" class="space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">Nombre</label>
+              <input type="text" name="nombre" placeholder="Nombre completo" required spellcheck="true" lang="es" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Email</label>
+              <input type="email" name="email" placeholder="correo@ejemplo.com" required class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Teléfono</label>
+              <input type="text" name="telefono" placeholder="+57 300 123 4567" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Empresa</label>
+              <input type="text" name="empresa" placeholder="Nombre de la empresa" spellcheck="true" lang="es" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">NIT</label>
+              <input type="text" name="nit" placeholder="Número de Identificación Tributaria" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Número de Documento</label>
+              <input type="text" name="numeroDocumento" placeholder="CC, NIT, Pasaporte..." class="form-input">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary px-6 py-3 rounded-lg text-base w-full">
+            Guardar Cliente
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div>
+      <div class="form-container p-5">
+        <div class="flex justify-between items-center mb-5 pb-3" style="border-bottom:1px solid var(--line)">
+          <h2 class="text-xl">Lista de Clientes</h2>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background:var(--green-lt);color:var(--green)" id="clientes-count">0 clientes</span>
+        </div>
+
+        <div class="scrollable-table">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr>
+                <th class="p-3 text-left">Nombre</th>
+                <th class="p-3 text-left">Email</th>
+                <th class="p-3 text-left">Teléfono</th>
+                <th class="p-3 text-left">Empresa</th>
+                <th class="p-3 text-left">NIT</th>
+                <th class="p-3 text-left">N° Doc.</th>
+                <th class="p-3 text-left">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="clientes-list"></tbody>
+          </table>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <i class="fas fa-users"></i>
+          <p>No hay clientes registrados</p>
+          <p style="font-size:.8rem;margin-top:4px">Comienza agregando tu primer cliente</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/clientes.js"></script>
+<script>
+  if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
+    auth.onAuthStateChanged(u => {
+      const el = document.getElementById('user-email');
+      if (el) el.textContent = u?.email || 'Usuario';
+    });
+  }
+  function logout() {
+    if (typeof auth !== 'undefined') auth.signOut().then(() => window.location.href = 'index.html');
+  }
+</script>
 </body>
 </html>
