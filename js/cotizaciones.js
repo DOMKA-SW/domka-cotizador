@@ -304,12 +304,6 @@ function agregarViñeta(texto = "") {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // ── Corrector ortografía ──
-  if (typeof mostrarModalCorrecciones === "function") {
-    const continuar = await mostrarModalCorrecciones("cotizacion");
-    if (!continuar) return; // Usuario canceló
-  }
-
   const clienteId = clienteSelect.value;
 
   // 🔹 Leer notas (soporte viñetas)
@@ -503,6 +497,13 @@ document.addEventListener("DOMContentLoaded", function() {
   cargarClientes();
   cargarCotizaciones();
   toggleColumnasItems();
+
+  // ── Corrector ortografía en tiempo real ──
+  if (typeof ltActivar === "function") ltActivar();
+  if (typeof ltObservar === "function") {
+    ltObservar(document.querySelector("#tabla-items tbody"));
+    ltObservar(document.getElementById("notas-vinetas-container"));
+  }
 
   // ============================
   // 🔹 Inicializar sistema de viñetas en notas
