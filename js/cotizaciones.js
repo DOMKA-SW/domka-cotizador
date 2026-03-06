@@ -126,6 +126,9 @@ async function cargarClientes() {
     opt.value = doc.id;
     opt.textContent = c.nombre || c.nombreEmpresa || "Sin nombre";
     // 🔹 Guardamos datos extra en dataset para usarlos al guardar
+    opt.dataset.tipoIdentificacion = c.tipoIdentificacion || (c.nit ? "NIT" : "CC");
+    opt.dataset.identificacion     = c.identificacion || c.nit || c.numeroDocumento || "";
+    // legacy
     opt.dataset.nit = c.nit || "";
     opt.dataset.numeroDocumento = c.numeroDocumento || "";
     opt.dataset.telefono = c.telefono || "";
@@ -300,6 +303,13 @@ function agregarViñeta(texto = "") {
 // ============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // ── Corrector ortografía ──
+  if (typeof mostrarModalCorrecciones === "function") {
+    const continuar = await mostrarModalCorrecciones("cotizacion");
+    if (!continuar) return; // Usuario canceló
+  }
+
   const clienteId = clienteSelect.value;
 
   // 🔹 Leer notas (soporte viñetas)
@@ -340,10 +350,19 @@ form.addEventListener("submit", async (e) => {
   const clienteDoc = await db.collection("clientes").doc(clienteId).get();
   const clienteData = clienteDoc.data() || {};
 
-  // 🔹 Tomar datos del cliente seleccionado
+  // Tomar identificación del cliente (campo unificado + compatibilidad legacy)
   const selectedOpt = clienteSelect.options[clienteSelect.selectedIndex];
-  const clienteNit = selectedOpt?.dataset.nit || clienteData.nit || "";
-  const clienteNumeroDocumento = selectedOpt?.dataset.numeroDocumento || clienteData.numeroDocumento || "";
+  const clienteTipoIdentificacion = selectedOpt?.dataset.tipoIdentificacion
+    || clienteData.tipoIdentificacion
+    || (clienteData.nit ? "NIT" : "CC");
+  const clienteIdentificacion = selectedOpt?.dataset.identificacion
+    || clienteData.identificacion
+    || clienteData.nit
+    || clienteData.numeroDocumento
+    || "";
+  // Legacy — mantener compatibilidad con documentos ya guardados
+  const clienteNit = clienteTipoIdentificacion === "NIT" ? clienteIdentificacion : (clienteData.nit || "");
+  const clienteNumeroDocumento = clienteTipoIdentificacion !== "NIT" ? clienteIdentificacion : (clienteData.numeroDocumento || "");
 
   let planPagos = [];
   if (formaPago === "contado") {
@@ -388,9 +407,11 @@ form.addEventListener("submit", async (e) => {
     clienteId,
     nombreCliente: clienteData.nombre || clienteData.nombreEmpresa || "Sin nombre",
     telefono: clienteData.telefono || "",
-    clienteNit,                 // 🔹 NUEVO
-    clienteNumeroDocumento,     // 🔹 NUEVO
-    mostrarDocumento,           // 🔹 NUEVO
+    clienteTipoIdentificacion,
+    clienteIdentificacion,
+    clienteNit,
+    clienteNumeroDocumento,
+    mostrarDocumento,
     notas,
     notasArray,                 // 🔹 NUEVO: guardamos también el array
     ubicacion,
