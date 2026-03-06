@@ -98,13 +98,21 @@
               <label class="form-label">Empresa</label>
               <input type="text" name="empresa" placeholder="Nombre de la empresa" spellcheck="true" lang="es" class="form-input">
             </div>
-            <div>
-              <label class="form-label">NIT</label>
-              <input type="text" name="nit" placeholder="Número de Identificación Tributaria" class="form-input">
-            </div>
-            <div>
-              <label class="form-label">Número de Documento</label>
-              <input type="text" name="numeroDocumento" placeholder="CC, NIT, Pasaporte..." class="form-input">
+            <div style="grid-column:span 2">
+              <label class="form-label">Tipo y Número de Identificación</label>
+              <div style="display:flex;gap:10px">
+                <select name="tipoIdentificacion" class="form-input" style="max-width:140px;flex-shrink:0">
+                  <option value="CC">CC</option>
+                  <option value="NIT">NIT</option>
+                  <option value="CE">CE</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                  <option value="TI">TI</option>
+                </select>
+                <input type="text" name="identificacion"
+                  placeholder="Número de identificación"
+                  spellcheck="false"
+                  class="form-input" style="flex:1">
+              </div>
             </div>
           </div>
 
@@ -131,8 +139,7 @@
                 <th class="p-3 text-left">Email</th>
                 <th class="p-3 text-left">Teléfono</th>
                 <th class="p-3 text-left">Empresa</th>
-                <th class="p-3 text-left">NIT</th>
-                <th class="p-3 text-left">N° Doc.</th>
+                <th class="p-3 text-left">Identificación</th>
                 <th class="p-3 text-left">Acciones</th>
               </tr>
             </thead>
