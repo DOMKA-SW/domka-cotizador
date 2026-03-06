@@ -171,12 +171,6 @@ function agregarViñeta(texto = "") {
 formCuenta.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // ── Corrector ortografía ──
-  if (typeof mostrarModalCorrecciones === "function") {
-    const continuar = await mostrarModalCorrecciones("cuenta");
-    if (!continuar) return; // Usuario canceló
-  }
-
   const clienteId = selectCliente.value;
 
   // 🔹 Leer notas (soporte viñetas)
@@ -370,6 +364,13 @@ agregarItemBtn.addEventListener("click", () => agregarItem());
 (async function init() {
   await cargarClientes();
   await cargarCuentas();
+
+  // ── Corrector ortografía en tiempo real ──
+  if (typeof ltActivar === "function") ltActivar();
+  if (typeof ltObservar === "function") {
+    ltObservar(document.getElementById("items-container"));
+    ltObservar(document.getElementById("notas-vinetas-container"));
+  }
 
   // Sistema de viñetas en notas
   const btnModoLibre = document.getElementById("btn-notas-libre");
