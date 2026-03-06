@@ -75,6 +75,7 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
     id = "", firmaConfirmacion = null, fechaConfirmacion = null,
     concepto = "",
     clienteNit = "", clienteNumeroDocumento = "",
+    clienteTipoIdentificacion = "", clienteIdentificacion = "",
     mostrarDocumento = true, adjuntos = []
   } = cuenta;
 
@@ -163,8 +164,13 @@ async function generarPDFCuenta(cuenta, nombreCliente = "Cliente") {
           stack: [
             sLabelCC("CLIENTE"),
             { text: nombreCliente, fontSize:13, bold:true, color:PC.black, font:"Roboto", margin:[0,0,0,4] },
-            ...(mostrarDocumento && clienteNit ? [{ text:`NIT: ${clienteNit}`, fontSize:9, color:PC.gray, font:"Roboto" }] : []),
-            ...(mostrarDocumento && clienteNumeroDocumento ? [{ text:`Doc: ${clienteNumeroDocumento}`, fontSize:9, color:PC.gray, font:"Roboto" }] : [])
+            ...(() => {
+              if (!mostrarDocumento) return [];
+              const tipo = clienteTipoIdentificacion || (clienteNit ? "NIT" : clienteNumeroDocumento ? "Doc" : "");
+              const num  = clienteIdentificacion || clienteNit || clienteNumeroDocumento;
+              if (!tipo || !num) return [];
+              return [{ text: `${tipo}: ${num}`, fontSize: 9, color: PC.gray, font: "Roboto" }];
+            })()
           ],
           fillColor:PC.bg, border:[false,false,false,false], margin:[0,14,16,14]
         },
