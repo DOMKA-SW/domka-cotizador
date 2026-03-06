@@ -1,284 +1,426 @@
-// js/spell-checker.js — DOMKA 2026
-// Corrector de ortografía con LanguageTool API (gratuita, sin clave)
-// Uso desde cualquier página: DomkaSpell.revisar()
-// ─────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+//  DOMKA — Corrector de Ortografía
+//  Usa LanguageTool API (gratuita, sin API key, español CO)
+//  Se llama justo antes de guardar: mostrarModalCorrecciones()
+// ═══════════════════════════════════════════════════════════
 
-const DomkaSpell = (() => {
+const LT_URL = "https://api.languagetool.org/v2/check";
 
-  const API = "https://api.languagetool.org/v2/check";
+// ── Recolectar todos los textos a revisar ─────────────────
+// Devuelve array de { campo, label, texto }
+function recolectarTextos(modo) {
+  const textos = [];
 
-  // ── Recoge todos los campos con texto de la página actual ──────
-  function getCampos() {
-    const campos = [];
-    ["notas", "ubicacion", "concepto", "mov-descripcion", "mov-notas"].forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.value.trim()) campos.push(el);
-    });
-    document.querySelectorAll("input.desc, input.item-desc").forEach(el => {
-      if (el.value.trim()) campos.push(el);
-    });
-    document.querySelectorAll("input.nota-vineta-input").forEach(el => {
-      if (el.value.trim()) campos.push(el);
-    });
-    return campos;
-  }
-
-  // ── Consulta LanguageTool ──────────────────────────────────────
-  async function checkText(texto) {
-    if (!texto || texto.trim().length < 4) return [];
-    try {
-      const res = await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ text: texto, language: "es", enabledOnly: "false" })
+  if (modo === "cotizacion") {
+    // Notas (modo libre)
+    const modoLibre = document.getElementById("notas-modo-libre");
+    if (modoLibre && !modoLibre.classList.contains("hidden")) {
+      const t = (document.getElementById("notas")?.value || "").trim();
+      if (t) textos.push({ campo: "notas-libre", label: "Notas", texto: t });
+    } else {
+      // Notas modo viñetas
+      document.querySelectorAll(".nota-vineta-input").forEach((inp, i) => {
+        const t = inp.value.trim();
+        if (t) textos.push({ campo: `vineta-${i}`, label: `Nota ${i + 1}`, texto: t, el: inp });
       });
-      if (!res.ok) return [];
-      const data = await res.json();
-      return (data.matches || []).filter(m => m.replacements?.length > 0);
-    } catch { return []; }
+    }
+
+    // Ubicación
+    const ub = (document.getElementById("ubicacion")?.value || "").trim();
+    if (ub) textos.push({ campo: "ubicacion", label: "Ubicación", texto: ub });
+
+    // Descripciones de ítems
+    document.querySelectorAll("#tabla-items .desc").forEach((inp, i) => {
+      const t = inp.value.trim();
+      if (t) textos.push({ campo: `item-${i}`, label: `Ítem ${i + 1}`, texto: t, el: inp });
+    });
+
+  } else if (modo === "cuenta") {
+    // Concepto
+    const co = (document.getElementById("concepto")?.value || "").trim();
+    if (co) textos.push({ campo: "concepto", label: "Concepto", texto: co });
+
+    // Notas (modo libre)
+    const modoLibre = document.getElementById("notas-modo-libre");
+    if (modoLibre && !modoLibre.classList.contains("hidden")) {
+      const t = (document.getElementById("notas")?.value || "").trim();
+      if (t) textos.push({ campo: "notas-libre", label: "Notas", texto: t });
+    } else {
+      document.querySelectorAll(".nota-vineta-input").forEach((inp, i) => {
+        const t = inp.value.trim();
+        if (t) textos.push({ campo: `vineta-${i}`, label: `Nota ${i + 1}`, texto: t, el: inp });
+      });
+    }
+
+    // Descripciones de ítems
+    document.querySelectorAll(".item-desc").forEach((inp, i) => {
+      const t = inp.value.trim();
+      if (t) textos.push({ campo: `item-${i}`, label: `Descripción ${i + 1}`, texto: t, el: inp });
+    });
   }
 
-  // ── Estilos del modal ──────────────────────────────────────────
-  function inyectarEstilos() {
-    if (document.getElementById("dspell-css")) return;
-    const s = document.createElement("style");
-    s.id = "dspell-css";
-    s.textContent = `
-      #dspell-overlay {
-        position:fixed;inset:0;z-index:9999;
-        background:rgba(26,26,26,.52);backdrop-filter:blur(3px);
-        display:flex;align-items:center;justify-content:center;padding:20px;
-        animation:dspFade .15s ease;
-      }
-      @keyframes dspFade{from{opacity:0}to{opacity:1}}
-      #dspell-modal{
-        background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:84vh;
-        display:flex;flex-direction:column;
-        box-shadow:0 24px 64px rgba(0,0,0,.18);overflow:hidden;
-        font-family:'DM Sans',sans-serif;
-      }
-      .dsp-head{
-        padding:20px 24px 16px;border-bottom:1px solid #ede7dc;
-        display:flex;align-items:center;justify-content:space-between;
-      }
-      .dsp-head-ico{
-        width:36px;height:36px;border-radius:10px;background:#e8f5ee;
-        display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
-      }
-      .dsp-head-txt{margin-left:12px;}
-      .dsp-head-txt h3{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#1a1a1a;font-weight:400;margin:0;}
-      .dsp-head-txt p{font-size:.73rem;color:#9a9a9a;margin:2px 0 0;}
-      .dsp-close{
-        background:#f4efe7;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;
+  return textos;
+}
+
+// ── Revisar un texto con LanguageTool ─────────────────────
+async function revisarTexto(texto) {
+  try {
+    const res = await fetch(LT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        text: texto,
+        language: "es",
+        enabledOnly: "false"
+      })
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    // Solo errores de ortografía y gramática, excluir puntuación menor
+    return (data.matches || []).filter(m =>
+      m.rule?.category?.id !== "PUNCTUATION" &&
+      m.rule?.id !== "UPPERCASE_SENTENCE_START"
+    );
+  } catch {
+    return [];
+  }
+}
+
+// ── Modal UI ──────────────────────────────────────────────
+function crearModalHTML() {
+  return `
+  <div id="lt-overlay" style="
+    position:fixed;inset:0;background:rgba(26,26,26,.55);
+    z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;backdrop-filter:blur(3px);
+  ">
+    <div id="lt-modal" style="
+      background:#fff;border-radius:16px;max-width:640px;width:100%;
+      max-height:85vh;display:flex;flex-direction:column;
+      box-shadow:0 24px 64px rgba(0,0,0,.18);
+      font-family:'DM Sans',sans-serif;
+    ">
+      <!-- Header -->
+      <div style="
+        padding:22px 28px 18px;border-bottom:1px solid #e8e2d8;
+        display:flex;align-items:center;gap:12px;
+      ">
+        <div style="
+          width:40px;height:40px;background:#e8f5ee;border-radius:10px;
+          display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1b7a51" stroke-width="2.5">
+            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:#1a1a1a">
+            Revisar ortografía
+          </div>
+          <div id="lt-subtitle" style="font-size:.78rem;color:#9a9a9a;margin-top:2px">
+            Analizando textos…
+          </div>
+        </div>
+        <button id="lt-cerrar-x" style="
+          background:none;border:none;cursor:pointer;
+          color:#9a9a9a;padding:4px;border-radius:6px;
+          font-size:1.2rem;line-height:1;
+        " title="Cerrar">✕</button>
+      </div>
+
+      <!-- Body scroll -->
+      <div id="lt-body" style="
+        overflow-y:auto;padding:20px 28px;flex:1;
         display:flex;align-items:center;justify-content:center;
-        color:#5a5a5a;font-size:.85rem;transition:background .15s;flex-shrink:0;
-      }
-      .dsp-close:hover{background:#ede7dc;}
-      .dsp-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;}
-      .dsp-item{background:#faf8f4;border:1px solid #e0d8cf;border-radius:12px;padding:14px 16px;transition:opacity .2s;}
-      .dsp-item.corregido{border-color:#6ee7b7;background:#f0fdf9;}
-      .dsp-item.ignorado{opacity:.4;pointer-events:none;}
-      .dsp-campo{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1b7a51;margin-bottom:7px;}
-      .dsp-ctx{font-size:.9rem;color:#2c2c2c;line-height:1.5;margin-bottom:8px;word-break:break-word;}
-      .dsp-ctx mark{background:#fef3c7;color:#92400e;border-radius:3px;padding:1px 4px;}
-      .dsp-msg{font-size:.78rem;color:#5a5a5a;margin-bottom:10px;line-height:1.4;}
-      .dsp-sugs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
-      .dsp-sug{
-        background:#e8f5ee;color:#1b7a51;border:1px solid rgba(27,122,81,.2);border-radius:6px;
-        padding:4px 13px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;
-      }
-      .dsp-sug:hover{background:#1b7a51;color:#fff;}
-      .dsp-ignorar{
-        background:transparent;border:none;font-size:.75rem;color:#9a9a9a;
-        cursor:pointer;padding:2px 4px;border-radius:4px;transition:color .15s;
-      }
-      .dsp-ignorar:hover{color:#5a5a5a;}
-      .dsp-empty{text-align:center;padding:48px 0;color:#9a9a9a;}
-      .dsp-empty-ico{font-size:2.4rem;margin-bottom:10px;}
-      .dsp-empty-tit{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#2c2c2c;margin-bottom:4px;}
-      .dsp-loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:56px 0;color:#9a9a9a;font-size:.88rem;}
-      .dsp-spinner{
-        width:34px;height:34px;border:3px solid #ede7dc;border-top-color:#1b7a51;
-        border-radius:50%;animation:dspSpin .75s linear infinite;
-      }
-      @keyframes dspSpin{to{transform:rotate(360deg)}}
-      .dsp-foot{
-        padding:14px 24px;border-top:1px solid #ede7dc;
-        display:flex;align-items:center;justify-content:space-between;gap:12px;
-      }
-      .dsp-foot-info{font-size:.75rem;color:#9a9a9a;}
-      .dsp-btn-ok{
-        background:#1b7a51;color:#fff;border:none;border-radius:8px;padding:9px 24px;
-        font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;
-        cursor:pointer;transition:background .15s;
-      }
-      .dsp-btn-ok:hover{background:#155c3c;}
-    `;
-    document.head.appendChild(s);
-  }
-
-  function crearModal() {
-    inyectarEstilos();
-    const overlay = document.createElement("div");
-    overlay.id = "dspell-overlay";
-    overlay.innerHTML = `
-      <div id="dspell-modal">
-        <div class="dsp-head">
-          <div style="display:flex;align-items:center">
-            <div class="dsp-head-ico">✏️</div>
-            <div class="dsp-head-txt">
-              <h3>Corrector de ortografía</h3>
-              <p id="dsp-subtitulo">Revisando campos…</p>
-            </div>
-          </div>
-          <button class="dsp-close" id="dsp-close">✕</button>
-        </div>
-        <div class="dsp-body" id="dsp-body">
-          <div class="dsp-loading">
-            <div class="dsp-spinner"></div>
-            <span>Consultando LanguageTool…</span>
-          </div>
-        </div>
-        <div class="dsp-foot">
-          <span class="dsp-foot-info" id="dsp-info">—</span>
-          <button class="dsp-btn-ok" id="dsp-ok">Listo</button>
+      ">
+        <!-- Spinner inicial -->
+        <div id="lt-spinner" style="text-align:center;padding:32px 0">
+          <div style="
+            width:36px;height:36px;border:3px solid #e8e2d8;
+            border-top-color:#1b7a51;border-radius:50%;
+            animation:ltSpin .8s linear infinite;margin:0 auto 14px;
+          "></div>
+          <div style="font-size:.88rem;color:#9a9a9a">Consultando LanguageTool…</div>
         </div>
       </div>
-    `;
-    document.body.appendChild(overlay);
-    overlay.querySelector("#dsp-close").onclick = cerrar;
-    overlay.querySelector("#dsp-ok").onclick    = cerrar;
-    overlay.addEventListener("click", e => { if (e.target === overlay) cerrar(); });
-  }
 
-  function cerrar() { document.getElementById("dspell-overlay")?.remove(); }
-
-  function esc(s) {
-    return (s || "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-  }
-
-  function labelCampo(el) {
-    if (el.id) {
-      const lbl = document.querySelector(`label[for="${el.id}"]`);
-      if (lbl) return lbl.textContent.trim();
+      <!-- Footer -->
+      <div id="lt-footer" style="
+        padding:16px 28px;border-top:1px solid #e8e2d8;
+        display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;
+      ">
+        <button id="lt-omitir" style="
+          padding:10px 22px;border-radius:8px;font-size:.88rem;font-weight:600;
+          background:#fff;border:1.5px solid #d6cfc5;color:#5a5a5a;cursor:pointer;
+          font-family:'DM Sans',sans-serif;transition:all .2s;
+        ">Omitir todo y continuar</button>
+        <button id="lt-aplicar" style="
+          padding:10px 22px;border-radius:8px;font-size:.88rem;font-weight:600;
+          background:#1b7a51;border:none;color:#fff;cursor:pointer;
+          font-family:'DM Sans',sans-serif;transition:all .2s;
+          box-shadow:0 3px 12px rgba(27,122,81,.25);
+        " disabled>Aplicar correcciones y guardar</button>
+      </div>
+    </div>
+  </div>
+  <style>
+    @keyframes ltSpin { to { transform:rotate(360deg); } }
+    .lt-check-row { display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0ebe3; }
+    .lt-check-row:last-child { border-bottom:none; }
+    .lt-check-row input[type=checkbox] { accent-color:#1b7a51;width:16px;height:16px;flex-shrink:0;margin-top:3px;cursor:pointer; }
+    .lt-campo-label { font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1b7a51;margin-bottom:4px; }
+    .lt-original { font-size:.82rem;color:#9a9a9a;margin-bottom:3px; }
+    .lt-original mark { background:#fef3c7;color:#92400e;padding:1px 3px;border-radius:3px;font-style:normal; }
+    .lt-mensaje { font-size:.82rem;color:#5a5a5a;margin-bottom:5px; }
+    .lt-sugerencias { display:flex;flex-wrap:wrap;gap:6px; }
+    .lt-sug-btn {
+      padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;
+      background:#e8f5ee;color:#1b7a51;border:1.5px solid #1b7a51;
+      font-family:'DM Sans',sans-serif;transition:all .15s;
     }
-    const mapa = {
-      notas:"Notas", ubicacion:"Ubicación", concepto:"Por concepto de",
-      "mov-descripcion":"Descripción del movimiento", "mov-notas":"Notas del movimiento"
-    };
-    if (mapa[el.id]) return mapa[el.id];
-    if (el.classList.contains("desc"))              return "Descripción del ítem";
-    if (el.classList.contains("item-desc"))         return "Descripción del servicio";
-    if (el.classList.contains("nota-vineta-input")) return "Nota";
-    return el.placeholder || el.name || "Campo";
+    .lt-sug-btn:hover { background:#1b7a51;color:#fff; }
+    .lt-sug-btn.selected { background:#1b7a51;color:#fff; }
+    .lt-ok-state { text-align:center;padding:28px 0; }
+    .lt-ok-icon { font-size:2.4rem;margin-bottom:8px; }
+    .lt-ok-title { font-family:'DM Serif Display',serif;font-size:1.15rem;color:#1a1a1a;margin-bottom:4px; }
+    .lt-ok-sub { font-size:.82rem;color:#9a9a9a; }
+  </style>`;
+}
+
+// ── Renderizar resultados ──────────────────────────────────
+function renderizarResultados(resultados) {
+  const body = document.getElementById("lt-body");
+  const subtitle = document.getElementById("lt-subtitle");
+  const btnAplicar = document.getElementById("lt-aplicar");
+
+  // Contar errores totales
+  const totalErrores = resultados.reduce((s, r) => s + r.matches.length, 0);
+
+  if (totalErrores === 0) {
+    subtitle.textContent = "Sin errores encontrados";
+    body.style.justifyContent = "center";
+    body.innerHTML = `
+      <div class="lt-ok-state">
+        <div class="lt-ok-icon">✅</div>
+        <div class="lt-ok-title">¡Todo correcto!</div>
+        <div class="lt-ok-sub">No se encontraron errores ortográficos ni gramaticales.</div>
+      </div>`;
+    btnAplicar.textContent = "Guardar";
+    btnAplicar.disabled = false;
+    return;
   }
 
-  function actualizarInfo() {
-    const n = document.querySelectorAll(".dsp-item:not(.corregido):not(.ignorado)").length;
-    const el = document.getElementById("dsp-info");
-    if (el) el.textContent = n
-      ? `${n} sugerencia${n !== 1 ? "s" : ""} pendiente${n !== 1 ? "s" : ""}`
-      : "Sin pendientes ✓";
-  }
+  subtitle.textContent = `${totalErrores} sugerencia${totalErrores !== 1 ? "s" : ""} encontrada${totalErrores !== 1 ? "s" : ""}`;
+  body.style.justifyContent = "flex-start";
 
-  function renderizar(resultados) {
-    const body  = document.getElementById("dsp-body");
-    const sub   = document.getElementById("dsp-subtitulo");
-    const info  = document.getElementById("dsp-info");
-    const total = resultados.reduce((s, r) => s + r.errores.length, 0);
+  // Estado de correcciones seleccionadas: { campo+offset: sugerencia elegida }
+  const selecciones = {}; // key: `${campo}-${matchIndex}` → { match, sugerencia, entry }
 
-    sub.textContent = total
-      ? `${total} sugerencia${total !== 1 ? "s" : ""} encontrada${total !== 1 ? "s" : ""}`
-      : "Revisión completada";
+  let html = `<div style="width:100%">`;
 
-    if (total === 0) {
-      body.innerHTML = `
-        <div class="dsp-empty">
-          <div class="dsp-empty-ico">✅</div>
-          <div class="dsp-empty-tit">Sin errores detectados</div>
-          <div>El texto no tiene sugerencias de corrección.</div>
+  resultados.forEach(({ entry, matches }) => {
+    if (!matches.length) return;
+
+    html += `<div style="margin-bottom:16px">`;
+    html += `<div class="lt-campo-label">${entry.label}</div>`;
+
+    matches.forEach((match, mi) => {
+      const key = `${entry.campo}-${mi}`;
+      const inicio = match.offset;
+      const fin = match.offset + match.length;
+      const textoOriginal = entry.texto;
+      const palabraError = textoOriginal.substring(inicio, fin);
+
+      // Texto con la palabra marcada
+      const textoMarcado =
+        textoOriginal.substring(0, inicio) +
+        `<mark>${palabraError}</mark>` +
+        textoOriginal.substring(fin);
+
+      const sugs = (match.replacements || []).slice(0, 4);
+
+      html += `
+        <div class="lt-check-row" data-key="${key}">
+          <input type="checkbox" id="ltck-${key}" data-key="${key}" checked>
+          <div style="flex:1">
+            <div class="lt-original">${textoMarcado}</div>
+            <div class="lt-mensaje">${match.message || "Posible error"}</div>
+            ${sugs.length ? `
+              <div class="lt-sugerencias" id="ltsugs-${key}">
+                ${sugs.map((s, si) => `
+                  <button class="lt-sug-btn${si === 0 ? " selected" : ""}"
+                    data-key="${key}" data-sug="${s.value}"
+                    data-inicio="${inicio}" data-fin="${fin}"
+                    data-campo="${entry.campo}">${s.value}</button>
+                `).join("")}
+              </div>` : `<div style="font-size:.78rem;color:#9a9a9a">Sin sugerencias automáticas</div>`}
+          </div>
         </div>`;
-      info.textContent = "0 sugerencias";
-      return;
-    }
 
-    info.textContent = `${total} sugerencia${total !== 1 ? "s" : ""}`;
-    body.innerHTML = "";
-
-    resultados.forEach(({ campo, label, errores }) => {
-      errores.forEach(err => {
-        const val    = campo.value;
-        const inicio = err.offset;
-        const fin    = err.offset + err.length;
-        const palabra = val.substring(inicio, fin);
-        const cI = Math.max(0, inicio - 35);
-        const cF = Math.min(val.length, fin + 35);
-        const pre  = esc(val.substring(cI, inicio));
-        const post = esc(val.substring(fin, cF));
-        const d1 = cI > 0 ? "…" : "";
-        const d2 = cF < val.length ? "…" : "";
-        const sugs = (err.replacements || []).slice(0, 5).map(r => r.value);
-
-        const div = document.createElement("div");
-        div.className = "dsp-item";
-        div.innerHTML = `
-          <div class="dsp-campo">${esc(label)}</div>
-          <div class="dsp-ctx">${d1}${pre}<mark>${esc(palabra)}</mark>${post}${d2}</div>
-          <div class="dsp-msg">${esc(err.message || "Posible error ortográfico")}</div>
-          ${sugs.length ? `<div class="dsp-sugs">${sugs.map(s =>
-            `<button class="dsp-sug" data-val="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
-          <button class="dsp-ignorar">Ignorar</button>
-        `;
-
-        div.querySelectorAll(".dsp-sug").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const sug = btn.dataset.val;
-            campo.value =
-              campo.value.substring(0, err.offset) + sug +
-              campo.value.substring(err.offset + err.length);
-            campo.dispatchEvent(new Event("input", { bubbles: true }));
-            div.classList.add("corregido");
-            div.querySelector(".dsp-sugs")?.remove();
-            div.querySelector(".dsp-ignorar")?.remove();
-            div.querySelector(".dsp-msg").textContent = `✓ Corregido → "${sug}"`;
-            actualizarInfo();
-          });
-        });
-
-        div.querySelector(".dsp-ignorar").addEventListener("click", () => {
-          div.classList.add("ignorado");
-          actualizarInfo();
-        });
-
-        body.appendChild(div);
-      });
+      // Pre-seleccionar primera sugerencia
+      if (sugs.length) {
+        selecciones[key] = {
+          match, sugerencia: sugs[0].value,
+          inicio, fin, campo: entry.campo, entry
+        };
+      }
     });
-  }
 
-  async function revisar() {
-    cerrar();
-    const campos = getCampos();
-    if (campos.length === 0) {
-      alert("No hay texto para revisar. Completa al menos un campo primero.");
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  body.innerHTML = html;
+
+  // Habilitar botón
+  btnAplicar.disabled = false;
+  btnAplicar.textContent = "Aplicar correcciones y guardar";
+
+  // ── Eventos en sugerencias ──
+  body.querySelectorAll(".lt-sug-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key;
+      const campo = btn.dataset.campo;
+      const sug = btn.dataset.sug;
+      const inicio = Number(btn.dataset.inicio);
+      const fin = Number(btn.dataset.fin);
+
+      // Marcar seleccionada
+      body.querySelectorAll(`.lt-sug-btn[data-key="${key}"]`).forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+
+      // Encontrar entry
+      const entry = resultados.find(r => r.entry.campo === campo)?.entry;
+      if (entry) {
+        selecciones[key] = { sugerencia: sug, inicio, fin, campo, entry };
+      }
+    });
+  });
+
+  // ── Checkbox desmarcar ──
+  body.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const key = cb.dataset.key;
+      if (!cb.checked) {
+        delete selecciones[key];
+      } else {
+        // Re-agregar primera sugerencia seleccionada
+        const firstSug = body.querySelector(`.lt-sug-btn.selected[data-key="${key}"]`);
+        if (firstSug) {
+          const campo = firstSug.dataset.campo;
+          const entry = resultados.find(r => r.entry.campo === campo)?.entry;
+          if (entry) {
+            selecciones[key] = {
+              sugerencia: firstSug.dataset.sug,
+              inicio: Number(firstSug.dataset.inicio),
+              fin: Number(firstSug.dataset.fin),
+              campo, entry
+            };
+          }
+        }
+      }
+    });
+  });
+
+  // Guardar referencia a selecciones en el botón para aplicar
+  btnAplicar._selecciones = selecciones;
+  btnAplicar._resultados = resultados;
+}
+
+// ── Aplicar correcciones al DOM ───────────────────────────
+function aplicarCorrecciones(selecciones) {
+  // Agrupar por campo y aplicar de atrás hacia adelante (offsets no se desplazan)
+  const porCampo = {};
+  Object.values(selecciones).forEach(s => {
+    if (!porCampo[s.campo]) porCampo[s.campo] = [];
+    porCampo[s.campo].push(s);
+  });
+
+  Object.entries(porCampo).forEach(([campo, corrs]) => {
+    // Ordenar de mayor a menor offset para no romper posiciones
+    corrs.sort((a, b) => b.inicio - a.inicio);
+
+    // Encontrar el elemento
+    let el = null;
+    if (campo === "notas-libre") {
+      el = document.getElementById("notas");
+    } else if (campo === "ubicacion") {
+      el = document.getElementById("ubicacion");
+    } else if (campo === "concepto") {
+      el = document.getElementById("concepto");
+    } else if (campo.startsWith("vineta-")) {
+      const idx = Number(campo.split("-")[1]);
+      el = document.querySelectorAll(".nota-vineta-input")[idx];
+    } else if (campo.startsWith("item-")) {
+      const idx = Number(campo.split("-")[1]);
+      // Cotizaciones usa .desc, cuentas usa .item-desc
+      const descs = [...document.querySelectorAll("#tabla-items .desc"), ...document.querySelectorAll(".item-desc")];
+      el = descs[idx];
+    }
+
+    if (!el) return;
+
+    let texto = el.value;
+    corrs.forEach(c => {
+      texto = texto.substring(0, c.inicio) + c.sugerencia + texto.substring(c.fin);
+    });
+    el.value = texto;
+
+    // Disparar input para que cotizaciones.js recalcule si aplica
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+// ── Función principal exportada ───────────────────────────
+// Retorna una Promise que resuelve true (continuar guardar) o false (cancelar)
+window.mostrarModalCorrecciones = function(modo) {
+  return new Promise(async (resolve) => {
+    // Inyectar modal
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = crearModalHTML();
+    document.body.appendChild(wrapper);
+
+    const overlay = document.getElementById("lt-overlay");
+    const btnOmitir = document.getElementById("lt-omitir");
+    const btnAplicar = document.getElementById("lt-aplicar");
+    const btnCerrarX = document.getElementById("lt-cerrar-x");
+
+    function cerrar(continuar) {
+      wrapper.remove();
+      resolve(continuar);
+    }
+
+    btnCerrarX.addEventListener("click", () => cerrar(false));
+    btnOmitir.addEventListener("click", () => cerrar(true));
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) cerrar(false);
+    });
+
+    // Recolectar textos
+    const entradas = recolectarTextos(modo);
+
+    if (entradas.length === 0) {
+      cerrar(true); // Nada que revisar, continuar directo
       return;
     }
-    crearModal();
+
+    // Revisar cada texto
     const resultados = [];
-    for (let i = 0; i < campos.length; i += 4) {
-      const lote   = campos.slice(i, i + 4);
-      const parcial = await Promise.all(lote.map(async campo => ({
-        campo,
-        label:  labelCampo(campo),
-        errores: await checkText(campo.value)
-      })));
-      resultados.push(...parcial.filter(r => r.errores.length > 0));
+    for (const entry of entradas) {
+      const matches = await revisarTexto(entry.texto);
+      if (matches.length) resultados.push({ entry, matches });
     }
-    renderizar(resultados);
-  }
 
-  return { revisar };
-})();
+    renderizarResultados(resultados);
 
-window.DomkaSpell = DomkaSpell;
+    // Aplicar + guardar
+    btnAplicar.addEventListener("click", () => {
+      const selecciones = btnAplicar._selecciones || {};
+      if (Object.keys(selecciones).length > 0) {
+        aplicarCorrecciones(selecciones);
+      }
+      cerrar(true);
+    });
+  });
+};
