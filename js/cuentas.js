@@ -30,8 +30,11 @@ async function cargarClientes() {
       opt.value = docu.id;
       opt.textContent = c.nombreEmpresa || c.nombre || `(sin nombre)`;
       opt.dataset.telefono = c.telefono || "";
-      opt.dataset.nit = c.nit || "";                           // 🔹 NUEVO
-      opt.dataset.numeroDocumento = c.numeroDocumento || "";   // 🔹 NUEVO
+      opt.dataset.tipoIdentificacion = c.tipoIdentificacion || (c.nit ? "NIT" : "CC");
+      opt.dataset.identificacion     = c.identificacion || c.nit || c.numeroDocumento || "";
+      // legacy
+      opt.dataset.nit = c.nit || "";
+      opt.dataset.numeroDocumento = c.numeroDocumento || "";
       selectCliente.appendChild(opt);
     });
   } catch (e) {
@@ -167,7 +170,13 @@ function agregarViñeta(texto = "") {
 // Guardar cuenta de cobro
 formCuenta.addEventListener("submit", async (e) => {
   e.preventDefault();
-  
+
+  // ── Corrector ortografía ──
+  if (typeof mostrarModalCorrecciones === "function") {
+    const continuar = await mostrarModalCorrecciones("cuenta");
+    if (!continuar) return; // Usuario canceló
+  }
+
   const clienteId = selectCliente.value;
 
   // 🔹 Leer notas (soporte viñetas)
@@ -212,18 +221,29 @@ formCuenta.addEventListener("submit", async (e) => {
     const nombreCliente = clienteData.nombreEmpresa || clienteData.nombre || "(sin nombre)";
     const telefonoCliente = clienteData.telefono || "";
 
-    // 🔹 Tomar datos del cliente seleccionado
+    // Tomar identificación del cliente (campo unificado + compatibilidad legacy)
     const selectedOpt = selectCliente.options[selectCliente.selectedIndex];
-    const clienteNit = selectedOpt?.dataset.nit || clienteData.nit || "";
-    const clienteNumeroDocumento = selectedOpt?.dataset.numeroDocumento || clienteData.numeroDocumento || "";
+    const clienteTipoIdentificacion = selectedOpt?.dataset.tipoIdentificacion
+      || clienteData.tipoIdentificacion
+      || (clienteData.nit ? "NIT" : "CC");
+    const clienteIdentificacion = selectedOpt?.dataset.identificacion
+      || clienteData.identificacion
+      || clienteData.nit
+      || clienteData.numeroDocumento
+      || "";
+    // Legacy
+    const clienteNit = clienteTipoIdentificacion === "NIT" ? clienteIdentificacion : (clienteData.nit || "");
+    const clienteNumeroDocumento = clienteTipoIdentificacion !== "NIT" ? clienteIdentificacion : (clienteData.numeroDocumento || "");
     
     const docRef = await db.collection("cuentas").add({
       clienteId,
       nombreCliente,
       telefonoCliente,
-      clienteNit,              // 🔹 NUEVO
-      clienteNumeroDocumento,  // 🔹 NUEVO
-      mostrarDocumento,        // 🔹 NUEVO
+      clienteTipoIdentificacion,
+      clienteIdentificacion,
+      clienteNit,
+      clienteNumeroDocumento,
+      mostrarDocumento,
       concepto,
       notas,
       notasArray,              // 🔹 NUEVO: guardamos array
