@@ -107,7 +107,7 @@
 
           <div>
             <label class="form-label">Por concepto de</label>
-            <input type="text" id="concepto" class="form-input" placeholder="Ej: Servicios de construcción" required>
+            <input type="text" id="concepto" class="form-input" placeholder="Ej: Servicios de construcción" required spellcheck="true" lang="es">
           </div>
 
           <div>
@@ -188,6 +188,7 @@
 <script src="js/auth.js"></script>
 <script src="js/numero-letras.js"></script>
 <script src="js/pdf-cuenta.js"></script>
+<script src="js/spellcheck.js"></script>
 <script src="js/cuentas.js"></script>
 <script>
   if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
