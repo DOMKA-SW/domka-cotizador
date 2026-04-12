@@ -1,0 +1,278 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ════════════════════════════════════════════════════════
+    // HELPERS DE IDENTIDAD
+    // ════════════════════════════════════════════════════════
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function userDoc() {
+      // Cachear con let no está disponible en Rules v2; la función es llamada
+      // como máximo una vez por rule branch gracias a lazy evaluation de Firebase.
+      return get(/databases/$(database)/documents/usuarios/$(uid()));
+    }
+
+    function userRole() {
+      return isAuth() ? userDoc().data.rol : null;
+    }
+
+    function userActivo() {
+      return isAuth() ? userDoc().data.activo == true : false;
+    }
+
+    // ── Roles ────────────────────────────────────────────────
+    function isAdmin() {
+      return isAuth() && userActivo() && userRole() == 'admin';
+    }
+
+    function isComercial() {
+      return isAuth() && userActivo() && userRole() in ['admin', 'comercial'];
+    }
+
+    function isTecnico() {
+      return isAuth() && userActivo() && userRole() in ['admin', 'comercial', 'tecnico'];
+    }
+
+    function isCliente() {
+      return isAuth() && userActivo() && userRole() == 'cliente';
+    }
+
+    function clienteIdDelUsuario() {
+      return userDoc().data.clienteId;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // HELPERS DE VALIDACIÓN
+    // ════════════════════════════════════════════════════════
+
+    // Verifica que la actualización solo toque campos de estado permitidos
+    function soloEstadoCambia(camposPermitidos) {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(camposPermitidos);
+    }
+
+    // Verifica que el token público coincide (el cliente lo envía como prueba)
+    function tokenValido() {
+      return request.resource.data.tokenPublico == resource.data.tokenPublico;
+    }
+
+    // El documento tiene un token (protección básica de existencia)
+    function tieneToken() {
+      return resource.data.tokenPublico is string
+        && resource.data.tokenPublico.size() >= 32;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // USUARIOS
+    // ════════════════════════════════════════════════════════
+    match /usuarios/{docUid} {
+      // GET propio o admin — jamás LIST sin auth
+      allow get:  if isAuth() && (uid() == docUid || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isAdmin()
+        // Campos obligatorios con tipos correctos
+        && request.resource.data.keys().hasAll(['email','nombre','rol','activo'])
+        && request.resource.data.rol in ['admin','comercial','tecnico','cliente']
+        && request.resource.data.activo is bool
+        && request.resource.data.email is string;
+
+      allow update: if isAdmin()
+        || (isAuth() && uid() == docUid
+            // El propio usuario NO puede cambiar rol, activo ni clienteId
+            && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['rol','activo','clienteId']));
+
+      allow delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // CLIENTES
+    // ════════════════════════════════════════════════════════
+    match /clientes/{docId} {
+      // Técnico puede hacer GET (para ver nombre en proyecto), NO list
+      allow get:  if isTecnico();
+      allow list: if isComercial();
+
+      allow create: if isComercial()
+        && request.resource.data.keys().hasAll(['nombre','email'])
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0;
+
+      allow update: if isComercial();
+      allow delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // COTIZACIONES
+    // ════════════════════════════════════════════════════════
+    match /cotizaciones/{docId} {
+      // ── Lectura ─────────────────────────────────────────
+      // GET público: permite links compartidos (solo 1 doc, no listado)
+      allow get: if true;
+
+      // LIST: solo usuarios internos autenticados
+      allow list: if isComercial()
+        || (isCliente() && resource.data.clienteId == clienteIdDelUsuario());
+
+      // ── Escritura ────────────────────────────────────────
+      allow create: if isComercial()
+        && request.resource.data.keys().hasAll([
+          'clienteId','nombreCliente','total','estado','tokenPublico'
+        ])
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.tokenPublico is string
+        && request.resource.data.tokenPublico.size() >= 32;
+
+      allow update: if isComercial()
+        // Cliente logueado puede aprobar/rechazar SU cotización
+        || (isCliente()
+            && resource.data.clienteId == clienteIdDelUsuario()
+            && soloEstadoCambia(['estado','fechaRespuesta']))
+        // Visitante público: DEBE enviar el token correcto (prueba de haber visto el doc)
+        || (!isAuth()
+            && tieneToken()
+            && tokenValido()
+            && soloEstadoCambia(['estado','fechaRespuesta','tokenPublico']));
+
+      allow delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // CUENTAS DE COBRO
+    // ════════════════════════════════════════════════════════
+    match /cuentas/{docId} {
+      allow get:  if true;
+      allow list: if isComercial()
+        || (isCliente() && resource.data.clienteId == clienteIdDelUsuario());
+
+      allow create: if isComercial()
+        && request.resource.data.keys().hasAll([
+          'clienteId','nombreCliente','total','estado','tokenPublico'
+        ])
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.tokenPublico is string
+        && request.resource.data.tokenPublico.size() >= 32;
+
+      allow update: if isComercial()
+        || (isCliente()
+            && resource.data.clienteId == clienteIdDelUsuario()
+            && soloEstadoCambia(['estado','fechaRespuesta']))
+        || (!isAuth()
+            && tieneToken()
+            && tokenValido()
+            && soloEstadoCambia(['estado','fechaRespuesta','tokenPublico']));
+
+      allow delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // PROYECTOS
+    // ════════════════════════════════════════════════════════
+    match /proyectos/{docId} {
+      // Sin acceso público — siempre requiere auth
+      allow get: if isAuth() && (
+        isComercial()
+        || (isTecnico() && resource.data.tecnicoId == uid())
+        || (isCliente() && resource.data.clienteId == clienteIdDelUsuario())
+      );
+      allow list: if isComercial()
+        || (isAuth() && userRole() == 'tecnico' && resource.data.tecnicoId == uid())
+        || (isCliente() && resource.data.clienteId == clienteIdDelUsuario());
+
+      allow create: if isComercial()
+        && request.resource.data.keys().hasAll([
+          'clienteId','nombreCliente','estado','evidencias'
+        ])
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.evidencias is list;
+
+      allow update: if isComercial()
+        || (isAuth() && userRole() == 'tecnico'
+            && resource.data.tecnicoId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['estado','evidencias','updatedAt']));
+
+      allow delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // DOCUMENTOS
+    // ════════════════════════════════════════════════════════
+    match /documentos/{docId} {
+      allow get:  if true;
+      allow list: if isComercial()
+        || (isCliente() && resource.data.clienteId == clienteIdDelUsuario());
+
+      allow create: if isComercial()
+        && request.resource.data.keys().hasAll([
+          'clienteId','nombreCliente','tipo','estado','tokenPublico'
+        ])
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.tokenPublico is string
+        && request.resource.data.tokenPublico.size() >= 32;
+
+      allow update: if isComercial()
+        || (isCliente()
+            && resource.data.clienteId == clienteIdDelUsuario()
+            && soloEstadoCambia(['estado','fechaRespuesta']))
+        || (!isAuth()
+            && tieneToken()
+            && tokenValido()
+            && soloEstadoCambia(['estado','fechaRespuesta','tokenPublico']));
+
+      allow delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // LOGS (solo escritura pública, lectura solo admin)
+    // ════════════════════════════════════════════════════════
+    match /logs/{docId} {
+      allow read: if isAdmin();
+      allow create: if
+        // Estructura mínima obligatoria y sin campos peligrosos
+        request.resource.data.keys().hasAll(['tipo','accion','timestamp'])
+        && request.resource.data.tipo in ['cotizacion','cuenta','documento']
+        && request.resource.data.accion in ['vista','aprobada','rechazada','recibido_confirmado']
+        && !request.resource.data.keys().hasAny(['__proto__','constructor','prototype']);
+      allow update, delete: if false;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // MÓDULO FINANCIERO (solo Admin)
+    // ════════════════════════════════════════════════════════
+    match /movimientos/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /cuentasBancarias/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ════════════════════════════════════════════════════════
+    // CONTADORES (numeración automática)
+    // ════════════════════════════════════════════════════════
+    match /contadores/{docId} {
+      allow get:    if isAuth();
+      allow list:   if isAdmin();
+      allow create: if isComercial();
+      allow update: if isComercial()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ultimo'])
+        && request.resource.data.ultimo is number;
+      allow delete: if false;
+    }
+
+  }
+}
