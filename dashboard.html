@@ -131,17 +131,26 @@
       <a href="dashboard.html" class="nav-item active">
         <i class="fas fa-home"></i> Dashboard
       </a>
-      <a href="cotizaciones.html" class="nav-item">
+      <a href="cotizaciones.html" class="nav-item" data-rol-min="comercial">
         <i class="fas fa-file-alt"></i> Cotizaciones
       </a>
-      <a href="cuentas.html" class="nav-item">
+      <a href="cuentas.html" class="nav-item" data-rol-min="comercial">
         <i class="fas fa-file-invoice-dollar"></i> Cuentas de cobro
       </a>
-      <a href="clientes.html" class="nav-item">
+      <a href="clientes.html" class="nav-item" data-rol-min="comercial">
         <i class="fas fa-users"></i> Clientes
       </a>
-      <a href="contabilidad.html" class="nav-item">
+      <a href="proyectos.html" class="nav-item">
+        <i class="fas fa-hard-hat"></i> Proyectos
+      </a>
+      <a href="documentos.html" class="nav-item" data-rol-min="comercial">
+        <i class="fas fa-folder-open"></i> Documentos
+      </a>
+      <a href="contabilidad.html" class="nav-item" data-rol-min="admin">
         <i class="fas fa-chart-bar"></i> Contabilidad
+      </a>
+      <a href="usuarios.html" class="nav-item" data-rol-min="admin">
+        <i class="fas fa-user-cog"></i> Usuarios
       </a>
     </nav>
 
@@ -149,6 +158,7 @@
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
         <div style="width:8px;height:8px;background:#22c55e;border-radius:50%"></div>
         <span style="font-size:.8rem;color:var(--gray)" id="user-email">Cargando…</span>
+        <span style="display:block;font-size:.6rem;color:var(--gray-lt)" id="user-rol"></span>
       </div>
       <button onclick="logout()" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">
         <i class="fas fa-sign-out-alt"></i> Cerrar sesión
@@ -274,6 +284,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="js/firebase.js"></script>
+<script src="js/security.js"></script>
+<script src="js/roles.js"></script>
 <script src="js/auth.js"></script>
 
 <script>
