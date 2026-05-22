@@ -184,7 +184,12 @@
     .info-card-value { font-size: 0.95rem; font-weight: 600; color: var(--black); }
 
     /* ── TABLA ÍTEMS ──────────────────────────────────────── */
-    .items-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .table-scroll-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 10px;
+    }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 480px; }
     .items-table thead tr { background: var(--black); }
     .items-table thead th {
       padding: 11px 14px;
@@ -409,7 +414,7 @@
 
       <!-- Detalle -->
       <p class="slabel">Detalle de la cotización</p>
-      <div style="overflow-x:auto; border-radius:10px; overflow:hidden; border:1px solid var(--line);">
+      <div class="table-scroll-wrap" style="border:1px solid var(--line);">
         <table class="items-table">
           <thead>
             <tr>
