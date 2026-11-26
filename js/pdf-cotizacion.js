@@ -49,7 +49,7 @@ const P = {
 // ── CUENTAS BANCARIAS ─────────────────────────────────────────
 // ⚠️ Edita aquí tus cuentas reales
 const BANCOS = [
-  { banco: "Bancolombia",       tipo: "Cuenta de Ahorros",  numero: "912-941792-97",    titular: "Alexander Otalora" }
+  { banco: "Bancolombia",       tipo: "Cuenta de Ahorros",  numero: "",    titular: "Alexander Otalora" }
   //{ banco: "Nequi / Daviplata", tipo: "Billetera Digital",  numero: "+57 305 811 4595", titular: "Alexander Otalora Camayo" }
 ];
 
